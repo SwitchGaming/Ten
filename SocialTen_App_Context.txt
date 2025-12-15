@@ -1,0 +1,223 @@
+## SocialTen - App Overview for Product Discussion
+
+### App Concept
+**SocialTen** is a minimalist social media app designed to make people "real again." The core concept is simple: users rate their day on a scale of 1-10 and share authentic moments with a small, curated circle of friends. The app intentionally limits connections to a maximum of 10 friends, emphasizing quality over quantity in social interactions.
+
+### Design Philosophy
+- **Shadow Minimalism Aesthetic**: Dark mode only with a near-black background (#0A0A0F), subtle card backgrounds, and minimal use of color
+- **Glow Customization**: Users can personalize their profile with customizable glow colors (cyan, purple, blue, green, orange, pink, white) and intensity levels that appear as subtle glows around their avatar and UI elements
+- **Clean Typography**: Ultra-light and light weight fonts, extensive letter-spacing, lowercase text throughout for a calm, modern feel
+- **Glass Card Effects**: Subtle card backgrounds with thin borders and soft shadows
+
+---
+
+### Core Features (Current MVP)
+
+#### 1. Daily Rating System
+- Users rate their day from 1-10 using a custom slider interface
+- Rating can be updated anytime throughout the day
+- Large, prominent display of the user's current rating on the home screen
+- Rating appears as a large number (120pt ultra-light font) in a glass card
+- "Rate" button when no rating exists, "Update" button when rating is set
+
+#### 2. Home Feed Structure
+The home screen has four main sections in order:
+
+**a) Your Rating Card**
+- Displays your current day's rating prominently
+- Glass card styling with personalized glow effect
+- Tap to update rating via full-screen picker
+
+**b) Friends Rating Bar**
+- Horizontal scrolling bar (Instagram Stories style)
+- Shows all friends sorted by rating (highest first)
+- Each friend displayed as a circle with their rating number inside
+- Friend's name below the circle
+- If friend hasn't rated, shows their initial letter instead
+- Personalized glow colors per friend
+
+**c) Daily Prompt Card**
+- System generates a daily prompt (e.g., "what challenged you today?", "what made you smile?", "one word for today?")
+- Tapping the prompt opens the post creation screen directly to the prompt tab
+- Prompts rotate daily based on day of year
+
+**d) Feed**
+- Shows posts from friends and yourself
+- Posts sorted by most recent
+- Each post card shows:
+  - User avatar with glow
+  - Username and timestamp
+  - User's current day rating
+  - Post content (photo and/or caption, or prompt response)
+  - +1 button (like equivalent) with count and names of who +1'd
+  - Reply button with count, expandable thread
+
+#### 3. Post Creation
+Two types of posts available via tabbed interface:
+
+**a) Regular Post (Photo + Caption)**
+- Optional square photo capture (camera only, no gallery)
+- Optional caption (max 200 characters)
+- Must have at least photo OR caption to post
+- Camera features:
+  - Square format only (1:1 aspect ratio)
+  - Front/back camera toggle
+  - Flash toggle
+  - Retake option before confirming
+  - Clean, minimal camera UI
+
+**b) Prompt Response**
+- Respond to the daily prompt
+- Text-only response
+- Prompt text displayed above input field
+
+#### 4. Reactions System
+- **+1 Button**: Simple like mechanism using plus.circle icon
+  - Shows count of +1s
+  - Shows names of people who +1'd (e.g., "Alex and Jordan" or "Alex, Jordan +3")
+  - Toggle on/off (can un-+1)
+- **Reply Button**: Opens threaded replies
+  - Expandable reply section
+  - Shows existing replies with user avatars and names
+  - Text input to add new reply
+  - Reply count shown on button
+
+#### 5. Friends System
+- **Maximum 10 friends** enforced throughout the app
+- **Friend Requests**: Send, accept, decline incoming requests
+- **Pending Requests View**: See all incoming and outgoing requests
+- **Search Users**: Find users by username or display name
+- **Remove Friends**: Unfriend option available on friend's profile
+- **Friends Count Display**: Shows "X/10 friends" in friends tab
+
+#### 6. Friends Tab
+- Search bar to filter existing friends
+- List of all friends with:
+  - Avatar with personalized glow
+  - Display name and bio preview
+  - Current day's rating
+- Tap friend to view their full profile
+- Pending requests banner when requests exist
+- Add friend button (disabled when at 10 friends)
+
+#### 7. Profile System
+**Your Profile:**
+- Avatar with personalized glow
+- Display name and username
+- Bio
+- Current day's rating in glass card
+- Stats section (friend count, etc.)
+- Edit profile button
+
+**Profile Customization (Edit Mode):**
+- Change display name
+- Change bio
+- Glow color selection (preset colors: white, cyan, purple, blue, green, orange, pink)
+- Glow intensity slider
+- Glow on/off toggle
+- Live preview of changes
+
+**Friend Profiles:**
+- Same layout as your profile
+- Remove friend option
+- View their rating and customization
+
+#### 8. Navigation
+- Bottom tab bar with 3 tabs: Home, Friends, Profile
+- Clean icons (house, person.2, person)
+- White tint on selected tab
+- Full-screen covers for:
+  - Rating picker
+  - Post creation
+  - Friend profiles
+  - Add friend view
+  - Friend requests view
+  - Profile editor
+
+---
+
+### Data Models
+
+**User:**
+- ID, username, display name, bio
+- Today's rating (1-10) with timestamp
+- Profile customization (glow color, intensity, on/off)
+- Friend IDs array
+- Rating history (for future 7-day chart feature)
+- Incoming/outgoing request IDs
+
+**Post:**
+- ID, user ID, timestamp
+- Optional image data (square photo)
+- Optional caption (max 200 chars)
+- Optional prompt response and prompt ID
+- Array of +1s (PlusOne objects with user ID and timestamp)
+- Array of replies (Reply objects with user ID, text, timestamp)
+
+**Friend Request:**
+- ID, from user ID, to user ID
+- Timestamp
+- Status (pending, accepted, declined)
+
+**Daily Prompt:**
+- ID, text, date
+- Rotates from pool of ~15 prompts based on day of year
+
+**Vibe:**
+- ID, creator user ID, timestamp
+- Title (e.g., "Study?", "Coffee?")
+- Time description (preset: "now", "in 5 min", "in 15 min", "in 30 min", "in 1 hr", "later")
+- Location (free text)
+- Array of responses (VibeResponse objects)
+- isActive flag
+
+**VibeResponse:**
+- ID, user ID, timestamp
+- Response type (yes, maybe, no)
+
+---
+
+### Key Intentional Limitations
+1. **10 friend maximum** - Forces meaningful connections
+2. **Camera only, no gallery** - Encourages authentic, in-the-moment sharing
+3. **Square photos only** - Consistent aesthetic
+4. **No video** - Keeps content simple and quick to consume
+5. **Dark mode only** - Cohesive aesthetic, reduces screen time strain
+6. **Simple reactions (+1 only)** - No emoji reactions, keeps interactions simple
+7. **No public profiles/discovery** - Must search by username to add friends
+
+---
+
+### Technical Stack
+- **Platform**: iOS (SwiftUI)
+- **Architecture**: MVVM with @Observable
+- **State Management**: Single AppViewModel managing all state
+- **Data**: Currently in-memory with sample data (no backend yet)
+- **Camera**: AVFoundation for custom camera implementation
+- **Minimum iOS**: iOS 17+ (uses newer SwiftUI features)
+
+---
+
+### Features Discussed But Not Yet Implemented
+1. **7-Day Rating History Chart** - Visual graph showing rating trends on profile
+2. **Modular Profile Sections** - Drag-to-reorder, show/hide sections on profile
+3. **Advanced Theme Customization** - Card styles, background styles, font choices
+4. **Rating History for Friends** - See friends' 7-day trends when viewing their profile
+
+---
+
+### Current User Flow
+1. Open app → Home screen with your rating card
+2. If no rating → Tap to rate → Full-screen slider picker → Save
+3. Scroll horizontally to see friends' ratings at a glance
+4. See active vibes from friends → Respond yes/maybe/no
+5. Tap "start a vibe" → Quick create (title, time, location) → Send to friends
+6. Tap daily prompt → Create prompt response post
+5. Scroll feed to see friends' posts
+6. +1 posts you like, reply to start conversations
+7. Friends tab to manage connections, add new friends
+8. Profile tab to customize your glow and edit bio
+
+---
+
+Use this context to discuss feature prioritization, rollout phases, potential backend requirements, monetization strategies, user acquisition, and any additional features that would enhance the core concept of authentic, limited social sharing.

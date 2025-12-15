@@ -1,0 +1,411 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B81A0A0A2EE40728000D2813 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81A0A092EE40728000D2813 /* Theme.swift */; };
+		B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Post.swift */; };
+		B8B35A1D2EE2C12F004A1258 /* FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */; };
+		B8B35A1F2EE2C149004A1258 /* DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */; };
+		B8B35A212EE2C1D3004A1258 /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */; };
+		B8CD47712EEBC31600F2CC27 /* Vibe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD47702EEBC31600F2CC27 /* Vibe.swift */; };
+		B8CD47732EEBC34500F2CC27 /* CreateVibeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD47722EEBC34500F2CC27 /* CreateVibeView.swift */; };
+		B8F9FB082EE0F1E8004A2584 /* SocialTenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */; };
+		B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB092EE0F1E8004A2584 /* ContentView.swift */; };
+		B8F9FB0C2EE0F1E9004A2584 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */; };
+		B8F9FB0F2EE0F1E9004A2584 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B8F9FB0E2EE0F1E9004A2584 /* Preview Assets.xcassets */; };
+		B8F9FB162EE0F304004A2584 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB152EE0F304004A2584 /* User.swift */; };
+		B8F9FB182EE0F31B004A2584 /* Rating.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB172EE0F31B004A2584 /* Rating.swift */; };
+		B8F9FB1A2EE0F330004A2584 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB192EE0F330004A2584 /* AppViewModel.swift */; };
+		B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */; };
+		B8F9FB1E2EE0F350004A2584 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1D2EE0F350004A2584 /* HomeView.swift */; };
+		B8F9FB202EE0F35F004A2584 /* FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */; };
+		B8F9FB222EE0F36D004A2584 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB212EE0F36D004A2584 /* ProfileView.swift */; };
+		B8F9FB242EE0F383004A2584 /* ProfileEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB232EE0F383004A2584 /* ProfileEditorView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B81A0A092EE40728000D2813 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B8B35A1A2EE2C117004A1258 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequest.swift; sourceTree = "<group>"; };
+		B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrompt.swift; sourceTree = "<group>"; };
+		B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
+		B8CD47702EEBC31600F2CC27 /* Vibe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibe.swift; sourceTree = "<group>"; };
+		B8CD47722EEBC34500F2CC27 /* CreateVibeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVibeView.swift; sourceTree = "<group>"; };
+		B8F9FB042EE0F1E8004A2584 /* SocialTen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SocialTen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialTenApp.swift; sourceTree = "<group>"; };
+		B8F9FB092EE0F1E8004A2584 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B8F9FB0E2EE0F1E9004A2584 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		B8F9FB152EE0F304004A2584 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B8F9FB172EE0F31B004A2584 /* Rating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rating.swift; sourceTree = "<group>"; };
+		B8F9FB192EE0F330004A2584 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		B8F9FB1D2EE0F350004A2584 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsView.swift; sourceTree = "<group>"; };
+		B8F9FB212EE0F36D004A2584 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		B8F9FB232EE0F383004A2584 /* ProfileEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditorView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B8F9FB012EE0F1E8004A2584 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B8F9FAFB2EE0F1E8004A2584 = {
+			isa = PBXGroup;
+			children = (
+				B8F9FB062EE0F1E8004A2584 /* SocialTen */,
+				B8F9FB052EE0F1E8004A2584 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B8F9FB052EE0F1E8004A2584 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B8F9FB042EE0F1E8004A2584 /* SocialTen.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
+			isa = PBXGroup;
+			children = (
+				B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */,
+				B8F9FB092EE0F1E8004A2584 /* ContentView.swift */,
+				B8CD47702EEBC31600F2CC27 /* Vibe.swift */,
+				B8F9FB152EE0F304004A2584 /* User.swift */,
+				B8F9FB172EE0F31B004A2584 /* Rating.swift */,
+				B8F9FB192EE0F330004A2584 /* AppViewModel.swift */,
+				B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */,
+				B81A0A092EE40728000D2813 /* Theme.swift */,
+				B8F9FB1D2EE0F350004A2584 /* HomeView.swift */,
+				B8CD47722EEBC34500F2CC27 /* CreateVibeView.swift */,
+				B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */,
+				B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */,
+				B8F9FB212EE0F36D004A2584 /* ProfileView.swift */,
+				B8B35A1A2EE2C117004A1258 /* Post.swift */,
+				B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */,
+				B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */,
+				B8F9FB232EE0F383004A2584 /* ProfileEditorView.swift */,
+				B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */,
+				B8F9FB0D2EE0F1E9004A2584 /* Preview Content */,
+			);
+			path = SocialTen;
+			sourceTree = "<group>";
+		};
+		B8F9FB0D2EE0F1E9004A2584 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				B8F9FB0E2EE0F1E9004A2584 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B8F9FB032EE0F1E8004A2584 /* SocialTen */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8F9FB122EE0F1E9004A2584 /* Build configuration list for PBXNativeTarget "SocialTen" */;
+			buildPhases = (
+				B8F9FB002EE0F1E8004A2584 /* Sources */,
+				B8F9FB012EE0F1E8004A2584 /* Frameworks */,
+				B8F9FB022EE0F1E8004A2584 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SocialTen;
+			productName = SocialTen;
+			productReference = B8F9FB042EE0F1E8004A2584 /* SocialTen.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B8F9FAFC2EE0F1E8004A2584 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					B8F9FB032EE0F1E8004A2584 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = B8F9FAFF2EE0F1E8004A2584 /* Build configuration list for PBXProject "SocialTen" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B8F9FAFB2EE0F1E8004A2584;
+			productRefGroup = B8F9FB052EE0F1E8004A2584 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B8F9FB032EE0F1E8004A2584 /* SocialTen */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B8F9FB022EE0F1E8004A2584 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8F9FB0F2EE0F1E9004A2584 /* Preview Assets.xcassets in Resources */,
+				B8F9FB0C2EE0F1E9004A2584 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B8F9FB002EE0F1E8004A2584 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8F9FB1A2EE0F330004A2584 /* AppViewModel.swift in Sources */,
+				B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */,
+				B8F9FB222EE0F36D004A2584 /* ProfileView.swift in Sources */,
+				B8F9FB1E2EE0F350004A2584 /* HomeView.swift in Sources */,
+				B8F9FB242EE0F383004A2584 /* ProfileEditorView.swift in Sources */,
+				B8F9FB202EE0F35F004A2584 /* FriendsView.swift in Sources */,
+				B8F9FB182EE0F31B004A2584 /* Rating.swift in Sources */,
+				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
+				B8B35A212EE2C1D3004A1258 /* CreatePostView.swift in Sources */,
+				B8F9FB082EE0F1E8004A2584 /* SocialTenApp.swift in Sources */,
+				B8CD47732EEBC34500F2CC27 /* CreateVibeView.swift in Sources */,
+				B8F9FB162EE0F304004A2584 /* User.swift in Sources */,
+				B8CD47712EEBC31600F2CC27 /* Vibe.swift in Sources */,
+				B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */,
+				B81A0A0A2EE40728000D2813 /* Theme.swift in Sources */,
+				B8B35A1F2EE2C149004A1258 /* DailyPrompt.swift in Sources */,
+				B8B35A1D2EE2C12F004A1258 /* FriendRequest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B8F9FB102EE0F1E9004A2584 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B8F9FB112EE0F1E9004A2584 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B8F9FB132EE0F1E9004A2584 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SocialTen/Preview Content\"";
+				DEVELOPMENT_TEAM = NU22NG348K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "SocialTen needs camera access to capture moments";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B8F9FB142EE0F1E9004A2584 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SocialTen/Preview Content\"";
+				DEVELOPMENT_TEAM = NU22NG348K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "SocialTen needs camera access to capture moments";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B8F9FAFF2EE0F1E8004A2584 /* Build configuration list for PBXProject "SocialTen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8F9FB102EE0F1E9004A2584 /* Debug */,
+				B8F9FB112EE0F1E9004A2584 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B8F9FB122EE0F1E9004A2584 /* Build configuration list for PBXNativeTarget "SocialTen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8F9FB132EE0F1E9004A2584 /* Debug */,
+				B8F9FB142EE0F1E9004A2584 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B8F9FAFC2EE0F1E8004A2584 /* Project object */;
+}
