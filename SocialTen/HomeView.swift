@@ -12,7 +12,7 @@ struct HomeView: View {
     @State private var showRatingPicker = false
     @State private var showCreatePost = false
     @State private var startOnPromptTab = false
-    
+// goat
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
