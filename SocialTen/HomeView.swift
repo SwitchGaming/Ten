@@ -13,6 +13,7 @@ struct HomeView: View {
     @State private var showCreatePost = false
     @State private var startOnPromptTab = false
 // goat
+// goat 2
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
