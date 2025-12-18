@@ -7,7 +7,7 @@ import SwiftUI
 import AVFoundation
 
 struct CreatePostView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     var startOnPromptTab: Bool = false
     @Environment(\.dismiss) private var dismiss
     
@@ -762,5 +762,6 @@ struct PromptInput: View {
 }
 
 #Preview {
-    CreatePostView(viewModel: AppViewModel())
+    CreatePostView()
+        .environmentObject(AppViewModel())
 }

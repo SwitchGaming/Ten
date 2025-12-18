@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct CreateVibeView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var vibeTitle: String = ""
@@ -65,7 +65,7 @@ struct CreateVibeView: View {
                             .foregroundColor(ShadowTheme.textTertiary)
                             .textCase(.uppercase)
                         
-                        TextField("Study? Coffee? Chill?", text: $vibeTitle)
+                        TextField("Football? Coffee? Study?", text: $vibeTitle)
                             .font(.system(size: 24, weight: .light))
                             .foregroundColor(ShadowTheme.textPrimary)
                             .focused($titleFocused)
@@ -220,6 +220,6 @@ struct TimePresetButton: View {
 }
 
 #Preview {
-    CreateVibeView(viewModel: AppViewModel())
+    CreateVibeView()
+        .environmentObject(AppViewModel())
 }
-

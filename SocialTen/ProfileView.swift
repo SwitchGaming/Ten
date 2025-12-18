@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var showEditProfile = false
     
     var body: some View {
@@ -19,10 +19,10 @@ struct ProfileView: View {
                 ScrollView(showsIndicators: false) {
                     if let user = viewModel.currentUser {
                         VStack(spacing: 40) {
-                            ProfileHeaderView(user: user, viewModel: viewModel)
+                            ProfileHeaderView(user: user)
                             
                             // Stats
-                            StatsSection(viewModel: viewModel, user: user)
+                            StatsSection(user: user)
                             
                             // Glow preview
                             GlowPreviewSection(user: user, showEditProfile: $showEditProfile)
@@ -51,15 +51,15 @@ struct ProfileView: View {
                 }
             }
             .fullScreenCover(isPresented: $showEditProfile) {
-                ProfileEditorView(viewModel: viewModel)
+                ProfileEditorView()
             }
         }
     }
 }
 
 struct ProfileHeaderView: View {
+    @EnvironmentObject var viewModel: AppViewModel
     let user: User
-    var viewModel: AppViewModel
     
     var glowColor: Color {
         user.profileCustomization.glowColor.color
@@ -128,7 +128,7 @@ struct ProfileHeaderView: View {
 }
 
 struct StatsSection: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     let user: User
     
     var body: some View {
@@ -239,5 +239,6 @@ struct GlowPreviewSection: View {
 }
 
 #Preview {
-    ProfileView(viewModel: AppViewModel())
+    ProfileView()
+        .environmentObject(AppViewModel())
 }

@@ -8,27 +8,30 @@
 import SwiftUI
 
 struct HomeView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var showRatingPicker = false
     @State private var showCreatePost = false
+    @State private var showCreateVibe = false
     @State private var startOnPromptTab = false
-// goat 12
-// goat 2
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 28) {
+                    // Vibe carousel at the top
+                    VibeCarousel(showCreateVibe: $showCreateVibe)
+                    
                     // Your rating card
-                    YourRatingCard(viewModel: viewModel, showRatingPicker: $showRatingPicker)
+                    YourRatingCard(showRatingPicker: $showRatingPicker)
                     
                     // Horizontal friends bar (like Instagram stories)
-                    FriendsRatingBar(viewModel: viewModel)
+                    FriendsRatingBar()
                     
                     // Daily prompt
-                    DailyPromptCard(viewModel: viewModel, showCreatePost: $showCreatePost, startOnPromptTab: $startOnPromptTab)
+                    DailyPromptCard(showCreatePost: $showCreatePost, startOnPromptTab: $startOnPromptTab)
                     
                     // Feed
-                    FeedSection(viewModel: viewModel)
+                    FeedSection()
                 }
                 .padding(.vertical, 24)
             }
@@ -54,14 +57,367 @@ struct HomeView: View {
                 }
             }
             .fullScreenCover(isPresented: $showCreatePost) {
-                CreatePostView(viewModel: viewModel, startOnPromptTab: startOnPromptTab)
+                CreatePostView(startOnPromptTab: startOnPromptTab)
                     .onDisappear {
                         startOnPromptTab = false
                     }
             }
             .fullScreenCover(isPresented: $showRatingPicker) {
-                RatingPickerSheet(viewModel: viewModel)
+                RatingPickerSheet()
             }
+            .fullScreenCover(isPresented: $showCreateVibe) {
+                CreateVibeView()
+            }
+        }
+    }
+}
+
+// MARK: - Vibe Carousel
+
+struct VibeCarousel: View {
+    @EnvironmentObject var viewModel: AppViewModel
+    @Binding var showCreateVibe: Bool
+    @State private var expandedVibeId: String? = nil
+    
+    var activeVibes: [Vibe] {
+        viewModel.getActiveVibes()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.purple.opacity(0.8))
+                    
+                    Text("vibes")
+                        .font(.system(size: 12, weight: .medium))
+                        .tracking(2)
+                        .foregroundColor(ShadowTheme.textTertiary)
+                        .textCase(.uppercase)
+                }
+                
+                Spacer()
+                
+                Button(action: { showCreateVibe = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 10, weight: .medium))
+                        Text("new")
+                            .font(.system(size: 11, weight: .medium))
+                    }
+                    .foregroundColor(.purple.opacity(0.8))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.purple.opacity(0.15))
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.purple.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                }
+            }
+            .padding(.horizontal, 24)
+            
+            if activeVibes.isEmpty {
+                // Empty state - single pill to create vibe
+                Button(action: { showCreateVibe = true }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 14, weight: .light))
+                        Text("start a vibe")
+                            .font(.system(size: 14, weight: .light))
+                    }
+                    .foregroundColor(ShadowTheme.textSecondary)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(ShadowTheme.cardBackground)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [.purple.opacity(0.3), .purple.opacity(0.1)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
+                    .shadow(color: .purple.opacity(0.1), radius: 8, x: 0, y: 2)
+                }
+                .padding(.horizontal, 20)
+            } else {
+                // Horizontal scroll of vibe pills
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(activeVibes) { vibe in
+                            VibePill(
+                                vibe: vibe,
+                                isExpanded: expandedVibeId == vibe.id,
+                                onTap: {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                        if expandedVibeId == vibe.id {
+                                            expandedVibeId = nil
+                                        } else {
+                                            expandedVibeId = vibe.id
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Vibe Pill (Collapsed & Expanded)
+
+struct VibePill: View {
+    @EnvironmentObject var viewModel: AppViewModel
+    let vibe: Vibe
+    let isExpanded: Bool
+    let onTap: () -> Void
+    
+    var creator: User? {
+        viewModel.getUser(by: vibe.userId)
+    }
+    
+    var glowColor: Color {
+        creator?.profileCustomization.glowColor.color ?? .purple
+    }
+    
+    var isOwnVibe: Bool {
+        vibe.userId == viewModel.currentUser?.id
+    }
+    
+    var userResponse: VibeResponseType? {
+        viewModel.getUserVibeResponse(for: vibe.id)
+    }
+    
+    var respondedUsers: [User] {
+        vibe.responses
+            .filter { $0.response == .yes }
+            .compactMap { viewModel.getUser(by: $0.userId) }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Main pill content (always visible)
+            Button(action: onTap) {
+                HStack(spacing: 10) {
+                    // Creator avatar
+                    Circle()
+                        .fill(ShadowTheme.surfaceLight)
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Text(String(creator?.displayName.prefix(1) ?? "?").lowercased())
+                                .font(.system(size: 10, weight: .light))
+                                .foregroundColor(ShadowTheme.textSecondary)
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(glowColor.opacity(0.5), lineWidth: 1)
+                        )
+                    
+                    // Vibe title
+                    Text(vibe.title)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(ShadowTheme.textPrimary)
+                    
+                    // Time indicator
+                    Text("· \(vibe.timeDescription)")
+                        .font(.system(size: 12, weight: .light))
+                        .foregroundColor(ShadowTheme.textTertiary)
+                    
+                    // Response count badge
+                    if vibe.yesCount > 0 {
+                        Text("\(vibe.yesCount) in")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green.opacity(0.15))
+                            )
+                    }
+                    
+                    // Expand indicator
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(ShadowTheme.textTertiary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(PlainButtonStyle())
+            
+            // Expanded content
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 14) {
+                    Divider()
+                        .background(Color.white.opacity(0.1))
+                    
+                    // Location
+                    HStack(spacing: 6) {
+                        Image(systemName: "location")
+                            .font(.system(size: 11, weight: .light))
+                        Text(vibe.location)
+                            .font(.system(size: 13, weight: .light))
+                    }
+                    .foregroundColor(ShadowTheme.textSecondary)
+                    
+                    // Who's in
+                    if !respondedUsers.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("who's in")
+                                .font(.system(size: 10, weight: .medium))
+                                .tracking(1)
+                                .foregroundColor(ShadowTheme.textTertiary)
+                                .textCase(.uppercase)
+                            
+                            HStack(spacing: -8) {
+                                ForEach(respondedUsers.prefix(5)) { user in
+                                    Circle()
+                                        .fill(ShadowTheme.surfaceLight)
+                                        .frame(width: 28, height: 28)
+                                        .overlay(
+                                            Text(String(user.displayName.prefix(1)).lowercased())
+                                                .font(.system(size: 10, weight: .light))
+                                                .foregroundColor(ShadowTheme.textSecondary)
+                                        )
+                                        .overlay(
+                                            Circle()
+                                                .stroke(ShadowTheme.cardBackground, lineWidth: 2)
+                                        )
+                                }
+                                
+                                if respondedUsers.count > 5 {
+                                    Circle()
+                                        .fill(ShadowTheme.surfaceLight)
+                                        .frame(width: 28, height: 28)
+                                        .overlay(
+                                            Text("+\(respondedUsers.count - 5)")
+                                                .font(.system(size: 9, weight: .medium))
+                                                .foregroundColor(ShadowTheme.textSecondary)
+                                        )
+                                        .overlay(
+                                            Circle()
+                                                .stroke(ShadowTheme.cardBackground, lineWidth: 2)
+                                        )
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Response buttons or Delete button
+                    if isOwnVibe {
+                        Button(action: { viewModel.deleteVibe(vibe.id) }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 11, weight: .medium))
+                                Text("delete vibe")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundColor(.red.opacity(0.8))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.red.opacity(0.1))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                                    )
+                            )
+                        }
+                    } else {
+                        HStack(spacing: 8) {
+                            VibeResponseButton(
+                                text: "yes",
+                                isSelected: userResponse == .yes,
+                                selectedColor: .green
+                            ) {
+                                viewModel.respondToVibe(vibe.id, response: .yes)
+                            }
+                            
+                            VibeResponseButton(
+                                text: "maybe",
+                                isSelected: userResponse == .maybe,
+                                selectedColor: .orange
+                            ) {
+                                viewModel.respondToVibe(vibe.id, response: .maybe)
+                            }
+                            
+                            VibeResponseButton(
+                                text: "no",
+                                isSelected: userResponse == .no,
+                                selectedColor: .red
+                            ) {
+                                viewModel.respondToVibe(vibe.id, response: .no)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 14)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: isExpanded ? 20 : 24)
+                .fill(ShadowTheme.cardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: isExpanded ? 20 : 24)
+                        .stroke(
+                            LinearGradient(
+                                colors: [glowColor.opacity(0.4), glowColor.opacity(0.15)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+        .shadow(color: glowColor.opacity(0.15), radius: 10, x: 0, y: 4)
+        .frame(width: isExpanded ? 280 : nil)
+    }
+}
+
+// MARK: - Vibe Response Button
+
+struct VibeResponseButton: View {
+    let text: String
+    let isSelected: Bool
+    let selectedColor: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(text)
+                .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
+                .foregroundColor(isSelected ? selectedColor : ShadowTheme.textSecondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? selectedColor.opacity(0.15) : Color.clear)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(
+                                    isSelected ? selectedColor.opacity(0.4) : Color.white.opacity(0.1),
+                                    lineWidth: 1
+                                )
+                        )
+                )
         }
     }
 }
@@ -69,7 +425,7 @@ struct HomeView: View {
 // MARK: - Your Rating Card
 
 struct YourRatingCard: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Binding var showRatingPicker: Bool
     
     var glowColor: Color {
@@ -139,7 +495,7 @@ struct YourRatingCard: View {
 // MARK: - Horizontal Friends Rating Bar (Instagram Stories Style)
 
 struct FriendsRatingBar: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -209,258 +565,10 @@ struct FriendRatingBubble: View {
     }
 }
 
-// MARK: - Create Vibe Button
-
-struct CreateVibeButton: View {
-    @Binding var showCreateVibe: Bool
-    
-    var body: some View {
-        Button(action: { showCreateVibe = true }) {
-            HStack(spacing: 12) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 16, weight: .light))
-                    .foregroundColor(.purple.opacity(0.8))
-                
-                Text("start a vibe")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(ShadowTheme.textSecondary)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .light))
-                    .foregroundColor(ShadowTheme.textTertiary)
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(ShadowTheme.cardBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [.purple.opacity(0.3), .purple.opacity(0.1)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-            )
-        }
-        .padding(.horizontal, 20)
-    }
-}
-
-// MARK: - Vibes Section
-
-struct VibesSection: View {
-    var viewModel: AppViewModel
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.purple.opacity(0.8))
-                
-                Text("vibes")
-                    .font(.system(size: 12, weight: .medium))
-                    .tracking(2)
-                    .foregroundColor(ShadowTheme.textTertiary)
-                    .textCase(.uppercase)
-            }
-            .padding(.horizontal, 24)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(viewModel.getActiveVibes()) { vibe in
-                        VibeCard(vibe: vibe, viewModel: viewModel)
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-    }
-}
-
-// MARK: - Vibe Card
-
-struct VibeCard: View {
-    let vibe: Vibe
-    var viewModel: AppViewModel
-    
-    var creator: User? {
-        viewModel.getUser(by: vibe.userId)
-    }
-    
-    var glowColor: Color {
-        creator?.profileCustomization.glowColor.color ?? .purple
-    }
-    
-    var isOwnVibe: Bool {
-        vibe.userId == viewModel.currentUser?.id
-    }
-    
-    var userResponse: VibeResponseType? {
-        viewModel.getUserVibeResponse(for: vibe.id)
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Header
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(ShadowTheme.surfaceLight)
-                    .frame(width: 28, height: 28)
-                    .overlay(
-                        Text(String(creator?.displayName.prefix(1) ?? "?").lowercased())
-                            .font(.system(size: 10, weight: .light))
-                            .foregroundColor(ShadowTheme.textSecondary)
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(glowColor.opacity(0.4), lineWidth: 1)
-                    )
-                
-                Text(creator?.displayName.lowercased() ?? "someone")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(ShadowTheme.textSecondary)
-                
-                Spacer()
-            }
-            
-            // Vibe Title
-            Text(vibe.title)
-                .font(.system(size: 20, weight: .light))
-                .foregroundColor(ShadowTheme.textPrimary)
-            
-            // Time & Location
-            HStack(spacing: 16) {
-                HStack(spacing: 4) {
-                    Image(systemName: "clock")
-                        .font(.system(size: 10, weight: .light))
-                    Text(vibe.timeDescription)
-                        .font(.system(size: 11, weight: .regular))
-                }
-                .foregroundColor(ShadowTheme.textTertiary)
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "location")
-                        .font(.system(size: 10, weight: .light))
-                    Text(vibe.location)
-                        .font(.system(size: 11, weight: .regular))
-                }
-                .foregroundColor(ShadowTheme.textTertiary)
-            }
-            
-            // Response counts
-            if vibe.yesCount > 0 || vibe.maybeCount > 0 {
-                HStack(spacing: 12) {
-                    if vibe.yesCount > 0 {
-                        Text("\(vibe.yesCount) in")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.green.opacity(0.8))
-                    }
-                    if vibe.maybeCount > 0 {
-                        Text("\(vibe.maybeCount) maybe")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(.orange.opacity(0.8))
-                    }
-                }
-            }
-            
-            // Response buttons (only if not your own vibe)
-            if !isOwnVibe {
-                HStack(spacing: 8) {
-                    VibeResponseButton(
-                        text: "yes",
-                        isSelected: userResponse == .yes,
-                        selectedColor: .green
-                    ) {
-                        viewModel.respondToVibe(vibe.id, response: .yes)
-                    }
-                    
-                    VibeResponseButton(
-                        text: "maybe",
-                        isSelected: userResponse == .maybe,
-                        selectedColor: .orange
-                    ) {
-                        viewModel.respondToVibe(vibe.id, response: .maybe)
-                    }
-                    
-                    VibeResponseButton(
-                        text: "no",
-                        isSelected: userResponse == .no,
-                        selectedColor: .red
-                    ) {
-                        viewModel.respondToVibe(vibe.id, response: .no)
-                    }
-                }
-            } else {
-                // Cancel button for own vibe
-                Button(action: { viewModel.cancelVibe(vibe.id) }) {
-                    Text("cancel vibe")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(ShadowTheme.textTertiary)
-                }
-            }
-        }
-        .padding(16)
-        .frame(width: 220)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(ShadowTheme.cardBackground)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            LinearGradient(
-                                colors: [glowColor.opacity(0.3), glowColor.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
-        )
-        .shadow(color: glowColor.opacity(0.15), radius: 12, x: 0, y: 4)
-    }
-}
-
-// MARK: - Vibe Response Button
-
-struct VibeResponseButton: View {
-    let text: String
-    let isSelected: Bool
-    let selectedColor: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Text(text)
-                .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
-                .foregroundColor(isSelected ? selectedColor : ShadowTheme.textSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(isSelected ? selectedColor.opacity(0.15) : Color.clear)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(
-                                    isSelected ? selectedColor.opacity(0.4) : Color.white.opacity(0.1),
-                                    lineWidth: 1
-                                )
-                        )
-                )
-        }
-    }
-}
-
 // MARK: - Daily Prompt Card
 
 struct DailyPromptCard: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Binding var showCreatePost: Bool
     @Binding var startOnPromptTab: Bool
     
@@ -514,7 +622,7 @@ struct DailyPromptCard: View {
 // MARK: - Feed Section
 
 struct FeedSection: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -541,7 +649,7 @@ struct FeedSection: View {
             } else {
                 LazyVStack(spacing: 16) {
                     ForEach(viewModel.getFeedPosts()) { post in
-                        PostCard(post: post, viewModel: viewModel)
+                        PostCard(post: post)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -553,8 +661,8 @@ struct FeedSection: View {
 // MARK: - Post Card
 
 struct PostCard: View {
+    @EnvironmentObject var viewModel: AppViewModel
     let post: Post
-    var viewModel: AppViewModel
     @State private var showReplies = false
     @State private var replyText = ""
     
@@ -718,7 +826,7 @@ struct PostCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     // Existing replies
                     ForEach(post.replies) { reply in
-                        ReplyRow(reply: reply, viewModel: viewModel)
+                        ReplyRow(reply: reply)
                     }
                     
                     // Reply input
@@ -772,8 +880,8 @@ struct PostCard: View {
 // MARK: - Reply Row
 
 struct ReplyRow: View {
+    @EnvironmentObject var viewModel: AppViewModel
     let reply: Reply
-    var viewModel: AppViewModel
     
     var user: User? {
         viewModel.getUser(by: reply.userId)
@@ -809,7 +917,7 @@ struct ReplyRow: View {
 // MARK: - Rating Picker Sheet
 
 struct RatingPickerSheet: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var selectedRating: Double = 5
     @State private var lastHapticRating: Int = 5
@@ -954,5 +1062,6 @@ struct RatingPickerSheet: View {
 }
 
 #Preview {
-    HomeView(viewModel: AppViewModel())
+    HomeView()
+        .environmentObject(AppViewModel())
 }

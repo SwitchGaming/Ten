@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct FriendsView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var searchText = ""
     @State private var selectedFriend: User?
     @State private var showAddFriend = false
@@ -124,7 +124,7 @@ struct FriendsView: View {
                         } else {
                             LazyVStack(spacing: 8) {
                                 ForEach(filteredFriends) { friend in
-                                    FriendListRow(friend: friend, viewModel: viewModel, onTap: {
+                                    FriendListRow(friend: friend, onTap: {
                                         selectedFriend = friend
                                     })
                                 }
@@ -154,13 +154,13 @@ struct FriendsView: View {
                 }
             }
             .fullScreenCover(item: $selectedFriend) { friend in
-                FriendProfileView(friend: friend, viewModel: viewModel)
+                FriendProfileView(friend: friend)
             }
             .fullScreenCover(isPresented: $showAddFriend) {
-                AddFriendView(viewModel: viewModel)
+                AddFriendView()
             }
             .fullScreenCover(isPresented: $showRequests) {
-                FriendRequestsView(viewModel: viewModel)
+                FriendRequestsView()
             }
         }
     }
@@ -170,8 +170,8 @@ struct FriendsView: View {
 
 struct FriendListRow: View {
     let friend: User
-    var viewModel: AppViewModel
     let onTap: () -> Void
+    @EnvironmentObject var viewModel: AppViewModel
     
     var glowColor: Color {
         friend.profileCustomization.glowColor.color
@@ -238,7 +238,7 @@ struct FriendListRow: View {
 
 struct FriendProfileView: View {
     let friend: User
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showRemoveConfirmation = false
     
@@ -363,7 +363,7 @@ struct FriendProfileView: View {
 // MARK: - Add Friend View
 
 struct AddFriendView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
     @State private var searchResults: [User] = []
@@ -476,7 +476,7 @@ struct AddFriendView: View {
                     } else {
                         LazyVStack(spacing: 8) {
                             ForEach(searchResults) { user in
-                                UserSearchRow(user: user, viewModel: viewModel)
+                                UserSearchRow(user: user)
                             }
                         }
                         .padding(.horizontal, 20)
@@ -498,7 +498,7 @@ struct AddFriendView: View {
 
 struct UserSearchRow: View {
     let user: User
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     var requestStatus: FriendRequestStatus {
         viewModel.getFriendRequestStatus(for: user.id)
@@ -570,7 +570,7 @@ struct UserSearchRow: View {
 // MARK: - Friend Requests View
 
 struct FriendRequestsView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     
     var incomingRequests: [FriendRequest] {
@@ -622,7 +622,7 @@ struct FriendRequestsView: View {
                                 
                                 ForEach(incomingRequests) { request in
                                     if let user = viewModel.getUserById(request.fromUserId) {
-                                        IncomingRequestRow(user: user, request: request, viewModel: viewModel)
+                                        IncomingRequestRow(user: user, request: request)
                                     }
                                 }
                             }
@@ -640,7 +640,7 @@ struct FriendRequestsView: View {
                                 
                                 ForEach(outgoingRequests) { request in
                                     if let user = viewModel.getUserById(request.toUserId) {
-                                        OutgoingRequestRow(user: user, request: request, viewModel: viewModel)
+                                        OutgoingRequestRow(user: user, request: request)
                                     }
                                 }
                             }
@@ -673,7 +673,7 @@ struct FriendRequestsView: View {
 struct IncomingRequestRow: View {
     let user: User
     let request: FriendRequest
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     var body: some View {
         HStack(spacing: 16) {
@@ -741,7 +741,7 @@ struct IncomingRequestRow: View {
 struct OutgoingRequestRow: View {
     let user: User
     let request: FriendRequest
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     
     var body: some View {
         HStack(spacing: 16) {
@@ -801,5 +801,6 @@ enum FriendRequestStatus {
 }
 
 #Preview {
-    FriendsView(viewModel: AppViewModel())
+    FriendsView()
+        .environmentObject(AppViewModel())
 }

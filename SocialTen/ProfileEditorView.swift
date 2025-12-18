@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileEditorView: View {
-    var viewModel: AppViewModel
+    @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     
     @State private var displayName: String = ""
@@ -425,6 +425,7 @@ struct ProfilePreviewCard: View {
 }
 
 #Preview {
-    ProfileEditorView(viewModel: AppViewModel())
+    ProfileEditorView()
+        .environmentObject(AppViewModel())
 }
 

@@ -35,6 +35,30 @@ struct Vibe: Identifiable, Codable {
         self.isActive = isActive
     }
     
+    // Computed expiration date based on timeDescription
+    var expiresAt: Date {
+        switch timeDescription.lowercased() {
+        case "now":
+            return timestamp.addingTimeInterval(30 * 60) // 30 minutes
+        case "in 5 min":
+            return timestamp.addingTimeInterval(35 * 60) // 35 minutes
+        case "in 15 min":
+            return timestamp.addingTimeInterval(45 * 60) // 45 minutes
+        case "in 30 min":
+            return timestamp.addingTimeInterval(60 * 60) // 1 hour
+        case "in 1 hr":
+            return timestamp.addingTimeInterval(90 * 60) // 1.5 hours
+        case "later":
+            return timestamp.addingTimeInterval(4 * 60 * 60) // 4 hours
+        default:
+            return timestamp.addingTimeInterval(2 * 60 * 60) // Default 2 hours
+        }
+    }
+    
+    var isExpired: Bool {
+        Date() > expiresAt
+    }
+    
     var yesCount: Int {
         responses.filter { $0.response == .yes }.count
     }
@@ -77,4 +101,3 @@ enum VibeTimePreset: String, CaseIterable {
     case in1hr = "in 1 hr"
     case later = "later"
 }
-
