@@ -63,10 +63,6 @@ struct Vibe: Identifiable, Codable {
         responses.filter { $0.response == .yes }.count
     }
     
-    var maybeCount: Int {
-        responses.filter { $0.response == .maybe }.count
-    }
-    
     var noCount: Int {
         responses.filter { $0.response == .no }.count
     }
@@ -88,16 +84,12 @@ struct VibeResponse: Identifiable, Codable {
 
 enum VibeResponseType: String, Codable {
     case yes
-    case maybe
     case no
 }
 
 // Quick time presets for vibe creation
 enum VibeTimePreset: String, CaseIterable {
-    case now = "now"
     case in5 = "in 5 min"
-    case in15 = "in 15 min"
-    case in30 = "in 30 min"
     case in1hr = "in 1 hr"
-    case later = "later"
+    case custom = "choose a time"
 }
