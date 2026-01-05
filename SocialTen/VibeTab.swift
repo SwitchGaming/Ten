@@ -205,9 +205,14 @@ struct VibeCard: View {
         viewModel.getUserVibeResponse(for: vibe.id)
     }
     
-    // Check if this vibe should have premium glow (creator is premium)
-    var hasPremiumGlow: Bool {
-        isOwnVibe && PremiumManager.shared.isPremium
+    // Check if this vibe's creator is premium (visible to everyone)
+    var creatorIsPremium: Bool {
+        creator?.isPremium ?? false
+    }
+    
+    // Get the creator's theme glow color
+    var creatorGlowColor: Color {
+        creator?.selectedTheme.glowColor ?? ThemeManager.shared.colors.accent2
     }
     
     var yesUsers: [User] {
@@ -237,10 +242,10 @@ struct VibeCard: View {
                     HStack(spacing: ThemeManager.shared.spacing.md) {
                         // Icon with premium glow
                         ZStack {
-                            // Premium glow effect
-                            if hasPremiumGlow {
+                            // Premium glow effect (visible to everyone if creator is premium)
+                            if creatorIsPremium {
                                 Circle()
-                                    .fill(ThemeManager.shared.colors.accent2)
+                                    .fill(creatorGlowColor)
                                     .frame(width: 40, height: 40)
                                     .blur(radius: glowAnimation ? 12 : 8)
                                     .opacity(glowAnimation ? 0.6 : 0.3)
@@ -248,12 +253,12 @@ struct VibeCard: View {
                             }
                             
                             Circle()
-                                .fill(ThemeManager.shared.colors.accent2.opacity(hasPremiumGlow ? 0.3 : 0.15))
+                                .fill(creatorIsPremium ? creatorGlowColor.opacity(0.3) : ThemeManager.shared.colors.accent2.opacity(0.15))
                                 .frame(width: 40, height: 40)
                             
                             Image(systemName: "sparkles")
                                 .font(.system(size: 16, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.accent2)
+                                .foregroundColor(creatorIsPremium ? creatorGlowColor : ThemeManager.shared.colors.accent2)
                         }
                         
                         // Title and info
@@ -267,14 +272,19 @@ struct VibeCard: View {
                                     HStack(spacing: 4) {
                                         Text("· you")
                                             .font(ThemeManager.shared.fonts.caption)
-                                            .foregroundColor(ThemeManager.shared.colors.accent2)
+                                            .foregroundColor(creatorIsPremium ? creatorGlowColor : ThemeManager.shared.colors.accent2)
                                         
-                                        if hasPremiumGlow {
+                                        if creatorIsPremium {
                                             Image(systemName: "plus.circle.fill")
                                                 .font(.system(size: 10))
-                                                .foregroundColor(ThemeManager.shared.colors.accent2)
+                                                .foregroundColor(creatorGlowColor)
                                         }
                                     }
+                                } else if creatorIsPremium {
+                                    // Show ten+ badge for other premium users' vibes
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(creatorGlowColor)
                                 }
                             }
                             
@@ -282,7 +292,7 @@ struct VibeCard: View {
                                 if !isOwnVibe, let creatorName = creator?.displayName {
                                     Text(creatorName.lowercased())
                                         .font(ThemeManager.shared.fonts.caption)
-                                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                        .foregroundColor(creatorIsPremium ? creatorGlowColor.opacity(0.8) : ThemeManager.shared.colors.textSecondary)
                                     
                                     Text("·")
                                         .foregroundColor(ThemeManager.shared.colors.textTertiary)
@@ -331,7 +341,7 @@ struct VibeCard: View {
             }
         }
         .onAppear {
-            if hasPremiumGlow {
+            if creatorIsPremium {
                 withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
                     glowAnimation = true
                 }

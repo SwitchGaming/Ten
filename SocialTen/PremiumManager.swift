@@ -131,6 +131,11 @@ class PremiumManager: ObservableObject {
         if selectedThemeId == "default" {
             setTheme("ocean")
         }
+        
+        // Sync to database so others can see premium status
+        Task {
+            await syncPremiumToDatabase()
+        }
     }
     
     private func getRedeemedCodes() -> Set<String> {
@@ -175,6 +180,11 @@ class PremiumManager: ObservableObject {
         selectedThemeId = themeId
         UserDefaults.standard.set(themeId, forKey: themeKey)
         applySelectedTheme()
+        
+        // Sync theme change to database
+        Task {
+            await syncPremiumToDatabase()
+        }
     }
     
     private func applySelectedTheme() {
@@ -206,6 +216,30 @@ class PremiumManager: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: expiry)
+    }
+    
+    // MARK: - Database Sync
+    
+    /// Sync premium status to the database so other users can see it
+    func syncPremiumToDatabase() async {
+        do {
+            guard let authUser = try? await SupabaseManager.shared.client.auth.session.user else {
+                return
+            }
+            
+            try await SupabaseManager.shared.client
+                .from("users")
+                .update([
+                    "premium_expires_at": isPremium ? premiumExpiresAt?.ISO8601Format() : nil as String?,
+                    "selected_theme_id": isPremium ? selectedThemeId : nil as String?
+                ])
+                .eq("auth_id", value: authUser.id)
+                .execute()
+            
+            print("✨ Premium status synced to database")
+        } catch {
+            print("Error syncing premium status: \(error)")
+        }
     }
 }
 

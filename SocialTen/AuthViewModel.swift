@@ -124,7 +124,9 @@ class AuthViewModel: ObservableObject {
                         todayRating: nil,
                         ratingTimestamp: nil,
                         createdAt: nil,
-                        authId: session.user.id
+                        authId: session.user.id,
+                        premiumExpiresAt: nil,
+                        selectedThemeId: nil
                     )
                     
                     try await supabase

@@ -15,9 +15,25 @@ struct User: Identifiable, Codable {
     var friendIds: [String]
     var ratingHistory: [RatingEntry]
     
+    // Premium status (visible to others)
+    var premiumExpiresAt: Date?
+    var selectedThemeId: String?
+    
     // Dynamic friend limit based on premium status
     static var maxFriends: Int {
         PremiumManager.shared.friendLimit
+    }
+    
+    // Check if this user has premium (for display purposes)
+    var isPremium: Bool {
+        guard let expiresAt = premiumExpiresAt else { return false }
+        return expiresAt > Date()
+    }
+    
+    // Get the user's selected theme
+    var selectedTheme: AppTheme {
+        guard let themeId = selectedThemeId else { return .default }
+        return AppTheme.allThemes.first { $0.id == themeId } ?? .default
     }
     
     init(
@@ -28,7 +44,9 @@ struct User: Identifiable, Codable {
         todayRating: Int? = nil,
         ratingTimestamp: Date? = nil,
         friendIds: [String] = [],
-        ratingHistory: [RatingEntry] = []
+        ratingHistory: [RatingEntry] = [],
+        premiumExpiresAt: Date? = nil,
+        selectedThemeId: String? = nil
     ) {
         self.id = id
         self.username = username
@@ -38,6 +56,8 @@ struct User: Identifiable, Codable {
         self.ratingTimestamp = ratingTimestamp
         self.friendIds = friendIds
         self.ratingHistory = ratingHistory
+        self.premiumExpiresAt = premiumExpiresAt
+        self.selectedThemeId = selectedThemeId
     }
     
     var canAddMoreFriends: Bool {

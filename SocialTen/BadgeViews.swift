@@ -560,6 +560,10 @@ struct UserProfileView: View {
     @State private var loadedBadges: [BadgeDefinition] = []
     @State private var isLoadingStats = true
     
+    // Friendship score
+    @State private var friendshipScore: FriendshipScore?
+    @State private var isLoadingFriendshipScore = false
+    
     var isCurrentUser: Bool {
         user.id == viewModel.currentUserProfile?.id
     }
@@ -615,25 +619,66 @@ struct UserProfileView: View {
                     .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     .padding(.top, ThemeManager.shared.spacing.lg)
                     
-                    // Avatar
-                    Circle()
-                        .fill(ThemeManager.shared.colors.cardBackground)
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Text(String(user.displayName.prefix(1)).lowercased())
-                                .font(.system(size: 40, weight: .ultraLight))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
-                        )
+                    // Avatar with premium glow
+                    ZStack {
+                        // Premium glow ring
+                        if user.isPremium {
+                            Circle()
+                                .fill(user.selectedTheme.glowColor)
+                                .frame(width: 120, height: 120)
+                                .blur(radius: 20)
+                                .opacity(0.4)
+                            
+                            Circle()
+                                .stroke(user.selectedTheme.glowColor, lineWidth: 2)
+                                .frame(width: 108, height: 108)
+                                .opacity(0.6)
+                        }
+                        
+                        Circle()
+                            .fill(user.isPremium ? user.selectedTheme.colors.cardBackground : ThemeManager.shared.colors.cardBackground)
+                            .frame(width: 100, height: 100)
+                            .overlay(
+                                Text(String(user.displayName.prefix(1)).lowercased())
+                                    .font(.system(size: 40, weight: .ultraLight))
+                                    .foregroundColor(user.isPremium ? user.selectedTheme.glowColor : ThemeManager.shared.colors.textSecondary)
+                            )
+                    }
                     
                     // Name & Username
                     VStack(spacing: 6) {
-                        Text(user.displayName.lowercased())
-                            .font(.system(size: 28, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        HStack(spacing: 8) {
+                            Text(user.displayName.lowercased())
+                                .font(.system(size: 28, weight: .light))
+                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            
+                            // Premium badge
+                            if user.isPremium {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 14))
+                                    Text("ten+")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .tracking(1)
+                                }
+                                .foregroundColor(user.selectedTheme.glowColor)
+                            }
+                        }
                         
-                        Text("@\(user.username)")
-                            .font(.system(size: 14, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        HStack(spacing: 8) {
+                            Text("@\(user.username)")
+                                .font(.system(size: 14, weight: .light))
+                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            
+                            // Show their theme name if premium
+                            if user.isPremium {
+                                Text("·")
+                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                Text(user.selectedTheme.name.lowercased())
+                                    .font(.system(size: 14, weight: .light))
+                                    .foregroundColor(user.selectedTheme.glowColor.opacity(0.8))
+                            }
+                        }
                     }
                     
                     // Badges Row
@@ -685,6 +730,16 @@ struct UserProfileView: View {
                         ratingCard
                     }
                     .padding(.top, 8)
+                    
+                    // Friendship Score Card (only for friends, not current user)
+                    if isFriend && !isCurrentUser {
+                        FriendshipScoreCard(
+                            friendshipScore: friendshipScore,
+                            isLoading: isLoadingFriendshipScore,
+                            friendName: user.displayName
+                        )
+                        .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                    }
                     
                     // Stats Section
                     VStack(spacing: 16) {
@@ -766,7 +821,10 @@ struct UserProfileView: View {
         }
         .task {
             if isFriend && !isCurrentUser {
-                await loadUserStats()
+                // Load stats and friendship score in parallel
+                async let statsTask: () = loadUserStats()
+                async let scoreTask: () = loadFriendshipScore()
+                _ = await (statsTask, scoreTask)
             } else {
                 isLoadingStats = false
             }
@@ -827,6 +885,14 @@ struct UserProfileView: View {
         }
         
         isLoadingStats = false
+    }
+    
+    // MARK: - Load Friendship Score
+    
+    func loadFriendshipScore() async {
+        isLoadingFriendshipScore = true
+        friendshipScore = await viewModel.calculateFriendshipScore(for: user.id)
+        isLoadingFriendshipScore = false
     }
     
     // MARK: - Rating Card

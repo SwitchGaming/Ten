@@ -1680,6 +1680,265 @@ class SupabaseAppViewModel: ObservableObject {
             case similarityReason = "similarity_reason"
         }
     }
+    
+    // MARK: - Friendship Score
+    
+    /// Calculate friendship score for a specific friend
+    /// Optimized: Uses RPC if available, falls back to client-side batched queries
+    func calculateFriendshipScore(for friendId: String) async -> FriendshipScore? {
+        guard let currentUserId = currentUser?.id,
+              let friendUUID = UUID(uuidString: friendId) else {
+            return nil
+        }
+        
+        // Check cache first
+        if let cached = FriendshipScoreCache.shared.getScore(for: friendId) {
+            return cached
+        }
+        
+        // Mark as loading
+        FriendshipScoreCache.shared.setLoading(friendId, loading: true)
+        defer { FriendshipScoreCache.shared.setLoading(friendId, loading: false) }
+        
+        // Try RPC first (most efficient - single database round trip)
+        if let score = await calculateScoreViaRPC(currentUserId: currentUserId, friendId: friendUUID) {
+            let friendshipScore = score.toFriendshipScore(friendId: friendId)
+            FriendshipScoreCache.shared.cacheScore(friendshipScore)
+            return friendshipScore
+        }
+        
+        // Fallback: Client-side calculation with batched parallel queries
+        return await calculateScoreClientSide(currentUserId: currentUserId, friendId: friendUUID)
+    }
+    
+    /// Try to calculate score via Supabase RPC (PostgreSQL function)
+    private func calculateScoreViaRPC(currentUserId: UUID, friendId: UUID) async -> FriendshipScoreResponse? {
+        do {
+            let response: FriendshipScoreResponse = try await supabase
+                .rpc("calculate_friendship_score", params: [
+                    "current_user_id": currentUserId.uuidString,
+                    "friend_user_id": friendId.uuidString
+                ])
+                .execute()
+                .value
+            
+            return response
+        } catch {
+            // RPC doesn't exist yet - fall back to client-side
+            print("RPC not available, using client-side calculation: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    /// Client-side calculation with optimized batched queries
+    private func calculateScoreClientSide(currentUserId: UUID, friendId: UUID) async -> FriendshipScore? {
+        print("📊 Calculating friendship score client-side for friend: \(friendId)")
+        
+        // Run queries individually to handle errors gracefully
+        let friendshipDate = await getFriendshipCreatedAt(userId: currentUserId, friendId: friendId)
+        let likesGiven = await countLikesGivenSafe(from: currentUserId, to: friendId)
+        let likesReceived = await countLikesGivenSafe(from: friendId, to: currentUserId)
+        let repliesGiven = await countRepliesGivenSafe(from: currentUserId, to: friendId)
+        let repliesReceived = await countRepliesGivenSafe(from: friendId, to: currentUserId)
+        let vibeResponsesGiven = await countVibeResponsesSafe(responder: friendId, vibeCreator: currentUserId)
+        let vibeResponsesReceived = await countVibeResponsesSafe(responder: currentUserId, vibeCreator: friendId)
+        let matchingDays = await countMatchingRatingDaysSafe(user1: currentUserId, user2: friendId)
+        
+        print("📊 Score breakdown - Likes: \(likesGiven)/\(likesReceived), Replies: \(repliesGiven)/\(repliesReceived), Vibes: \(vibeResponsesGiven)/\(vibeResponsesReceived), Matching days: \(matchingDays)")
+        
+        // Calculate friendship weeks
+        let friendshipWeeks: Int
+        if let date = friendshipDate {
+            let weeks = Calendar.current.dateComponents([.weekOfYear], from: date, to: Date()).weekOfYear ?? 0
+            friendshipWeeks = max(1, weeks) // At least 1 if they're friends
+            print("📊 Friendship created: \(date), weeks: \(friendshipWeeks)")
+        } else {
+            friendshipWeeks = 1 // Default to 1 week if friendship exists but no date
+            print("📊 No friendship date found, defaulting to 1 week")
+        }
+        
+        // Calculate total score with weights:
+        // - Likes: 1 point each
+        // - Replies: 2 points each
+        // - Vibe responses: 3 points each
+        // - Matching rating days: 1 point each
+        // - Friendship duration: 1 point per week
+        let score = likesGiven + likesReceived +
+                    (repliesGiven + repliesReceived) * 2 +
+                    (vibeResponsesGiven + vibeResponsesReceived) * 3 +
+                    matchingDays +
+                    friendshipWeeks
+        
+        print("📊 Total friendship score: \(score)")
+        
+        let breakdown = FriendshipScore.ScoreBreakdown(
+            likesGiven: likesGiven,
+            likesReceived: likesReceived,
+            repliesGiven: repliesGiven,
+            repliesReceived: repliesReceived,
+            vibeResponsesGiven: vibeResponsesGiven,
+            vibeResponsesReceived: vibeResponsesReceived,
+            matchingRatingDays: matchingDays,
+            friendshipWeeks: friendshipWeeks
+        )
+        
+        let friendshipScore = FriendshipScore(
+            id: friendId.uuidString,
+            score: score,
+            breakdown: breakdown
+        )
+        
+        // Cache the result
+        FriendshipScoreCache.shared.cacheScore(friendshipScore)
+        
+        return friendshipScore
+    }
+    
+    // MARK: - Friendship Score Helper Queries (Safe versions that don't throw)
+    
+    /// Get when the friendship was created
+    private func getFriendshipCreatedAt(userId: UUID, friendId: UUID) async -> Date? {
+        do {
+            let friendships: [DBCreatedAtOnly] = try await supabase
+                .from("friendships")
+                .select("created_at")
+                .eq("user_id", value: userId)
+                .eq("friend_id", value: friendId)
+                .limit(1)
+                .execute()
+                .value
+            
+            return friendships.first?.createdAt
+        } catch {
+            print("📊 Error getting friendship date: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    /// Count likes given from one user to another's posts (safe - returns 0 on error)
+    private func countLikesGivenSafe(from likerId: UUID, to postOwnerId: UUID) async -> Int {
+        do {
+            // Get posts by postOwnerId
+            let posts: [DBIdOnly] = try await supabase
+                .from("posts")
+                .select("id")
+                .eq("user_id", value: postOwnerId)
+                .execute()
+                .value
+            
+            guard !posts.isEmpty else { return 0 }
+            let postIds = posts.map { $0.id }
+            
+            // Count likes by likerId on those posts
+            let likes: [DBIdOnly] = try await supabase
+                .from("post_likes")
+                .select("id")
+                .eq("user_id", value: likerId)
+                .in("post_id", values: postIds)
+                .execute()
+                .value
+            
+            return likes.count
+        } catch {
+            print("📊 Error counting likes: \(error.localizedDescription)")
+            return 0
+        }
+    }
+    
+    /// Count replies given from one user to another's posts (safe - returns 0 on error)
+    private func countRepliesGivenSafe(from replierId: UUID, to postOwnerId: UUID) async -> Int {
+        do {
+            // Get posts by postOwnerId
+            let posts: [DBIdOnly] = try await supabase
+                .from("posts")
+                .select("id")
+                .eq("user_id", value: postOwnerId)
+                .execute()
+                .value
+            
+            guard !posts.isEmpty else { return 0 }
+            let postIds = posts.map { $0.id }
+            
+            // Count replies by replierId on those posts
+            let replies: [DBIdOnly] = try await supabase
+                .from("post_replies")
+                .select("id")
+                .eq("user_id", value: replierId)
+                .in("post_id", values: postIds)
+                .execute()
+                .value
+            
+            return replies.count
+        } catch {
+            print("📊 Error counting replies: \(error.localizedDescription)")
+            return 0
+        }
+    }
+    
+    /// Count vibe responses where responder joined vibes created by vibeCreator (safe)
+    private func countVibeResponsesSafe(responder: UUID, vibeCreator: UUID) async -> Int {
+        do {
+            // Get vibes by vibeCreator
+            let vibes: [DBIdOnly] = try await supabase
+                .from("vibes")
+                .select("id")
+                .eq("user_id", value: vibeCreator)
+                .execute()
+                .value
+            
+            guard !vibes.isEmpty else { return 0 }
+            let vibeIds = vibes.map { $0.id }
+            
+            // Count "yes" responses by responder
+            let responses: [DBIdOnly] = try await supabase
+                .from("vibe_responses")
+                .select("id")
+                .eq("user_id", value: responder)
+                .eq("response", value: "yes")
+                .in("vibe_id", values: vibeIds)
+                .execute()
+                .value
+            
+            return responses.count
+        } catch {
+            print("📊 Error counting vibe responses: \(error.localizedDescription)")
+            return 0
+        }
+    }
+    
+    /// Count days where both users rated the same day (safe - returns 0 on error)
+    private func countMatchingRatingDaysSafe(user1: UUID, user2: UUID) async -> Int {
+        do {
+            // Get rating dates for user1
+            let user1Ratings: [DBDateOnly] = try await supabase
+                .from("rating_history")
+                .select("date")
+                .eq("user_id", value: user1)
+                .execute()
+                .value
+            
+            guard !user1Ratings.isEmpty else { return 0 }
+            
+            // Get rating dates for user2
+            let user2Ratings: [DBDateOnly] = try await supabase
+                .from("rating_history")
+                .select("date")
+                .eq("user_id", value: user2)
+                .execute()
+                .value
+            
+            guard !user2Ratings.isEmpty else { return 0 }
+            
+            // Count matching dates
+            let user1Dates = Set(user1Ratings.map { Calendar.current.startOfDay(for: $0.date) })
+            let user2Dates = Set(user2Ratings.map { Calendar.current.startOfDay(for: $0.date) })
+            
+            return user1Dates.intersection(user2Dates).count
+        } catch {
+            print("📊 Error counting matching rating days: \(error.localizedDescription)")
+            return 0
+        }
+    }
 }
 
 // MARK: - Database Model Extensions
@@ -1694,7 +1953,9 @@ extension DBUser {
             todayRating: todayRating,
             ratingTimestamp: ratingTimestamp,
             friendIds: [],
-            ratingHistory: []
+            ratingHistory: [],
+            premiumExpiresAt: premiumExpiresAt,
+            selectedThemeId: selectedThemeId
         )
     }
 }

@@ -15,6 +15,8 @@ struct DBUser: Codable, Identifiable {
     let ratingTimestamp: Date?
     let createdAt: Date?
     let authId: UUID?
+    let premiumExpiresAt: Date?
+    let selectedThemeId: String?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -25,6 +27,8 @@ struct DBUser: Codable, Identifiable {
         case ratingTimestamp = "rating_timestamp"
         case createdAt = "created_at"
         case authId = "auth_id"
+        case premiumExpiresAt = "premium_expires_at"
+        case selectedThemeId = "selected_theme_id"
     }
 }
 
@@ -182,5 +186,23 @@ struct DBDailyPrompt: Codable, Identifiable {
         case id
         case text
         case date
+    }
+}
+
+// MARK: - Simple ID-only models for counting queries
+
+struct DBIdOnly: Codable {
+    let id: UUID
+}
+
+struct DBDateOnly: Codable {
+    let date: Date
+}
+
+struct DBCreatedAtOnly: Codable {
+    let createdAt: Date?
+    
+    enum CodingKeys: String, CodingKey {
+        case createdAt = "created_at"
     }
 }
