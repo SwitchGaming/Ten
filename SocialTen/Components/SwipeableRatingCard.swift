@@ -16,7 +16,7 @@ struct SwipeableRatingCard: View {
     @GestureState private var isDragging = false
     
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-    private let dragThreshold: CGFloat = 30  // Points to drag for 1 rating change
+    private let dragThreshold: CGFloat = 50  // Points to drag for 1 rating change
     
     var dayOfWeek: String {
         let formatter = DateFormatter()
