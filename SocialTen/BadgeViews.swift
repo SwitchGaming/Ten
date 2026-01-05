@@ -873,7 +873,7 @@ struct UserProfileView: View {
     // MARK: - Add Friend Button
     
     var hasMaxFriends: Bool {
-        viewModel.friends.count >= 10
+        viewModel.friends.count >= PremiumManager.shared.friendLimit
     }
     
     var addFriendButton: some View {
@@ -896,7 +896,7 @@ struct UserProfileView: View {
                             .fill(ThemeManager.shared.colors.cardBackground)
                     )
                     
-                    Text("you've reached 10 friends. upgrade to ten+ for more.")
+                    Text(PremiumManager.shared.isPremium ? "you've reached \(PremiumManager.shared.friendLimit) friends." : "you've reached 10 friends. upgrade to ten+ for more.")
                         .font(.system(size: 11, weight: .light))
                         .foregroundColor(ThemeManager.shared.colors.textTertiary)
                         .multilineTextAlignment(.center)

@@ -188,6 +188,7 @@ struct VibeTab: View {
 struct VibeCard: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @State private var selectedUser: User?
+    @State private var glowAnimation = false
     let vibe: Vibe
     let isExpanded: Bool
     let onTap: () -> Void
@@ -202,6 +203,11 @@ struct VibeCard: View {
     
     var userResponse: VibeResponseType? {
         viewModel.getUserVibeResponse(for: vibe.id)
+    }
+    
+    // Check if this vibe should have premium glow (creator is premium)
+    var hasPremiumGlow: Bool {
+        isOwnVibe && PremiumManager.shared.isPremium
     }
     
     var yesUsers: [User] {
@@ -229,10 +235,20 @@ struct VibeCard: View {
                 // Main content
                 Button(action: onTap) {
                     HStack(spacing: ThemeManager.shared.spacing.md) {
-                        // Icon
+                        // Icon with premium glow
                         ZStack {
+                            // Premium glow effect
+                            if hasPremiumGlow {
+                                Circle()
+                                    .fill(ThemeManager.shared.colors.accent2)
+                                    .frame(width: 40, height: 40)
+                                    .blur(radius: glowAnimation ? 12 : 8)
+                                    .opacity(glowAnimation ? 0.6 : 0.3)
+                                    .scaleEffect(glowAnimation ? 1.3 : 1.1)
+                            }
+                            
                             Circle()
-                                .fill(ThemeManager.shared.colors.accent2.opacity(0.15))
+                                .fill(ThemeManager.shared.colors.accent2.opacity(hasPremiumGlow ? 0.3 : 0.15))
                                 .frame(width: 40, height: 40)
                             
                             Image(systemName: "sparkles")
@@ -248,9 +264,17 @@ struct VibeCard: View {
                                     .foregroundColor(ThemeManager.shared.colors.textPrimary)
                                 
                                 if isOwnVibe {
-                                    Text("· you")
-                                        .font(ThemeManager.shared.fonts.caption)
-                                        .foregroundColor(ThemeManager.shared.colors.accent2)
+                                    HStack(spacing: 4) {
+                                        Text("· you")
+                                            .font(ThemeManager.shared.fonts.caption)
+                                            .foregroundColor(ThemeManager.shared.colors.accent2)
+                                        
+                                        if hasPremiumGlow {
+                                            Image(systemName: "plus.circle.fill")
+                                                .font(.system(size: 10))
+                                                .foregroundColor(ThemeManager.shared.colors.accent2)
+                                        }
+                                    }
                                 }
                             }
                             
@@ -303,6 +327,13 @@ struct VibeCard: View {
                 // Expanded content
                 if isExpanded {
                     expandedContent
+                }
+            }
+        }
+        .onAppear {
+            if hasPremiumGlow {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    glowAnimation = true
                 }
             }
         }

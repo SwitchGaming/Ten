@@ -50,8 +50,10 @@ class ThemeManager: ObservableObject {
 struct AppTheme: Identifiable {
     let id: String
     let name: String
+    let description: String
     let colors: ThemeColors
     let isPremium: Bool
+    let glowColor: Color
     
     static func == (lhs: AppTheme, rhs: AppTheme) -> Bool {
         lhs.id == rhs.id
@@ -60,6 +62,7 @@ struct AppTheme: Identifiable {
     static let `default` = AppTheme(
         id: "default",
         name: "Midnight",
+        description: "Classic elegance",
         colors: ThemeColors(
             background: Color(hex: "0A0A0A"),
             cardBackground: Color(hex: "141414"),
@@ -71,13 +74,15 @@ struct AppTheme: Identifiable {
             textSecondary: Color(hex: "A1A1AA"),
             textTertiary: Color(hex: "52525B")
         ),
-        isPremium: false
+        isPremium: false,
+        glowColor: Color(hex: "8B5CF6")
     )
     
     // Premium themes for ten+
     static let ocean = AppTheme(
         id: "ocean",
         name: "Ocean",
+        description: "Deep blue serenity",
         colors: ThemeColors(
             background: Color(hex: "0A1628"),
             cardBackground: Color(hex: "132035"),
@@ -89,12 +94,14 @@ struct AppTheme: Identifiable {
             textSecondary: Color(hex: "94A3B8"),
             textTertiary: Color(hex: "64748B")
         ),
-        isPremium: true
+        isPremium: true,
+        glowColor: Color(hex: "38BDF8")
     )
     
     static let forest = AppTheme(
         id: "forest",
         name: "Forest",
+        description: "Nature's calm",
         colors: ThemeColors(
             background: Color(hex: "0A1410"),
             cardBackground: Color(hex: "132016"),
@@ -106,12 +113,14 @@ struct AppTheme: Identifiable {
             textSecondary: Color(hex: "A1CAAB"),
             textTertiary: Color(hex: "6B8B73")
         ),
-        isPremium: true
+        isPremium: true,
+        glowColor: Color(hex: "4ADE80")
     )
     
     static let sunset = AppTheme(
         id: "sunset",
         name: "Sunset",
+        description: "Golden warmth",
         colors: ThemeColors(
             background: Color(hex: "1A0A0A"),
             cardBackground: Color(hex: "251414"),
@@ -123,10 +132,50 @@ struct AppTheme: Identifiable {
             textSecondary: Color(hex: "CAAB9A"),
             textTertiary: Color(hex: "8B7165")
         ),
-        isPremium: true
+        isPremium: true,
+        glowColor: Color(hex: "FB923C")
     )
     
-    static let allThemes: [AppTheme] = [.default, .ocean, .forest, .sunset]
+    static let aurora = AppTheme(
+        id: "aurora",
+        name: "Aurora",
+        description: "Northern lights",
+        colors: ThemeColors(
+            background: Color(hex: "0a0a1a"),
+            cardBackground: Color(hex: "141428"),
+            surfaceLight: Color(hex: "1e1b4b"),
+            accent1: Color(hex: "22D3EE"),
+            accent2: Color(hex: "A855F7"),
+            accent3: Color(hex: "1e1b4b"),
+            textPrimary: Color.white,
+            textSecondary: Color(hex: "A5B4FC"),
+            textTertiary: Color(hex: "6366F1")
+        ),
+        isPremium: true,
+        glowColor: Color(hex: "A855F7")
+    )
+    
+    static let rose = AppTheme(
+        id: "rose",
+        name: "Rose",
+        description: "Midnight bloom",
+        colors: ThemeColors(
+            background: Color(hex: "0f0a0a"),
+            cardBackground: Color(hex: "1a1214"),
+            surfaceLight: Color(hex: "2a1a1e"),
+            accent1: Color(hex: "FB7185"),
+            accent2: Color(hex: "E879F9"),
+            accent3: Color(hex: "2a1a1e"),
+            textPrimary: Color.white,
+            textSecondary: Color(hex: "FDA4AF"),
+            textTertiary: Color(hex: "9F7AEA")
+        ),
+        isPremium: true,
+        glowColor: Color(hex: "FB7185")
+    )
+    
+    static let allThemes: [AppTheme] = [.default, .ocean, .forest, .sunset, .aurora, .rose]
+    static let premiumThemes: [AppTheme] = [.ocean, .forest, .sunset, .aurora, .rose]
 }
 
 // MARK: - Theme Colors

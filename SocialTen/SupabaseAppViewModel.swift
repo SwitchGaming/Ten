@@ -1597,8 +1597,8 @@ class SupabaseAppViewModel: ObservableObject {
     func refreshConnectionOfTheWeek() async {
         guard let userId = currentUser?.id else { return }
         
-        // Check if user has max friends
-        if friends.count >= 10 {
+        // Check if user has max friends (using dynamic limit)
+        if friends.count >= PremiumManager.shared.friendLimit {
             connectionOfTheWeek = nil
             return
         }

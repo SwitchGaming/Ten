@@ -16,6 +16,7 @@
 		B831AD222EFBEA4E00E7B1E7 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD212EFBEA4E00E7B1E7 /* AuthViewModel.swift */; };
 		B831AD242EFBEA6F00E7B1E7 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD232EFBEA6F00E7B1E7 /* AuthView.swift */; };
 		B831AD262EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD252EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift */; };
+		B85383A12F0C411500E18824 /* PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A02F0C411500E18824 /* PremiumManager.swift */; };
 		B88172982F02F9BD00923E9C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172972F02F9BD00923E9C /* NotificationManager.swift */; };
 		B881729A2F030A8800923E9C /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172992F030A8800923E9C /* NotificationSettingsView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Post.swift */; };
@@ -50,6 +51,8 @@
 		B831AD212EFBEA4E00E7B1E7 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		B831AD232EFBEA6F00E7B1E7 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		B831AD252EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAppViewModel.swift; sourceTree = "<group>"; };
+		B85383A02F0C411500E18824 /* PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumManager.swift; sourceTree = "<group>"; };
+		B85383A22F0C438500E18824 /* SocialTen.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SocialTen.xctestplan; sourceTree = SOURCE_ROOT; };
 		B88172952F02F95700923E9C /* SocialTen.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SocialTen.entitlements; sourceTree = "<group>"; };
 		B88172962F02F98B00923E9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B88172972F02F9BD00923E9C /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
@@ -127,6 +130,8 @@
 				B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */,
 				B88172972F02F9BD00923E9C /* NotificationManager.swift */,
 				B8F9FB092EE0F1E8004A2584 /* ContentView.swift */,
+				B85383A22F0C438500E18824 /* SocialTen.xctestplan */,
+				B85383A02F0C411500E18824 /* PremiumManager.swift */,
 				B8F08B4C2F004BA600F1CDE5 /* Badge.swift */,
 				B8F08B4E2F004C4200F1CDE5 /* BadgeManager.swift */,
 				B8F08B502F004C6800F1CDE5 /* BadgeViews.swift */,
@@ -251,6 +256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B8C99EB22EFE5CAC0050E1A3 /* VibeTab.swift in Sources */,
+				B85383A12F0C411500E18824 /* PremiumManager.swift in Sources */,
 				B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */,
 				B8FFBA502EFBEF3D005B073B /* OnBoardingView.swift in Sources */,
 				B831AD202EFBEA2800E7B1E7 /* SupabaseManager.swift in Sources */,

@@ -243,9 +243,19 @@ struct FriendsView: View {
     
     // MARK: - Friends Section
     
+    var friendsSectionTitle: String {
+        let limit = PremiumManager.shared.friendLimit
+        let count = viewModel.friends.count
+        if PremiumManager.shared.isPremium {
+            return "your circle (\(count)/\(limit))"
+        } else {
+            return "your ten (\(count)/\(limit))"
+        }
+    }
+    
     var friendsSection: some View {
         VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
-            Text("your ten (\(viewModel.friends.count)/10)")
+            Text(friendsSectionTitle)
                 .font(ThemeManager.shared.fonts.caption)
                 .foregroundColor(ThemeManager.shared.colors.textTertiary)
                 .tracking(ThemeManager.shared.letterSpacing.wide)
@@ -308,8 +318,8 @@ struct FriendsView: View {
                     )
             )
         }
-        .disabled(viewModel.friends.count >= 10)
-        .opacity(viewModel.friends.count >= 10 ? 0.5 : 1)
+        .disabled(viewModel.friends.count >= PremiumManager.shared.friendLimit)
+        .opacity(viewModel.friends.count >= PremiumManager.shared.friendLimit ? 0.5 : 1)
     }
     
     var connectionOfTheWeekCard: some View {
@@ -347,7 +357,7 @@ struct FriendsView: View {
                 }
             }
             
-            if viewModel.friends.count >= 10 {
+            if viewModel.friends.count >= PremiumManager.shared.friendLimit {
                 circleCompleteCard
             } else if viewModel.isLoadingConnection {
                 loadingConnectionCard
@@ -387,7 +397,7 @@ struct FriendsView: View {
                 .font(.system(size: 16, weight: .light))
                 .foregroundColor(ThemeManager.shared.colors.textPrimary)
             
-            Text("you've reached 10 friends")
+            Text("you've reached \(PremiumManager.shared.friendLimit) friends")
                 .font(ThemeManager.shared.fonts.caption)
                 .foregroundColor(ThemeManager.shared.colors.textTertiary)
         }
@@ -574,8 +584,14 @@ struct FriendsView: View {
                             
                             // ten + Section
                             settingsSection(title: "ten +") {
-                                SettingsRow(icon: "sparkles", title: "Upgrade to ten +", showBadge: true) {
-                                    showTenPlus = true
+                                if PremiumManager.shared.isPremium {
+                                    SettingsRow(icon: "checkmark.seal.fill", title: "Manage Premium", subtitle: "\(PremiumManager.shared.daysRemaining ?? 0) days left") {
+                                        showTenPlus = true
+                                    }
+                                } else {
+                                    SettingsRow(icon: "sparkles", title: "Upgrade to ten +", showBadge: true) {
+                                        showTenPlus = true
+                                    }
                                 }
                             }
                             
@@ -691,6 +707,7 @@ struct FriendsView: View {
     struct SettingsRow: View {
         let icon: String
         let title: String
+        var subtitle: String? = nil
         var showBadge: Bool = false
         let action: () -> Void
         
@@ -702,9 +719,17 @@ struct FriendsView: View {
                         .foregroundColor(ThemeManager.shared.colors.textSecondary)
                         .frame(width: 24)
                     
-                    Text(title)
-                        .font(ThemeManager.shared.fonts.body)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(ThemeManager.shared.fonts.body)
+                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        
+                        if let subtitle = subtitle {
+                            Text(subtitle)
+                                .font(ThemeManager.shared.fonts.caption)
+                                .foregroundColor(ThemeManager.shared.colors.accent2)
+                        }
+                    }
                     
                     if showBadge {
                         Text("NEW")

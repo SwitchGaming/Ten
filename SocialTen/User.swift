@@ -15,7 +15,10 @@ struct User: Identifiable, Codable {
     var friendIds: [String]
     var ratingHistory: [RatingEntry]
     
-    static let maxFriends = 10
+    // Dynamic friend limit based on premium status
+    static var maxFriends: Int {
+        PremiumManager.shared.friendLimit
+    }
     
     init(
         id: String = UUID().uuidString,
