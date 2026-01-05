@@ -120,18 +120,25 @@ struct CreatePostView: View {
     }
     
     func createPost() {
-        Task { @MainActor in
-            switch postType {
+        // Capture values before dismissing
+        let currentPostType = postType
+        let trimmedCaption = caption.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPromptResponse = promptResponse.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Dismiss immediately for instant feedback
+        dismiss()
+        
+        // Create post in background (optimistic update happens in viewModel)
+        Task {
+            switch currentPostType {
             case .post:
-                let trimmedCaption = caption.trimmingCharacters(in: .whitespacesAndNewlines)
                 await viewModel.createPost(
                     imageData: nil,
                     caption: trimmedCaption.isEmpty ? nil : trimmedCaption
                 )
             case .prompt:
-                await viewModel.createPost(imageData: nil, caption: nil, promptResponse: promptResponse)
+                await viewModel.createPost(imageData: nil, caption: nil, promptResponse: trimmedPromptResponse)
             }
-            dismiss()
         }
     }
 }

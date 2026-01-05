@@ -80,31 +80,38 @@ struct VibeTab: View {
     
     var createVibeCard: some View {
         Button(action: { showCreateVibe = true }) {
-            DepthCard(depth: .medium) {
-                VStack(spacing: ThemeManager.shared.spacing.md) {
+            DepthCard(depth: .low) {
+                HStack(spacing: ThemeManager.shared.spacing.md) {
                     ZStack {
                         Circle()
                             .fill(ThemeManager.shared.colors.accent2.opacity(0.15))
-                            .frame(width: 64, height: 64)
+                            .frame(width: 40, height: 40)
                         
                         Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .light))
+                            .font(.system(size: 16, weight: .light))
                             .foregroundColor(ThemeManager.shared.colors.accent2)
                     }
                     
-                    Text("start a vibe")
-                        .font(ThemeManager.shared.fonts.body)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("start a vibe")
+                            .font(ThemeManager.shared.fonts.body)
+                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        
+                        Text("invite friends to hang")
+                            .font(ThemeManager.shared.fonts.caption)
+                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    }
                     
-                    Text("invite friends to hang")
-                        .font(ThemeManager.shared.fonts.caption)
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .light))
                         .foregroundColor(ThemeManager.shared.colors.textTertiary)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, ThemeManager.shared.spacing.xl)
+                .padding(ThemeManager.shared.spacing.md)
             }
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(.plain)
     }
     
     // MARK: - My Vibes Section
@@ -501,6 +508,7 @@ struct CreateVibeSheet: View {
     @State private var customTime: Date = Date().addingTimeInterval(30 * 60)
     @State private var showTimePicker = false
     @State private var location = ""
+    @State private var showMaxVibesAlert = false
     
     @FocusState private var titleFocused: Bool
     @FocusState private var locationFocused: Bool
@@ -767,16 +775,49 @@ struct CreateVibeSheet: View {
         .onAppear {
             titleFocused = true
         }
+        .alert("Maximum Vibes Reached", isPresented: $showMaxVibesAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("You can only have 5 active vibes at a time. Wait for one to expire or delete an existing vibe.")
+        }
     }
     
     func createVibe() {
-        Task { @MainActor in
+        // Check if user already has 5 active vibes
+        let activeVibeCount = viewModel.getActiveVibes().filter { $0.userId == viewModel.currentUserProfile?.id }.count
+        if activeVibeCount >= 5 {
+            showMaxVibesAlert = true
+            return
+        }
+        
+        // Calculate the actual expiration time
+        let expiresAt: Date
+        switch selectedTime {
+        case .in5:
+            expiresAt = Date().addingTimeInterval(35 * 60) // 5 min + 30 min buffer
+        case .in1hr:
+            expiresAt = Date().addingTimeInterval(90 * 60) // 1 hr + 30 min buffer
+        case .custom:
+            // Use the custom time + 30 min buffer for the event
+            expiresAt = customTime.addingTimeInterval(30 * 60)
+        }
+        
+        // Capture values before dismissing
+        let vibeTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let vibeTimeDescription = timeDescription
+        let vibeLocation = location.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Dismiss immediately for instant feedback
+        dismiss()
+        
+        // Create vibe in background (optimistic update happens in viewModel)
+        Task {
             await viewModel.createVibe(
-                title: title.trimmingCharacters(in: .whitespacesAndNewlines),
-                timeDescription: timeDescription,
-                location: location.trimmingCharacters(in: .whitespacesAndNewlines)
+                title: vibeTitle,
+                timeDescription: vibeTimeDescription,
+                location: vibeLocation,
+                expiresAt: expiresAt
             )
-            dismiss()
         }
     }
 }

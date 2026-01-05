@@ -741,11 +741,9 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
-    func createVibe(title: String, timeDescription: String, location: String) async {
+    func createVibe(title: String, timeDescription: String, location: String, expiresAt: Date) async {
         guard let userId = currentUser?.id,
               let userIdString = currentUserProfile?.id else { return }
-        
-        let expiresAt = calculateExpiresAt(timeDescription: timeDescription)
         
         // Optimistic update - add to local state immediately
         let tempId = UUID().uuidString
@@ -773,19 +771,36 @@ class SupabaseAppViewModel: ObservableObject {
         )
         
         do {
-            try await supabase
+            // Insert and get the actual ID from server
+            let insertedVibes: [DBVibe] = try await supabase
                 .from("vibes")
                 .insert(newVibe)
+                .select()
                 .execute()
+                .value
             
-            // Reload to get the actual ID from server
-            await loadVibes()
-            // After: await loadVibes()
-            // Add:
-            if let userId = currentUserProfile?.id {
-                await BadgeManager.shared.trackVibeCreated(userId: userId)
-                await BadgeManager.shared.checkForNewBadges(userId: userId, friendCount: friends.count)
-            }        } catch {
+            // Update local vibe with actual database ID
+            if let insertedVibe = insertedVibes.first,
+               let actualId = insertedVibe.id,
+               let index = vibes.firstIndex(where: { $0.id == tempId }) {
+                vibes[index] = Vibe(
+                    id: actualId.uuidString,
+                    userId: userIdString,
+                    title: title,
+                    timeDescription: timeDescription,
+                    location: location,
+                    timestamp: insertedVibe.timestamp ?? Date(),
+                    responses: [],
+                    isActive: true
+                )
+                print("Vibe created with ID: \(actualId.uuidString)")
+            }
+            
+            // Track for badges
+            await BadgeManager.shared.trackVibeCreated(userId: userIdString)
+            await BadgeManager.shared.checkForNewBadges(userId: userIdString, friendCount: friends.count)
+            
+        } catch {
             print("Error creating vibe: \(error)")
             // Remove optimistic update if failed
             vibes.removeAll { $0.id == tempId }
