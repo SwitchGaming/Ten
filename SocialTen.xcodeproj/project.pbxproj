@@ -12,78 +12,78 @@
 		B831AD1A2EFBE82100E7B1E7 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD192EFBE82100E7B1E7 /* PostgREST */; };
 		B831AD1C2EFBE82100E7B1E7 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD1B2EFBE82100E7B1E7 /* Realtime */; };
 		B831AD1E2EFBE82100E7B1E7 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD1D2EFBE82100E7B1E7 /* Storage */; };
-		B831AD202EFBEA2800E7B1E7 /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD1F2EFBEA2800E7B1E7 /* SupabaseManager.swift */; };
-		B831AD222EFBEA4E00E7B1E7 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD212EFBEA4E00E7B1E7 /* AuthViewModel.swift */; };
-		B831AD242EFBEA6F00E7B1E7 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD232EFBEA6F00E7B1E7 /* AuthView.swift */; };
-		B831AD262EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD252EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift */; };
-		B85383A12F0C411500E18824 /* PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A02F0C411500E18824 /* PremiumManager.swift */; };
-		B85383A42F0C49C400E18824 /* FriendshipScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A32F0C49C400E18824 /* FriendshipScore.swift */; };
-		B88172982F02F9BD00923E9C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172972F02F9BD00923E9C /* NotificationManager.swift */; };
-		B881729A2F030A8800923E9C /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172992F030A8800923E9C /* NotificationSettingsView.swift */; };
-		B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Post.swift */; };
-		B8B35A1D2EE2C12F004A1258 /* FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */; };
-		B8B35A1F2EE2C149004A1258 /* DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */; };
-		B8B35A212EE2C1D3004A1258 /* CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */; };
-		B8C99EA12EFE5BD80050E1A3 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EA02EFE5BD80050E1A3 /* ThemeManager.swift */; };
-		B8C99EB22EFE5CAC0050E1A3 /* VibeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB12EFE5CAC0050E1A3 /* VibeTab.swift */; };
-		B8C99EB42EFE5CCC0050E1A3 /* FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB32EFE5CCC0050E1A3 /* FeedTab.swift */; };
+		B831AD202EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */; };
+		B831AD222EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */; };
+		B831AD242EFBEA6F00E7B1E7 /* Authorization/AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */; };
+		B831AD262EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD252EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift */; };
+		B85383A12F0C411500E18824 /* Settings/PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */; };
+		B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */; };
+		B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */; };
+		B881729A2F030A8800923E9C /* Settings/NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */; };
+		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
+		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
+		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
+		B8B35A212EE2C1D3004A1258 /* Feed/CreatePostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A202EE2C1D3004A1258 /* Feed/CreatePostView.swift */; };
+		B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EA02EFE5BD80050E1A3 /* Settings/ThemeManager.swift */; };
+		B8C99EB22EFE5CAC0050E1A3 /* Vibe/VibeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB12EFE5CAC0050E1A3 /* Vibe/VibeTab.swift */; };
+		B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB32EFE5CCC0050E1A3 /* Feed/FeedTab.swift */; };
 		B8C99EB62EFE8D4C0050E1A3 /* TenPlusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB52EFE8D4C0050E1A3 /* TenPlusView.swift */; };
-		B8C99EB82EFE90A40050E1A3 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB72EFE90A40050E1A3 /* EditProfileView.swift */; };
-		B8CD47712EEBC31600F2CC27 /* Vibe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD47702EEBC31600F2CC27 /* Vibe.swift */; };
-		B8F08B4D2F004BA600F1CDE5 /* Badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4C2F004BA600F1CDE5 /* Badge.swift */; };
-		B8F08B4F2F004C4200F1CDE5 /* BadgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4E2F004C4200F1CDE5 /* BadgeManager.swift */; };
-		B8F08B512F004C6800F1CDE5 /* BadgeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B502F004C6800F1CDE5 /* BadgeViews.swift */; };
+		B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB72EFE90A40050E1A3 /* Settings/EditProfileView.swift */; };
+		B8CD47712EEBC31600F2CC27 /* Vibe/Vibe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD47702EEBC31600F2CC27 /* Vibe/Vibe.swift */; };
+		B8F08B4D2F004BA600F1CDE5 /* Badges/Badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4C2F004BA600F1CDE5 /* Badges/Badge.swift */; };
+		B8F08B4F2F004C4200F1CDE5 /* Badges/BadgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4E2F004C4200F1CDE5 /* Badges/BadgeManager.swift */; };
+		B8F08B512F004C6800F1CDE5 /* Badges/BadgeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B502F004C6800F1CDE5 /* Badges/BadgeViews.swift */; };
 		B8F9FB082EE0F1E8004A2584 /* SocialTenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */; };
 		B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB092EE0F1E8004A2584 /* ContentView.swift */; };
 		B8F9FB0C2EE0F1E9004A2584 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */; };
 		B8F9FB0F2EE0F1E9004A2584 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B8F9FB0E2EE0F1E9004A2584 /* Preview Assets.xcassets */; };
-		B8F9FB162EE0F304004A2584 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB152EE0F304004A2584 /* User.swift */; };
-		B8F9FB182EE0F31B004A2584 /* Rating.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB172EE0F31B004A2584 /* Rating.swift */; };
+		B8F9FB162EE0F304004A2584 /* Settings/User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB152EE0F304004A2584 /* Settings/User.swift */; };
+		B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB172EE0F31B004A2584 /* Home/Rating.swift */; };
 		B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */; };
-		B8F9FB1E2EE0F350004A2584 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1D2EE0F350004A2584 /* HomeView.swift */; };
-		B8F9FB202EE0F35F004A2584 /* FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */; };
+		B8F9FB1E2EE0F350004A2584 /* Home/HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1D2EE0F350004A2584 /* Home/HomeView.swift */; };
+		B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F9FB1F2EE0F35F004A2584 /* Friends/FriendsView.swift */; };
 		B8FFBA4C2EFBEC97005B073B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B8FFBA4B2EFBEC97005B073B /* Supabase */; };
-		B8FFBA4E2EFBECD8005B073B /* DatabaseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4D2EFBECD8005B073B /* DatabaseModels.swift */; };
-		B8FFBA502EFBEF3D005B073B /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4F2EFBEF3D005B073B /* OnBoardingView.swift */; };
+		B8FFBA4E2EFBECD8005B073B /* Supabase/DatabaseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4D2EFBECD8005B073B /* Supabase/DatabaseModels.swift */; };
+		B8FFBA502EFBEF3D005B073B /* Authorization/OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B831AD1F2EFBEA2800E7B1E7 /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
-		B831AD212EFBEA4E00E7B1E7 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		B831AD232EFBEA6F00E7B1E7 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
-		B831AD252EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAppViewModel.swift; sourceTree = "<group>"; };
-		B85383A02F0C411500E18824 /* PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumManager.swift; sourceTree = "<group>"; };
+		B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseManager.swift; sourceTree = "<group>"; };
+		B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthViewModel.swift; sourceTree = "<group>"; };
+		B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthView.swift; sourceTree = "<group>"; };
+		B831AD252EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseAppViewModel.swift; sourceTree = "<group>"; };
+		B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/PremiumManager.swift; sourceTree = "<group>"; };
 		B85383A22F0C438500E18824 /* SocialTen.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SocialTen.xctestplan; sourceTree = SOURCE_ROOT; };
-		B85383A32F0C49C400E18824 /* FriendshipScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendshipScore.swift; sourceTree = "<group>"; };
+		B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendshipScore.swift; sourceTree = "<group>"; };
 		B88172952F02F95700923E9C /* SocialTen.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SocialTen.entitlements; sourceTree = "<group>"; };
 		B88172962F02F98B00923E9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B88172972F02F9BD00923E9C /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
-		B88172992F030A8800923E9C /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
-		B8B35A1A2EE2C117004A1258 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
-		B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequest.swift; sourceTree = "<group>"; };
-		B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPrompt.swift; sourceTree = "<group>"; };
-		B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePostView.swift; sourceTree = "<group>"; };
-		B8C99EA02EFE5BD80050E1A3 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
-		B8C99EB12EFE5CAC0050E1A3 /* VibeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeTab.swift; sourceTree = "<group>"; };
-		B8C99EB32EFE5CCC0050E1A3 /* FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedTab.swift; sourceTree = "<group>"; };
+		B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationManager.swift; sourceTree = "<group>"; };
+		B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationSettingsView.swift; sourceTree = "<group>"; };
+		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
+		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
+		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
+		B8B35A202EE2C1D3004A1258 /* Feed/CreatePostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/CreatePostView.swift; sourceTree = "<group>"; };
+		B8C99EA02EFE5BD80050E1A3 /* Settings/ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/ThemeManager.swift; sourceTree = "<group>"; };
+		B8C99EB12EFE5CAC0050E1A3 /* Vibe/VibeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibe/VibeTab.swift; sourceTree = "<group>"; };
+		B8C99EB32EFE5CCC0050E1A3 /* Feed/FeedTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/FeedTab.swift; sourceTree = "<group>"; };
 		B8C99EB52EFE8D4C0050E1A3 /* TenPlusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenPlusView.swift; sourceTree = "<group>"; };
-		B8C99EB72EFE90A40050E1A3 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
-		B8CD47702EEBC31600F2CC27 /* Vibe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibe.swift; sourceTree = "<group>"; };
-		B8F08B4C2F004BA600F1CDE5 /* Badge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badge.swift; sourceTree = "<group>"; };
-		B8F08B4E2F004C4200F1CDE5 /* BadgeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeManager.swift; sourceTree = "<group>"; };
-		B8F08B502F004C6800F1CDE5 /* BadgeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeViews.swift; sourceTree = "<group>"; };
+		B8C99EB72EFE90A40050E1A3 /* Settings/EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/EditProfileView.swift; sourceTree = "<group>"; };
+		B8CD47702EEBC31600F2CC27 /* Vibe/Vibe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibe/Vibe.swift; sourceTree = "<group>"; };
+		B8F08B4C2F004BA600F1CDE5 /* Badges/Badge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/Badge.swift; sourceTree = "<group>"; };
+		B8F08B4E2F004C4200F1CDE5 /* Badges/BadgeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/BadgeManager.swift; sourceTree = "<group>"; };
+		B8F08B502F004C6800F1CDE5 /* Badges/BadgeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/BadgeViews.swift; sourceTree = "<group>"; };
 		B8F9FB042EE0F1E8004A2584 /* SocialTen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SocialTen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialTenApp.swift; sourceTree = "<group>"; };
 		B8F9FB092EE0F1E8004A2584 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B8F9FB0E2EE0F1E9004A2584 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		B8F9FB152EE0F304004A2584 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		B8F9FB172EE0F31B004A2584 /* Rating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rating.swift; sourceTree = "<group>"; };
+		B8F9FB152EE0F304004A2584 /* Settings/User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/User.swift; sourceTree = "<group>"; };
+		B8F9FB172EE0F31B004A2584 /* Home/Rating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/Rating.swift; sourceTree = "<group>"; };
 		B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		B8F9FB1D2EE0F350004A2584 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsView.swift; sourceTree = "<group>"; };
-		B8FFBA4D2EFBECD8005B073B /* DatabaseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseModels.swift; sourceTree = "<group>"; };
-		B8FFBA4F2EFBEF3D005B073B /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
+		B8F9FB1D2EE0F350004A2584 /* Home/HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/HomeView.swift; sourceTree = "<group>"; };
+		B8F9FB1F2EE0F35F004A2584 /* Friends/FriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendsView.swift; sourceTree = "<group>"; };
+		B8FFBA4D2EFBECD8005B073B /* Supabase/DatabaseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/DatabaseModels.swift; sourceTree = "<group>"; };
+		B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/OnBoardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -130,37 +130,37 @@
 				B88172962F02F98B00923E9C /* Info.plist */,
 				B88172952F02F95700923E9C /* SocialTen.entitlements */,
 				B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */,
-				B88172972F02F9BD00923E9C /* NotificationManager.swift */,
+				B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */,
 				B8F9FB092EE0F1E8004A2584 /* ContentView.swift */,
-				B85383A32F0C49C400E18824 /* FriendshipScore.swift */,
+				B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */,
 				B85383A22F0C438500E18824 /* SocialTen.xctestplan */,
-				B85383A02F0C411500E18824 /* PremiumManager.swift */,
-				B8F08B4C2F004BA600F1CDE5 /* Badge.swift */,
-				B8F08B4E2F004C4200F1CDE5 /* BadgeManager.swift */,
-				B8F08B502F004C6800F1CDE5 /* BadgeViews.swift */,
-				B8C99EB72EFE90A40050E1A3 /* EditProfileView.swift */,
+				B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */,
+				B8F08B4C2F004BA600F1CDE5 /* Badges/Badge.swift */,
+				B8F08B4E2F004C4200F1CDE5 /* Badges/BadgeManager.swift */,
+				B8F08B502F004C6800F1CDE5 /* Badges/BadgeViews.swift */,
+				B8C99EB72EFE90A40050E1A3 /* Settings/EditProfileView.swift */,
 				B8C99EB52EFE8D4C0050E1A3 /* TenPlusView.swift */,
-				B8C99EA02EFE5BD80050E1A3 /* ThemeManager.swift */,
-				B8FFBA4D2EFBECD8005B073B /* DatabaseModels.swift */,
-				B8CD47702EEBC31600F2CC27 /* Vibe.swift */,
-				B8F9FB152EE0F304004A2584 /* User.swift */,
-				B8F9FB172EE0F31B004A2584 /* Rating.swift */,
+				B8C99EA02EFE5BD80050E1A3 /* Settings/ThemeManager.swift */,
+				B8FFBA4D2EFBECD8005B073B /* Supabase/DatabaseModels.swift */,
+				B8CD47702EEBC31600F2CC27 /* Vibe/Vibe.swift */,
+				B8F9FB152EE0F304004A2584 /* Settings/User.swift */,
+				B8F9FB172EE0F31B004A2584 /* Home/Rating.swift */,
 				B8F9FB1B2EE0F33E004A2584 /* MainTabView.swift */,
-				B831AD1F2EFBEA2800E7B1E7 /* SupabaseManager.swift */,
-				B831AD212EFBEA4E00E7B1E7 /* AuthViewModel.swift */,
-				B831AD232EFBEA6F00E7B1E7 /* AuthView.swift */,
-				B8FFBA4F2EFBEF3D005B073B /* OnBoardingView.swift */,
-				B831AD252EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift */,
+				B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */,
+				B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */,
+				B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */,
+				B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */,
+				B831AD252EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift */,
 				B8C99EA22EFE5C000050E1A3 /* Components */,
-				B8F9FB1D2EE0F350004A2584 /* HomeView.swift */,
-				B8C99EB12EFE5CAC0050E1A3 /* VibeTab.swift */,
-				B8C99EB32EFE5CCC0050E1A3 /* FeedTab.swift */,
-				B8B35A202EE2C1D3004A1258 /* CreatePostView.swift */,
-				B8F9FB1F2EE0F35F004A2584 /* FriendsView.swift */,
-				B88172992F030A8800923E9C /* NotificationSettingsView.swift */,
-				B8B35A1A2EE2C117004A1258 /* Post.swift */,
-				B8B35A1C2EE2C12F004A1258 /* FriendRequest.swift */,
-				B8B35A1E2EE2C149004A1258 /* DailyPrompt.swift */,
+				B8F9FB1D2EE0F350004A2584 /* Home/HomeView.swift */,
+				B8C99EB12EFE5CAC0050E1A3 /* Vibe/VibeTab.swift */,
+				B8C99EB32EFE5CCC0050E1A3 /* Feed/FeedTab.swift */,
+				B8B35A202EE2C1D3004A1258 /* Feed/CreatePostView.swift */,
+				B8F9FB1F2EE0F35F004A2584 /* Friends/FriendsView.swift */,
+				B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */,
+				B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */,
+				B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */,
+				B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */,
 				B8F9FB0B2EE0F1E9004A2584 /* Assets.xcassets */,
 				B8F9FB0D2EE0F1E9004A2584 /* Preview Content */,
 			);
@@ -258,36 +258,36 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B8C99EB22EFE5CAC0050E1A3 /* VibeTab.swift in Sources */,
-				B85383A12F0C411500E18824 /* PremiumManager.swift in Sources */,
-				B8B35A1B2EE2C117004A1258 /* Post.swift in Sources */,
-				B8FFBA502EFBEF3D005B073B /* OnBoardingView.swift in Sources */,
-				B831AD202EFBEA2800E7B1E7 /* SupabaseManager.swift in Sources */,
-				B881729A2F030A8800923E9C /* NotificationSettingsView.swift in Sources */,
-				B8F9FB1E2EE0F350004A2584 /* HomeView.swift in Sources */,
-				B831AD262EFBEA8D00E7B1E7 /* SupabaseAppViewModel.swift in Sources */,
-				B831AD242EFBEA6F00E7B1E7 /* AuthView.swift in Sources */,
-				B8F08B512F004C6800F1CDE5 /* BadgeViews.swift in Sources */,
-				B831AD222EFBEA4E00E7B1E7 /* AuthViewModel.swift in Sources */,
-				B8F9FB202EE0F35F004A2584 /* FriendsView.swift in Sources */,
-				B8C99EA12EFE5BD80050E1A3 /* ThemeManager.swift in Sources */,
-				B8C99EB82EFE90A40050E1A3 /* EditProfileView.swift in Sources */,
-				B88172982F02F9BD00923E9C /* NotificationManager.swift in Sources */,
-				B8C99EB42EFE5CCC0050E1A3 /* FeedTab.swift in Sources */,
-				B8F9FB182EE0F31B004A2584 /* Rating.swift in Sources */,
+				B8C99EB22EFE5CAC0050E1A3 /* Vibe/VibeTab.swift in Sources */,
+				B85383A12F0C411500E18824 /* Settings/PremiumManager.swift in Sources */,
+				B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */,
+				B8FFBA502EFBEF3D005B073B /* Authorization/OnBoardingView.swift in Sources */,
+				B831AD202EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift in Sources */,
+				B881729A2F030A8800923E9C /* Settings/NotificationSettingsView.swift in Sources */,
+				B8F9FB1E2EE0F350004A2584 /* Home/HomeView.swift in Sources */,
+				B831AD262EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift in Sources */,
+				B831AD242EFBEA6F00E7B1E7 /* Authorization/AuthView.swift in Sources */,
+				B8F08B512F004C6800F1CDE5 /* Badges/BadgeViews.swift in Sources */,
+				B831AD222EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift in Sources */,
+				B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */,
+				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,
+				B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */,
+				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
+				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
+				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
 				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
 				B8C99EB62EFE8D4C0050E1A3 /* TenPlusView.swift in Sources */,
-				B8FFBA4E2EFBECD8005B073B /* DatabaseModels.swift in Sources */,
-				B8B35A212EE2C1D3004A1258 /* CreatePostView.swift in Sources */,
+				B8FFBA4E2EFBECD8005B073B /* Supabase/DatabaseModels.swift in Sources */,
+				B8B35A212EE2C1D3004A1258 /* Feed/CreatePostView.swift in Sources */,
 				B8F9FB082EE0F1E8004A2584 /* SocialTenApp.swift in Sources */,
-				B8F08B4D2F004BA600F1CDE5 /* Badge.swift in Sources */,
-				B8F9FB162EE0F304004A2584 /* User.swift in Sources */,
-				B8CD47712EEBC31600F2CC27 /* Vibe.swift in Sources */,
-				B8F08B4F2F004C4200F1CDE5 /* BadgeManager.swift in Sources */,
+				B8F08B4D2F004BA600F1CDE5 /* Badges/Badge.swift in Sources */,
+				B8F9FB162EE0F304004A2584 /* Settings/User.swift in Sources */,
+				B8CD47712EEBC31600F2CC27 /* Vibe/Vibe.swift in Sources */,
+				B8F08B4F2F004C4200F1CDE5 /* Badges/BadgeManager.swift in Sources */,
 				B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */,
-				B85383A42F0C49C400E18824 /* FriendshipScore.swift in Sources */,
-				B8B35A1F2EE2C149004A1258 /* DailyPrompt.swift in Sources */,
-				B8B35A1D2EE2C12F004A1258 /* FriendRequest.swift in Sources */,
+				B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */,
+				B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */,
+				B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
