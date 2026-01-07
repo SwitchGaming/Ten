@@ -9,6 +9,13 @@ struct NotificationSettingsView: View {
     @StateObject private var notificationManager = NotificationManager.shared
     @Environment(\.dismiss) private var dismiss
     
+    var formattedTimezone: String {
+        let tz = TimeZone.current
+        let name = tz.identifier.replacingOccurrences(of: "_", with: " ")
+        let abbreviation = tz.abbreviation() ?? ""
+        return "\(name) (\(abbreviation))"
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -38,6 +45,13 @@ struct NotificationSettingsView: View {
                                 )
                                 
                                 NotificationToggleRow(
+                                    icon: "hand.thumbsup",
+                                    title: "Vibe Responses",
+                                    subtitle: "When someone joins your vibe",
+                                    isOn: $notificationManager.notificationPreferences.vibeResponsesEnabled
+                                )
+                                
+                                NotificationToggleRow(
                                     icon: "person.badge.plus",
                                     title: "Friend Requests",
                                     subtitle: "When someone wants to connect",
@@ -50,6 +64,43 @@ struct NotificationSettingsView: View {
                                     subtitle: "When someone replies to your posts",
                                     isOn: $notificationManager.notificationPreferences.repliesEnabled
                                 )
+                                
+                                NotificationToggleRow(
+                                    icon: "star",
+                                    title: "Connection of the Week",
+                                    subtitle: "When you get a new weekly match",
+                                    isOn: $notificationManager.notificationPreferences.connectionMatchEnabled
+                                )
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                                    .fill(ThemeManager.shared.colors.cardBackground)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md))
+                        }
+                        
+                        // Daily Reminder
+                        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                            Text("daily reminder")
+                                .font(ThemeManager.shared.fonts.caption)
+                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .tracking(ThemeManager.shared.letterSpacing.wide)
+                                .textCase(.uppercase)
+                            
+                            VStack(spacing: 1) {
+                                NotificationToggleRow(
+                                    icon: "bell.badge",
+                                    title: "Rate Your Day",
+                                    subtitle: "Get a reminder to rate your day",
+                                    isOn: $notificationManager.notificationPreferences.dailyReminderEnabled
+                                )
+                                
+                                if notificationManager.notificationPreferences.dailyReminderEnabled {
+                                    QuietHoursRow(
+                                        title: "Reminder Time",
+                                        time: $notificationManager.notificationPreferences.dailyReminderTime
+                                    )
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
@@ -67,15 +118,24 @@ struct NotificationSettingsView: View {
                                 .textCase(.uppercase)
                             
                             VStack(spacing: 1) {
-                                QuietHoursRow(
-                                    title: "Start",
-                                    time: $notificationManager.notificationPreferences.quietHoursStart
+                                NotificationToggleRow(
+                                    icon: "moon.fill",
+                                    title: "Enable Quiet Hours",
+                                    subtitle: "Silence notifications during set times",
+                                    isOn: $notificationManager.notificationPreferences.quietHoursEnabled
                                 )
                                 
-                                QuietHoursRow(
-                                    title: "End",
-                                    time: $notificationManager.notificationPreferences.quietHoursEnd
-                                )
+                                if notificationManager.notificationPreferences.quietHoursEnabled {
+                                    QuietHoursRow(
+                                        title: "Start",
+                                        time: $notificationManager.notificationPreferences.quietHoursStart
+                                    )
+                                    
+                                    QuietHoursRow(
+                                        title: "End",
+                                        time: $notificationManager.notificationPreferences.quietHoursEnd
+                                    )
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
@@ -83,10 +143,46 @@ struct NotificationSettingsView: View {
                             )
                             .clipShape(RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md))
                             
-                            Text("notifications will be silenced during quiet hours")
+                            if notificationManager.notificationPreferences.quietHoursEnabled {
+                                Text("notifications will be queued and delivered when quiet hours end")
+                                    .font(ThemeManager.shared.fonts.caption)
+                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .padding(.top, 4)
+                            }
+                        }
+                        
+                        // Timezone Info
+                        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                            Text("timezone")
                                 .font(ThemeManager.shared.fonts.caption)
                                 .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                                .padding(.top, 4)
+                                .tracking(ThemeManager.shared.letterSpacing.wide)
+                                .textCase(.uppercase)
+                            
+                            HStack {
+                                Image(systemName: "globe")
+                                    .font(.system(size: 18, weight: .light))
+                                    .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                    .frame(width: 28)
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(formattedTimezone)
+                                        .font(ThemeManager.shared.fonts.body)
+                                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                    
+                                    Text("auto-detected from your device")
+                                        .font(ThemeManager.shared.fonts.caption)
+                                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, ThemeManager.shared.spacing.md)
+                            .padding(.vertical, ThemeManager.shared.spacing.md)
+                            .background(
+                                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                                    .fill(ThemeManager.shared.colors.cardBackground)
+                            )
                         }
                         
                         Spacer(minLength: 50)

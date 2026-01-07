@@ -549,6 +549,12 @@ class SupabaseAppViewModel: ObservableObject {
                 .execute()
             
             print("Friend request sent successfully")
+            
+            // Send push notification to recipient
+            if let senderName = currentUserProfile?.displayName {
+                await sendPushNotification(type: "friend_request", to: toUserId, senderName: senderName)
+            }
+            
             return true
         } catch {
             print("Error sending friend request: \(error)")
@@ -800,6 +806,15 @@ class SupabaseAppViewModel: ObservableObject {
             await BadgeManager.shared.trackVibeCreated(userId: userIdString)
             await BadgeManager.shared.checkForNewBadges(userId: userIdString, friendCount: friends.count)
             
+            // Send push notifications to all friends
+            if let senderName = currentUserProfile?.displayName {
+                await sendPushNotificationToAllFriends(
+                    type: "vibe",
+                    senderName: senderName,
+                    data: ["vibeId": insertedVibes.first?.id?.uuidString ?? tempId]
+                )
+            }
+            
         } catch {
             print("Error creating vibe: \(error)")
             // Remove optimistic update if failed
@@ -844,6 +859,19 @@ class SupabaseAppViewModel: ObservableObject {
                 .from("vibe_responses")
                 .upsert(vibeResponse, onConflict: "vibe_id,user_id")
                 .execute()
+            
+            // Send push notification to vibe creator (only for "yes" responses)
+            if response == .yes,
+               let vibe = vibes.first(where: { $0.id == vibeId }),
+               vibe.userId != userIdString, // Don't notify yourself
+               let senderName = currentUserProfile?.displayName {
+                await sendPushNotification(
+                    type: "vibe_response",
+                    to: vibe.userId,
+                    senderName: senderName,
+                    data: ["vibeId": vibeId]
+                )
+            }
         } catch {
             print("Error responding to vibe: \(error)")
             // Reload vibes if failed
@@ -1266,6 +1294,18 @@ class SupabaseAppViewModel: ObservableObject {
             // Track for badges after successful insert
             await BadgeManager.shared.trackReply(userId: userIdString)
             await BadgeManager.shared.checkForNewBadges(userId: userIdString, friendCount: friends.count)
+            
+            // Send push notification to post author
+            if let post = posts.first(where: { $0.id == postId }),
+               post.userId != userIdString, // Don't notify yourself
+               let senderName = currentUserProfile?.displayName {
+                await sendPushNotification(
+                    type: "reply",
+                    to: post.userId,
+                    senderName: senderName,
+                    data: ["postId": postId]
+                )
+            }
         } catch {
             print("Error adding reply: \(error)")
             // Revert optimistic update on failure
@@ -1352,6 +1392,46 @@ class SupabaseAppViewModel: ObservableObject {
             print("Error updating rating: \(error)")
             // Reload user profile if update failed
             await loadCurrentUser()
+        }
+    }
+    
+    // MARK: - Push Notifications
+    
+    /// Sends a push notification to a specific user via the edge function
+    /// - Parameters:
+    ///   - type: Notification type (vibe, vibe_response, friend_request, reply, connection_match)
+    ///   - userId: The recipient user's UUID string
+    ///   - senderName: The display name of the person triggering the notification
+    ///   - data: Optional additional data to include in the notification payload
+    func sendPushNotification(type: String, to userId: String, senderName: String, data: [String: String]? = nil) async {
+        do {
+            var body: [String: Any] = [
+                "type": type,
+                "userId": userId,
+                "senderName": senderName
+            ]
+            
+            if let data = data {
+                body["data"] = data
+            }
+            
+            let jsonData = try JSONSerialization.data(withJSONObject: body)
+            
+            try await supabase.functions.invoke(
+                "send-push-notification",
+                options: FunctionInvokeOptions(body: jsonData)
+            )
+            
+            print("✅ Push notification sent: \(type) to \(userId)")
+        } catch {
+            print("❌ Error sending push notification: \(error)")
+        }
+    }
+    
+    /// Sends push notifications to all friends of the current user
+    func sendPushNotificationToAllFriends(type: String, senderName: String, data: [String: String]? = nil) async {
+        for friend in friends {
+            await sendPushNotification(type: type, to: friend.id, senderName: senderName, data: data)
         }
     }
     
@@ -1655,6 +1735,15 @@ class SupabaseAppViewModel: ObservableObject {
                     .from("connection_pairings")
                     .insert(newPairing)
                     .execute()
+                
+                // Send push notification to the matched user
+                if let senderName = currentUserProfile?.displayName {
+                    await sendPushNotification(
+                        type: "connection_match",
+                        to: matchedUserId.uuidString,
+                        senderName: senderName
+                    )
+                }
                 
                 // Reload to get the full pairing with user details
                 await loadConnectionOfTheWeek()

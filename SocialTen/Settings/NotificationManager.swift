@@ -103,9 +103,14 @@ class NotificationManager: ObservableObject {
            let prefs = try? JSONDecoder().decode(NotificationPreferences.self, from: data) {
             notificationPreferences = prefs
         }
+        // Always update timezone to current device timezone
+        notificationPreferences.timezone = TimeZone.current.identifier
     }
     
     func savePreferences() {
+        // Ensure timezone is current before saving
+        notificationPreferences.timezone = TimeZone.current.identifier
+        
         if let data = try? JSONEncoder().encode(notificationPreferences) {
             UserDefaults.standard.set(data, forKey: "notificationPreferences")
         }
@@ -126,8 +131,14 @@ class NotificationManager: ObservableObject {
                 friendRequestsEnabled: notificationPreferences.friendRequestsEnabled,
                 repliesEnabled: notificationPreferences.repliesEnabled,
                 ratingsEnabled: notificationPreferences.ratingsEnabled,
+                vibeResponsesEnabled: notificationPreferences.vibeResponsesEnabled,
+                connectionMatchEnabled: notificationPreferences.connectionMatchEnabled,
+                dailyReminderEnabled: notificationPreferences.dailyReminderEnabled,
+                dailyReminderTime: notificationPreferences.dailyReminderTime,
+                quietHoursEnabled: notificationPreferences.quietHoursEnabled,
                 quietHoursStart: notificationPreferences.quietHoursStart,
-                quietHoursEnd: notificationPreferences.quietHoursEnd
+                quietHoursEnd: notificationPreferences.quietHoursEnd,
+                timezone: notificationPreferences.timezone
             )
             
             try await SupabaseManager.shared.client
@@ -176,8 +187,14 @@ struct NotificationPreferences: Codable {
     var friendRequestsEnabled: Bool = true
     var repliesEnabled: Bool = true
     var ratingsEnabled: Bool = false
+    var vibeResponsesEnabled: Bool = true
+    var connectionMatchEnabled: Bool = true
+    var dailyReminderEnabled: Bool = false
+    var dailyReminderTime: String = "19:00"
+    var quietHoursEnabled: Bool = true
     var quietHoursStart: String = "22:00"
     var quietHoursEnd: String = "08:00"
+    var timezone: String = TimeZone.current.identifier
 }
 
 // MARK: - DB Model for Supabase
@@ -188,8 +205,14 @@ struct DBNotificationPreferences: Codable {
     let friendRequestsEnabled: Bool
     let repliesEnabled: Bool
     let ratingsEnabled: Bool
+    let vibeResponsesEnabled: Bool
+    let connectionMatchEnabled: Bool
+    let dailyReminderEnabled: Bool
+    let dailyReminderTime: String
+    let quietHoursEnabled: Bool
     let quietHoursStart: String
     let quietHoursEnd: String
+    let timezone: String
     
     enum CodingKeys: String, CodingKey {
         case userId = "user_id"
@@ -197,7 +220,13 @@ struct DBNotificationPreferences: Codable {
         case friendRequestsEnabled = "friend_requests_enabled"
         case repliesEnabled = "replies_enabled"
         case ratingsEnabled = "ratings_enabled"
+        case vibeResponsesEnabled = "vibe_responses_enabled"
+        case connectionMatchEnabled = "connection_match_enabled"
+        case dailyReminderEnabled = "daily_reminder_enabled"
+        case dailyReminderTime = "daily_reminder_time"
+        case quietHoursEnabled = "quiet_hours_enabled"
         case quietHoursStart = "quiet_hours_start"
         case quietHoursEnd = "quiet_hours_end"
+        case timezone
     }
 }
