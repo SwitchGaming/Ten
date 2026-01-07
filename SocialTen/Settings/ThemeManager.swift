@@ -141,37 +141,37 @@ struct AppTheme: Identifiable {
         name: "Aurora",
         description: "Northern lights",
         colors: ThemeColors(
-            background: Color(hex: "0a0a1a"),
-            cardBackground: Color(hex: "141428"),
-            surfaceLight: Color(hex: "1e1b4b"),
-            accent1: Color(hex: "22D3EE"),
-            accent2: Color(hex: "A855F7"),
-            accent3: Color(hex: "1e1b4b"),
+            background: Color(hex: "050814"),
+            cardBackground: Color(hex: "0c1220"),
+            surfaceLight: Color(hex: "12192d"),
+            accent1: Color(hex: "5EEAD4"),
+            accent2: Color(hex: "34D399"),
+            accent3: Color(hex: "12192d"),
             textPrimary: Color.white,
-            textSecondary: Color(hex: "A5B4FC"),
-            textTertiary: Color(hex: "6366F1")
+            textSecondary: Color(hex: "99F6E4"),
+            textTertiary: Color(hex: "5EEAD4").opacity(0.5)
         ),
         isPremium: true,
-        glowColor: Color(hex: "A855F7")
+        glowColor: Color(hex: "5EEAD4")
     )
     
     static let rose = AppTheme(
         id: "rose",
-        name: "Rose",
-        description: "Midnight bloom",
+        name: "Blossom",
+        description: "Cherry bloom",
         colors: ThemeColors(
-            background: Color(hex: "0f0a0a"),
-            cardBackground: Color(hex: "1a1214"),
-            surfaceLight: Color(hex: "2a1a1e"),
-            accent1: Color(hex: "FB7185"),
-            accent2: Color(hex: "E879F9"),
-            accent3: Color(hex: "2a1a1e"),
+            background: Color(hex: "0d0a0c"),
+            cardBackground: Color(hex: "1a1318"),
+            surfaceLight: Color(hex: "261c22"),
+            accent1: Color(hex: "F9A8D4"),
+            accent2: Color(hex: "EC4899"),
+            accent3: Color(hex: "261c22"),
             textPrimary: Color.white,
-            textSecondary: Color(hex: "FDA4AF"),
-            textTertiary: Color(hex: "9F7AEA")
+            textSecondary: Color(hex: "FBCFE8"),
+            textTertiary: Color(hex: "F472B6").opacity(0.5)
         ),
         isPremium: true,
-        glowColor: Color(hex: "FB7185")
+        glowColor: Color(hex: "F472B6")
     )
     
     static let allThemes: [AppTheme] = [.default, .ocean, .forest, .sunset, .aurora, .rose]

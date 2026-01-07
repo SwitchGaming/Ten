@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ActiveVibeBanner: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     @Binding var navigateToVibeTab: Bool
     @Binding var expandedVibeId: String?
     
@@ -21,35 +22,35 @@ struct ActiveVibeBanner: View {
                 navigateToVibeTab = true
             }) {
                 DepthCard(depth: .low) {
-                    HStack(spacing: ThemeManager.shared.spacing.sm) {
+                    HStack(spacing: themeManager.spacing.sm) {
                         Image(systemName: "sparkles")
                             .font(.system(size: 14))
-                            .foregroundColor(ThemeManager.shared.colors.accent2)
+                            .foregroundColor(themeManager.colors.accent2)
                         
                         Text(vibe.title)
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         Text("·")
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                         
                         Text(vibe.timeDescription)
-                            .font(ThemeManager.shared.fonts.caption)
-                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(themeManager.colors.textSecondary)
                         
                         Spacer()
                         
                         if vibe.yesCount > 0 {
                             Text("\(vibe.yesCount + 1) in") // +1 for creator
-                                .font(ThemeManager.shared.fonts.caption)
+                                .font(themeManager.fonts.caption)
                                 .foregroundColor(.green)
                         }
                         
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                     }
-                    .padding(ThemeManager.shared.spacing.md)
+                    .padding(themeManager.spacing.md)
                 }
             }
             .buttonStyle(.plain)

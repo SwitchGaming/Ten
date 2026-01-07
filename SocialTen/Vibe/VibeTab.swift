@@ -7,6 +7,7 @@ import SwiftUI
 
 struct VibeTab: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showCreateVibe = false
     @State private var expandedVibeId: String? = nil
     @Binding var initialExpandedVibeId: String?
@@ -30,13 +31,13 @@ struct VibeTab: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: ThemeManager.shared.spacing.xl) {
+            VStack(spacing: themeManager.spacing.xl) {
                 // Header
                 Text("vibes")
-                    .font(ThemeManager.shared.fonts.title)
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                    .tracking(ThemeManager.shared.letterSpacing.wide)
-                    .padding(.top, ThemeManager.shared.spacing.lg)
+                    .font(themeManager.fonts.title)
+                    .foregroundColor(themeManager.colors.textPrimary)
+                    .tracking(themeManager.letterSpacing.wide)
+                    .padding(.top, themeManager.spacing.lg)
                 
                 // Create Vibe Card
                 createVibeCard
@@ -58,9 +59,9 @@ struct VibeTab: View {
                 
                 Spacer(minLength: 100)
             }
-            .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+            .padding(.horizontal, themeManager.spacing.screenHorizontal)
         }
-        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
+        .background(themeManager.colors.background.ignoresSafeArea())
         .fullScreenCover(isPresented: $showCreateVibe) {
             CreateVibeSheet()
         }
@@ -81,34 +82,34 @@ struct VibeTab: View {
     var createVibeCard: some View {
         Button(action: { showCreateVibe = true }) {
             DepthCard(depth: .low) {
-                HStack(spacing: ThemeManager.shared.spacing.md) {
+                HStack(spacing: themeManager.spacing.md) {
                     ZStack {
                         Circle()
-                            .fill(ThemeManager.shared.colors.accent2.opacity(0.15))
+                            .fill(themeManager.colors.accent2.opacity(0.15))
                             .frame(width: 40, height: 40)
                         
                         Image(systemName: "plus")
                             .font(.system(size: 16, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.accent2)
+                            .foregroundColor(themeManager.colors.accent2)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("start a vibe")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         Text("invite friends to hang")
-                            .font(ThemeManager.shared.fonts.caption)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(themeManager.colors.textTertiary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                 }
-                .padding(ThemeManager.shared.spacing.md)
+                .padding(themeManager.spacing.md)
             }
         }
         .buttonStyle(.plain)
@@ -117,11 +118,11 @@ struct VibeTab: View {
     // MARK: - My Vibes Section
     
     var myVibesSection: some View {
-        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+        VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             Text("your vibes")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                .tracking(ThemeManager.shared.letterSpacing.wide)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
+                .tracking(themeManager.letterSpacing.wide)
                 .textCase(.uppercase)
             
             ForEach(myVibes) { vibe in
@@ -141,11 +142,11 @@ struct VibeTab: View {
     // MARK: - Friend Vibes Section
     
     var friendVibesSection: some View {
-        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+        VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             Text("from friends")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                .tracking(ThemeManager.shared.letterSpacing.wide)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
+                .tracking(themeManager.letterSpacing.wide)
                 .textCase(.uppercase)
             
             ForEach(friendVibes) { vibe in
@@ -165,21 +166,21 @@ struct VibeTab: View {
     // MARK: - Empty State
     
     var emptyState: some View {
-        VStack(spacing: ThemeManager.shared.spacing.md) {
+        VStack(spacing: themeManager.spacing.md) {
             Image(systemName: "sparkles")
                 .font(.system(size: 40, weight: .ultraLight))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(themeManager.colors.textTertiary)
             
             Text("no active vibes")
-                .font(ThemeManager.shared.fonts.body)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.body)
+                .foregroundColor(themeManager.colors.textTertiary)
             
             Text("start one and invite friends!")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, ThemeManager.shared.spacing.xxl)
+        .padding(.vertical, themeManager.spacing.xxl)
     }
 }
 
@@ -187,6 +188,7 @@ struct VibeTab: View {
 
 struct VibeCard: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var selectedUser: User?
     @State private var glowAnimation = false
     let vibe: Vibe
@@ -211,8 +213,12 @@ struct VibeCard: View {
     }
     
     // Get the creator's theme glow color
+    // For own vibes, use current theme directly so it updates immediately on theme change
     var creatorGlowColor: Color {
-        creator?.selectedTheme.glowColor ?? ThemeManager.shared.colors.accent2
+        if isOwnVibe {
+            return themeManager.currentTheme.glowColor
+        }
+        return creator?.selectedTheme.glowColor ?? themeManager.colors.accent2
     }
     
     var yesUsers: [User] {
@@ -239,7 +245,7 @@ struct VibeCard: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Main content
                 Button(action: onTap) {
-                    HStack(spacing: ThemeManager.shared.spacing.md) {
+                    HStack(spacing: themeManager.spacing.md) {
                         // Icon with premium glow
                         ZStack {
                             // Premium glow effect (visible to everyone if creator is premium)
@@ -253,26 +259,26 @@ struct VibeCard: View {
                             }
                             
                             Circle()
-                                .fill(creatorIsPremium ? creatorGlowColor.opacity(0.3) : ThemeManager.shared.colors.accent2.opacity(0.15))
+                                .fill(creatorIsPremium ? creatorGlowColor.opacity(0.3) : themeManager.colors.accent2.opacity(0.15))
                                 .frame(width: 40, height: 40)
                             
                             Image(systemName: "sparkles")
                                 .font(.system(size: 16, weight: .light))
-                                .foregroundColor(creatorIsPremium ? creatorGlowColor : ThemeManager.shared.colors.accent2)
+                                .foregroundColor(creatorIsPremium ? creatorGlowColor : themeManager.colors.accent2)
                         }
                         
                         // Title and info
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
                                 Text(vibe.title)
-                                    .font(ThemeManager.shared.fonts.body)
-                                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                    .font(themeManager.fonts.body)
+                                    .foregroundColor(themeManager.colors.textPrimary)
                                 
                                 if isOwnVibe {
                                     HStack(spacing: 4) {
                                         Text("· you")
-                                            .font(ThemeManager.shared.fonts.caption)
-                                            .foregroundColor(creatorIsPremium ? creatorGlowColor : ThemeManager.shared.colors.accent2)
+                                            .font(themeManager.fonts.caption)
+                                            .foregroundColor(creatorIsPremium ? creatorGlowColor : themeManager.colors.accent2)
                                         
                                         if creatorIsPremium {
                                             Image(systemName: "plus.circle.fill")
@@ -291,23 +297,23 @@ struct VibeCard: View {
                             HStack(spacing: 8) {
                                 if !isOwnVibe, let creatorName = creator?.displayName {
                                     Text(creatorName.lowercased())
-                                        .font(ThemeManager.shared.fonts.caption)
-                                        .foregroundColor(creatorIsPremium ? creatorGlowColor.opacity(0.8) : ThemeManager.shared.colors.textSecondary)
+                                        .font(themeManager.fonts.caption)
+                                        .foregroundColor(creatorIsPremium ? creatorGlowColor.opacity(0.8) : themeManager.colors.textSecondary)
                                     
                                     Text("·")
-                                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                        .foregroundColor(themeManager.colors.textTertiary)
                                 }
                                 
                                 Text(vibe.timeDescription)
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                                 
                                 Text("·")
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                                 
                                 Text(vibe.location)
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                             }
                         }
                         
@@ -317,7 +323,7 @@ struct VibeCard: View {
                         if vibe.yesCount > 0 {
                             HStack(spacing: 4) {
                                 Text("\(vibe.yesCount)")
-                                    .font(ThemeManager.shared.fonts.caption)
+                                    .font(themeManager.fonts.caption)
                                     .foregroundColor(.green)
                                 
                                 Image(systemName: "checkmark.circle.fill")
@@ -328,9 +334,9 @@ struct VibeCard: View {
                         
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.system(size: 12, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                     }
-                    .padding(ThemeManager.shared.spacing.md)
+                    .padding(themeManager.spacing.md)
                 }
                 .buttonStyle(.plain)
                 
@@ -340,6 +346,7 @@ struct VibeCard: View {
                 }
             }
         }
+        .id("\(vibe.id)-\(themeManager.currentTheme.id)") // Force refresh when theme changes
         .onAppear {
             if creatorIsPremium {
                 withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
@@ -350,17 +357,17 @@ struct VibeCard: View {
     }
     
     var expandedContent: some View {
-        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+        VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             Divider()
-                .background(ThemeManager.shared.colors.cardBackground)
+                .background(themeManager.colors.cardBackground)
             
             // Who's in
             if !yesUsers.isEmpty {
-                VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                     Text("who's in")
-                        .font(ThemeManager.shared.fonts.caption)
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                        .tracking(ThemeManager.shared.letterSpacing.wide)
+                        .font(themeManager.fonts.caption)
+                        .foregroundColor(themeManager.colors.textTertiary)
+                        .tracking(themeManager.letterSpacing.wide)
                         .textCase(.uppercase)
                     
                     HStack(spacing: -8) {
@@ -369,12 +376,12 @@ struct VibeCard: View {
                                 selectedUser = user
                             }) {
                                 Circle()
-                                    .fill(ThemeManager.shared.colors.background)
+                                    .fill(themeManager.colors.background)
                                     .frame(width: 32, height: 32)
                                     .overlay(
                                         Text(String(user.displayName.prefix(1)).lowercased())
                                             .font(.system(size: 12, weight: .light))
-                                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                            .foregroundColor(themeManager.colors.textSecondary)
                                     )
                                     .overlay(
                                         Circle()
@@ -386,12 +393,12 @@ struct VibeCard: View {
                         
                         if yesUsers.count > 5 {
                             Circle()
-                                .fill(ThemeManager.shared.colors.background)
+                                .fill(themeManager.colors.background)
                                 .frame(width: 32, height: 32)
                                 .overlay(
                                     Text("+\(yesUsers.count - 5)")
                                         .font(.system(size: 10, weight: .medium))
-                                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                        .foregroundColor(themeManager.colors.textSecondary)
                                 )
                         }
                     }
@@ -400,11 +407,11 @@ struct VibeCard: View {
             
             // Who's not going
             if !noUsers.isEmpty {
-                VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                     Text("can't make it")
-                        .font(ThemeManager.shared.fonts.caption)
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                        .tracking(ThemeManager.shared.letterSpacing.wide)
+                        .font(themeManager.fonts.caption)
+                        .foregroundColor(themeManager.colors.textTertiary)
+                        .tracking(themeManager.letterSpacing.wide)
                         .textCase(.uppercase)
                     
                     HStack(spacing: -8) {
@@ -413,12 +420,12 @@ struct VibeCard: View {
                                 selectedUser = user
                             }) {
                                 Circle()
-                                    .fill(ThemeManager.shared.colors.background)
+                                    .fill(themeManager.colors.background)
                                     .frame(width: 32, height: 32)
                                     .overlay(
                                         Text(String(user.displayName.prefix(1)).lowercased())
                                             .font(.system(size: 12, weight: .light))
-                                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                            .foregroundColor(themeManager.colors.textTertiary)
                                     )
                                     .overlay(
                                         Circle()
@@ -430,12 +437,12 @@ struct VibeCard: View {
                         
                         if noUsers.count > 5 {
                             Circle()
-                                .fill(ThemeManager.shared.colors.background)
+                                .fill(themeManager.colors.background)
                                 .frame(width: 32, height: 32)
                                 .overlay(
                                     Text("+\(noUsers.count - 5)")
                                         .font(.system(size: 10, weight: .medium))
-                                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                        .foregroundColor(themeManager.colors.textTertiary)
                                 )
                         }
                     }
@@ -444,7 +451,7 @@ struct VibeCard: View {
             
             // Response buttons or Edit/Delete for own vibes
             if isOwnVibe {
-                HStack(spacing: ThemeManager.shared.spacing.sm) {
+                HStack(spacing: themeManager.spacing.sm) {
                     Button(action: {
                         Task {
                             await viewModel.deleteVibe(vibe.id)
@@ -454,19 +461,19 @@ struct VibeCard: View {
                             Image(systemName: "trash")
                                 .font(.system(size: 12))
                             Text("delete")
-                                .font(ThemeManager.shared.fonts.caption)
+                                .font(themeManager.fonts.caption)
                         }
                         .foregroundColor(.red.opacity(0.8))
-                        .padding(.horizontal, ThemeManager.shared.spacing.md)
-                        .padding(.vertical, ThemeManager.shared.spacing.sm)
+                        .padding(.horizontal, themeManager.spacing.md)
+                        .padding(.vertical, themeManager.spacing.sm)
                         .background(
-                            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.sm)
+                            RoundedRectangle(cornerRadius: themeManager.radius.sm)
                                 .fill(Color.red.opacity(0.1))
                         )
                     }
                 }
             } else {
-                HStack(spacing: ThemeManager.shared.spacing.sm) {
+                HStack(spacing: themeManager.spacing.sm) {
                     VibeResponseButton(
                         text: "i'm in",
                         isSelected: userResponse == .yes,
@@ -489,8 +496,8 @@ struct VibeCard: View {
                 }
             }
         }
-        .padding(.horizontal, ThemeManager.shared.spacing.md)
-        .padding(.bottom, ThemeManager.shared.spacing.md)
+        .padding(.horizontal, themeManager.spacing.md)
+        .padding(.bottom, themeManager.spacing.md)
         .fullScreenCover(item: $selectedUser) { user in
             UserProfileView(
                 user: user,
@@ -514,6 +521,7 @@ struct VibeCard: View {
 // MARK: - Vibe Response Button
 
 struct VibeResponseButton: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let text: String
     let isSelected: Bool
     let color: Color
@@ -522,16 +530,16 @@ struct VibeResponseButton: View {
     var body: some View {
         Button(action: action) {
             Text(text)
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(isSelected ? color : ThemeManager.shared.colors.textSecondary)
-                .padding(.horizontal, ThemeManager.shared.spacing.md)
-                .padding(.vertical, ThemeManager.shared.spacing.sm)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(isSelected ? color : themeManager.colors.textSecondary)
+                .padding(.horizontal, themeManager.spacing.md)
+                .padding(.vertical, themeManager.spacing.sm)
                 .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.sm)
+                    RoundedRectangle(cornerRadius: themeManager.radius.sm)
                         .fill(isSelected ? color.opacity(0.15) : Color.clear)
                         .overlay(
-                            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.sm)
-                                .stroke(isSelected ? color.opacity(0.4) : ThemeManager.shared.colors.textTertiary.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: themeManager.radius.sm)
+                                .stroke(isSelected ? color.opacity(0.4) : themeManager.colors.textTertiary.opacity(0.3), lineWidth: 1)
                         )
                 )
         }
@@ -542,6 +550,7 @@ struct VibeResponseButton: View {
 
 struct CreateVibeSheet: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var title = ""
@@ -582,7 +591,7 @@ struct CreateVibeSheet: View {
     }
     var body: some View {
         ZStack {
-            ThemeManager.shared.colors.background.ignoresSafeArea()
+            themeManager.colors.background.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Header
@@ -590,60 +599,60 @@ struct CreateVibeSheet: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                            .foregroundColor(themeManager.colors.textSecondary)
                             .frame(width: 40, height: 40)
                             .background(
                                 Circle()
-                                    .fill(ThemeManager.shared.colors.cardBackground)
+                                    .fill(themeManager.colors.cardBackground)
                             )
                     }
                     
                     Spacer()
                     
                     Text("new vibe")
-                        .font(ThemeManager.shared.fonts.body)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                        .tracking(ThemeManager.shared.letterSpacing.wide)
+                        .font(themeManager.fonts.body)
+                        .foregroundColor(themeManager.colors.textPrimary)
+                        .tracking(themeManager.letterSpacing.wide)
                     
                     Spacer()
                     
                     Button(action: createVibe) {
                         Text("send")
-                            .font(ThemeManager.shared.fonts.caption)
-                            .foregroundColor(canCreate ? ThemeManager.shared.colors.accent2 : ThemeManager.shared.colors.textTertiary)
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(canCreate ? themeManager.colors.accent2 : themeManager.colors.textTertiary)
                     }
                     .disabled(!canCreate)
                     .frame(width: 40)
                 }
-                .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                .padding(.top, ThemeManager.shared.spacing.lg)
-                .padding(.bottom, ThemeManager.shared.spacing.xl)
+                .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                .padding(.top, themeManager.spacing.lg)
+                .padding(.bottom, themeManager.spacing.xl)
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: ThemeManager.shared.spacing.xl) {
+                    VStack(spacing: themeManager.spacing.xl) {
                         // Title Input
-                        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                        VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                             HStack {
                                 Text("what's the vibe?")
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                                    .tracking(themeManager.letterSpacing.wide)
                                     .textCase(.uppercase)
                                 
                                 Spacer()
                                 
                                 Text("\(title.count)/30")
                                     .font(.system(size: 10, weight: .regular))
-                                    .foregroundColor(title.count > 30 ? .red : ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(title.count > 30 ? .red : themeManager.colors.textTertiary)
                             }
                             
                             TextField("", text: $title)
                                 .placeholder(when: title.isEmpty) {
                                     Text("basketball? coffee? study?")
-                                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                        .foregroundColor(themeManager.colors.textTertiary)
                                 }
                                 .font(.system(size: 24, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                .foregroundColor(themeManager.colors.textPrimary)
                                 .focused($titleFocused)
                                 .onChange(of: title) { _, newValue in
                                     if newValue.count > 30 {
@@ -653,15 +662,15 @@ struct CreateVibeSheet: View {
                         }
                         
                         // Time Selection
-                        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                        VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                             Text("when?")
-                                .font(ThemeManager.shared.fonts.caption)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                                .tracking(ThemeManager.shared.letterSpacing.wide)
+                                .font(themeManager.fonts.caption)
+                                .foregroundColor(themeManager.colors.textTertiary)
+                                .tracking(themeManager.letterSpacing.wide)
                                 .textCase(.uppercase)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: ThemeManager.shared.spacing.sm) {
+                                HStack(spacing: themeManager.spacing.sm) {
                                     ForEach(VibeTimePreset.allCases, id: \.self) { preset in
                                         TimePresetChip(
                                             text: preset == .custom && selectedTime == .custom ? timeDescription : preset.rawValue,
@@ -680,28 +689,28 @@ struct CreateVibeSheet: View {
                         }
                         
                         // Location Input
-                        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                        VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                             HStack {
                                 Text("where?")
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                                    .tracking(themeManager.letterSpacing.wide)
                                     .textCase(.uppercase)
                                 
                                 Spacer()
                                 
                                 Text("\(location.count)/30")
                                     .font(.system(size: 10, weight: .regular))
-                                    .foregroundColor(location.count > 30 ? .red : ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(location.count > 30 ? .red : themeManager.colors.textTertiary)
                             }
                             
                             TextField("", text: $location)
                                 .placeholder(when: location.isEmpty) {
                                     Text("my place, the court, cafe...")
-                                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                        .foregroundColor(themeManager.colors.textTertiary)
                                 }
                                 .font(.system(size: 20, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                .foregroundColor(themeManager.colors.textPrimary)
                                 .focused($locationFocused)
                                 .onChange(of: location) { _, newValue in
                                     if newValue.count > 30 {
@@ -711,45 +720,45 @@ struct CreateVibeSheet: View {
                         }
                         // Preview
                         if canCreate {
-                            VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                            VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                                 Text("preview")
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                                    .tracking(themeManager.letterSpacing.wide)
                                     .textCase(.uppercase)
                                 
                                 DepthCard(depth: .low) {
                                     HStack {
                                         Image(systemName: "sparkles")
                                             .font(.system(size: 14))
-                                            .foregroundColor(ThemeManager.shared.colors.accent2)
+                                            .foregroundColor(themeManager.colors.accent2)
                                         
                                         Text(title)
-                                            .font(ThemeManager.shared.fonts.body)
-                                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                            .font(themeManager.fonts.body)
+                                            .foregroundColor(themeManager.colors.textPrimary)
                                         
                                         Text("·")
-                                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                            .foregroundColor(themeManager.colors.textTertiary)
                                         
                                         Text(timeDescription)
-                                            .font(ThemeManager.shared.fonts.caption)
-                                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                            .font(themeManager.fonts.caption)
+                                            .foregroundColor(themeManager.colors.textSecondary)
                                         
                                         Text("·")
-                                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                            .foregroundColor(themeManager.colors.textTertiary)
                                         
                                         Text(location)
-                                            .font(ThemeManager.shared.fonts.caption)
-                                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                            .font(themeManager.fonts.caption)
+                                            .foregroundColor(themeManager.colors.textSecondary)
                                         
                                         Spacer()
                                     }
-                                    .padding(ThemeManager.shared.spacing.md)
+                                    .padding(themeManager.spacing.md)
                                 }
                             }
                         }
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
                 }
             }
             
@@ -774,14 +783,14 @@ struct CreateVibeSheet: View {
                                 }
                             }
                         }
-                        .font(ThemeManager.shared.fonts.body)
-                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        .font(themeManager.fonts.body)
+                        .foregroundColor(themeManager.colors.textSecondary)
                         
                         Spacer()
                         
                         Text("choose date & time")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         Spacer()
                         
@@ -790,11 +799,11 @@ struct CreateVibeSheet: View {
                                 showTimePicker = false
                             }
                         }
-                        .font(ThemeManager.shared.fonts.body)
-                        .foregroundColor(ThemeManager.shared.colors.accent2)
+                        .font(themeManager.fonts.body)
+                        .foregroundColor(themeManager.colors.accent2)
                     }
                     .padding()
-                    .background(ThemeManager.shared.colors.cardBackground)
+                    .background(themeManager.colors.cardBackground)
                     
                     DatePicker(
                         "",
@@ -805,9 +814,9 @@ struct CreateVibeSheet: View {
                     .datePickerStyle(.wheel)
                     .labelsHidden()
                     .padding()
-                    .background(ThemeManager.shared.colors.background)
+                    .background(themeManager.colors.background)
                 }
-                .background(ThemeManager.shared.colors.background)
+                .background(themeManager.colors.background)
                 .cornerRadius(20)
                 .padding(.horizontal, 20)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -866,6 +875,7 @@ struct CreateVibeSheet: View {
 // MARK: - Time Preset Chip
 
 struct TimePresetChip: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let text: String
     let isSelected: Bool
     let action: () -> Void
@@ -873,16 +883,16 @@ struct TimePresetChip: View {
     var body: some View {
         Button(action: action) {
             Text(text)
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(isSelected ? ThemeManager.shared.colors.accent2 : ThemeManager.shared.colors.textSecondary)
-                .padding(.horizontal, ThemeManager.shared.spacing.md)
-                .padding(.vertical, ThemeManager.shared.spacing.sm)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(isSelected ? themeManager.colors.accent2 : themeManager.colors.textSecondary)
+                .padding(.horizontal, themeManager.spacing.md)
+                .padding(.vertical, themeManager.spacing.sm)
                 .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.full)
-                        .fill(isSelected ? ThemeManager.shared.colors.accent2.opacity(0.15) : Color.clear)
+                    RoundedRectangle(cornerRadius: themeManager.radius.full)
+                        .fill(isSelected ? themeManager.colors.accent2.opacity(0.15) : Color.clear)
                         .overlay(
-                            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.full)
-                                .stroke(isSelected ? ThemeManager.shared.colors.accent2.opacity(0.4) : ThemeManager.shared.colors.textTertiary.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: themeManager.radius.full)
+                                .stroke(isSelected ? themeManager.colors.accent2.opacity(0.4) : themeManager.colors.textTertiary.opacity(0.3), lineWidth: 1)
                         )
                 )
         }

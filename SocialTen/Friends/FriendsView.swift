@@ -8,6 +8,7 @@ import SwiftUI
 struct FriendsView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @EnvironmentObject var badgeManager: BadgeManager
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var searchText = ""
     @State private var selectedFriend: User?
     @State private var showAddFriend = false
@@ -41,10 +42,10 @@ struct FriendsView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: ThemeManager.shared.spacing.xl) {
+                VStack(spacing: themeManager.spacing.xl) {
                     // Header
                     header
-                        .padding(.top, ThemeManager.shared.spacing.lg)
+                        .padding(.top, themeManager.spacing.lg)
                     
                     // Your Profile Card
                     profileCard
@@ -65,11 +66,11 @@ struct FriendsView: View {
                     
                     // Connection of the Week
                     connectionOfTheWeekCard
-                        .padding(.top, ThemeManager.shared.spacing.md)
+                        .padding(.top, themeManager.spacing.md)
                     
                     Spacer(minLength: 100)
                 }
-                .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                .padding(.horizontal, themeManager.spacing.screenHorizontal)
             }
             
             // Badge toast notification
@@ -85,7 +86,7 @@ struct FriendsView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
+        .background(themeManager.colors.background.ignoresSafeArea())
         .fullScreenCover(item: $selectedFriend) { friend in
             FriendDetailView(friend: friend)
         }
@@ -104,35 +105,35 @@ struct FriendsView: View {
     
     var header: some View {
         Text("friends")
-            .font(ThemeManager.shared.fonts.title)
-            .foregroundColor(ThemeManager.shared.colors.textPrimary)
-            .tracking(ThemeManager.shared.letterSpacing.wide)
+            .font(themeManager.fonts.title)
+            .foregroundColor(themeManager.colors.textPrimary)
+            .tracking(themeManager.letterSpacing.wide)
     }
     
     // MARK: - Profile Card
     
     var profileCard: some View {
         DepthCard {
-            VStack(spacing: ThemeManager.shared.spacing.md) {
-                HStack(spacing: ThemeManager.shared.spacing.md) {
+            VStack(spacing: themeManager.spacing.md) {
+                HStack(spacing: themeManager.spacing.md) {
                     // Avatar
                     Circle()
-                        .fill(ThemeManager.shared.colors.cardBackground)
+                        .fill(themeManager.colors.cardBackground)
                         .frame(width: 56, height: 56)
                         .overlay(
                             Text(String(viewModel.currentUserProfile?.displayName.prefix(1) ?? "?").lowercased())
                                 .font(.system(size: 22, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(themeManager.colors.textSecondary)
                         )
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.currentUserProfile?.displayName.lowercased() ?? "you")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         Text("@\(viewModel.currentUserProfile?.username ?? "username")")
-                            .font(ThemeManager.shared.fonts.caption)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(themeManager.colors.textTertiary)
                     }
                     
                     Spacer()
@@ -141,18 +142,18 @@ struct FriendsView: View {
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gearshape")
                             .font(.system(size: 18, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                             .frame(width: 44, height: 44)
                             .background(
                                 Circle()
-                                    .fill(ThemeManager.shared.colors.background)
+                                    .fill(themeManager.colors.background)
                             )
                     }
                 }
                 
                 // Badges and Streak Row
                 if !topBadges.isEmpty || badgeManager.currentStreak > 0 {
-                    HStack(spacing: ThemeManager.shared.spacing.md) {
+                    HStack(spacing: themeManager.spacing.md) {
                         // Top Badges
                         if !topBadges.isEmpty {
                             HStack(spacing: -8) {
@@ -175,14 +176,14 @@ struct FriendsView: View {
                                     .font(.system(size: 12))
                                     .foregroundColor(.orange)
                                 Text("\(badgeManager.currentStreak) day streak")
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                             }
                         }
                     }
                     .padding(.top, 4)
                 }            }
-            .padding(ThemeManager.shared.spacing.md)
+            .padding(themeManager.spacing.md)
         }
     }
     
@@ -192,26 +193,26 @@ struct FriendsView: View {
         Button(action: { showRequests = true }) {
             HStack {
                 Circle()
-                    .fill(ThemeManager.shared.colors.accent1)
+                    .fill(themeManager.colors.accent1)
                     .frame(width: 8, height: 8)
                 
                 Text("\(pendingRequestsCount) pending request\(pendingRequestsCount > 1 ? "s" : "")")
-                    .font(ThemeManager.shared.fonts.caption)
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .font(themeManager.fonts.caption)
+                    .foregroundColor(themeManager.colors.textPrimary)
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .light))
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(themeManager.colors.textTertiary)
             }
-            .padding(ThemeManager.shared.spacing.md)
+            .padding(themeManager.spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                    .fill(ThemeManager.shared.colors.cardBackground)
+                RoundedRectangle(cornerRadius: themeManager.radius.md)
+                    .fill(themeManager.colors.cardBackground)
                     .overlay(
-                        RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                            .stroke(ThemeManager.shared.colors.accent1.opacity(0.3), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: themeManager.radius.md)
+                            .stroke(themeManager.colors.accent1.opacity(0.3), lineWidth: 1)
                     )
             )
         }
@@ -220,24 +221,24 @@ struct FriendsView: View {
     // MARK: - Search Bar
     
     var searchBar: some View {
-        HStack(spacing: ThemeManager.shared.spacing.sm) {
+        HStack(spacing: themeManager.spacing.sm) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 14, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(themeManager.colors.textTertiary)
             
             TextField("", text: $searchText)
                 .placeholder(when: searchText.isEmpty) {
                     Text("search friends")
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                 }
-                .font(ThemeManager.shared.fonts.body)
-                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                .font(themeManager.fonts.body)
+                .foregroundColor(themeManager.colors.textPrimary)
         }
-        .padding(.horizontal, ThemeManager.shared.spacing.md)
-        .padding(.vertical, ThemeManager.shared.spacing.sm + 4)
+        .padding(.horizontal, themeManager.spacing.md)
+        .padding(.vertical, themeManager.spacing.sm + 4)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                .fill(ThemeManager.shared.colors.cardBackground)
+            RoundedRectangle(cornerRadius: themeManager.radius.md)
+                .fill(themeManager.colors.cardBackground)
         )
     }
     
@@ -254,11 +255,11 @@ struct FriendsView: View {
     }
     
     var friendsSection: some View {
-        VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+        VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             Text(friendsSectionTitle)
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                .tracking(ThemeManager.shared.letterSpacing.wide)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
+                .tracking(themeManager.letterSpacing.wide)
                 .textCase(.uppercase)
             
             if filteredFriends.isEmpty {
@@ -270,24 +271,24 @@ struct FriendsView: View {
     }
     
     var emptyState: some View {
-        VStack(spacing: ThemeManager.shared.spacing.md) {
+        VStack(spacing: themeManager.spacing.md) {
             Image(systemName: "person.2")
                 .font(.system(size: 40, weight: .ultraLight))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(themeManager.colors.textTertiary)
             
             Text(searchText.isEmpty ? "no friends yet" : "no results")
-                .font(ThemeManager.shared.fonts.body)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.body)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, ThemeManager.shared.spacing.xxl)
+        .padding(.vertical, themeManager.spacing.xxl)
     }
     
     var friendsGrid: some View {
         LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: ThemeManager.shared.spacing.md),
-            GridItem(.flexible(), spacing: ThemeManager.shared.spacing.md)
-        ], spacing: ThemeManager.shared.spacing.md) {
+            GridItem(.flexible(), spacing: themeManager.spacing.md),
+            GridItem(.flexible(), spacing: themeManager.spacing.md)
+        ], spacing: themeManager.spacing.md) {
             ForEach(filteredFriends) { friend in
                 FriendGridCard(friend: friend) {
                     selectedFriend = friend
@@ -304,16 +305,16 @@ struct FriendsView: View {
                 Image(systemName: "plus")
                     .font(.system(size: 14, weight: .medium))
                 Text("add friend")
-                    .font(ThemeManager.shared.fonts.caption)
-                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                    .font(themeManager.fonts.caption)
+                    .tracking(themeManager.letterSpacing.wide)
             }
-            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+            .foregroundColor(themeManager.colors.textSecondary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, ThemeManager.shared.spacing.md)
+            .padding(.vertical, themeManager.spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                RoundedRectangle(cornerRadius: themeManager.radius.md)
                     .stroke(
-                        ThemeManager.shared.colors.cardBackground,
+                        themeManager.colors.cardBackground,
                         style: StrokeStyle(lineWidth: 1, dash: [8, 4])
                     )
             )
@@ -329,12 +330,12 @@ struct FriendsView: View {
             return connection.isMatched || viewModel.friends.contains { $0.id == connection.matchedUser.id }
         }()
         
-        return VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+        return VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             HStack {
                 Text("connection of the week")
-                    .font(ThemeManager.shared.fonts.caption)
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                    .font(themeManager.fonts.caption)
+                    .foregroundColor(themeManager.colors.textTertiary)
+                    .tracking(themeManager.letterSpacing.wide)
                     .textCase(.uppercase)
                 
                 Spacer()
@@ -349,7 +350,7 @@ struct FriendsView: View {
                     }) {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                             .rotationEffect(.degrees(viewModel.isLoadingConnection ? 360 : 0))
                             .animation(viewModel.isLoadingConnection ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: viewModel.isLoadingConnection)
                     }
@@ -382,115 +383,116 @@ struct FriendsView: View {
         }
     }
     var circleCompleteCard: some View {
-        VStack(spacing: ThemeManager.shared.spacing.md) {
+        VStack(spacing: themeManager.spacing.md) {
             ZStack {
                 Circle()
-                    .fill(ThemeManager.shared.colors.textPrimary.opacity(0.1))
+                    .fill(themeManager.colors.textPrimary.opacity(0.1))
                     .frame(width: 60, height: 60)
                 
                 Image(systemName: "checkmark")
                     .font(.system(size: 24, weight: .light))
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(themeManager.colors.textPrimary)
             }
             
             Text("your circle is complete")
                 .font(.system(size: 16, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                .foregroundColor(themeManager.colors.textPrimary)
             
             Text("you've reached \(PremiumManager.shared.friendLimit) friends")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, ThemeManager.shared.spacing.xl)
+        .padding(.vertical, themeManager.spacing.xl)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                .fill(ThemeManager.shared.colors.cardBackground)
+            RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                .fill(themeManager.colors.cardBackground)
         )
     }
     
     var loadingConnectionCard: some View {
-        VStack(spacing: ThemeManager.shared.spacing.md) {
+        VStack(spacing: themeManager.spacing.md) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
             
             Text("finding your match...")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 280)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                .fill(ThemeManager.shared.colors.cardBackground)
+            RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                .fill(themeManager.colors.cardBackground)
         )
     }
     
     var noMatchCard: some View {
-        VStack(spacing: ThemeManager.shared.spacing.md) {
+        VStack(spacing: themeManager.spacing.md) {
             ZStack {
                 Circle()
-                    .fill(ThemeManager.shared.colors.cardBackground)
+                    .fill(themeManager.colors.cardBackground)
                     .frame(width: 60, height: 60)
                 
                 Image(systemName: "person.crop.circle.badge.questionmark")
                     .font(.system(size: 26, weight: .ultraLight))
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(themeManager.colors.textTertiary)
             }
             
             Text("no matches yet")
                 .font(.system(size: 16, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                .foregroundColor(themeManager.colors.textPrimary)
             
             Text("check back soon")
-                .font(ThemeManager.shared.fonts.caption)
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .font(themeManager.fonts.caption)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, ThemeManager.shared.spacing.xl)
+        .padding(.vertical, themeManager.spacing.xl)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                .fill(ThemeManager.shared.colors.cardBackground)
+            RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                .fill(themeManager.colors.cardBackground)
         )
     }
     
     // MARK: - Friend Grid Card
     
     struct FriendGridCard: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
         let friend: User
         let onTap: () -> Void
         
         var body: some View {
             Button(action: onTap) {
-                VStack(spacing: ThemeManager.shared.spacing.sm) {
+                VStack(spacing: themeManager.spacing.sm) {
                     // Avatar with rating
                     ZStack {
                         Circle()
-                            .fill(ThemeManager.shared.colors.cardBackground)
+                            .fill(themeManager.colors.cardBackground)
                             .frame(width: 64, height: 64)
                         
                         if let rating = friend.todayRating {
                             Text("\(rating)")
                                 .font(.system(size: 28, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                .foregroundColor(themeManager.colors.textPrimary)
                         } else {
                             Text(String(friend.displayName.prefix(1)).lowercased())
                                 .font(.system(size: 24, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                         }
                     }
                     
                     // Name
                     Text(friend.displayName.lowercased())
-                        .font(ThemeManager.shared.fonts.caption)
-                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        .font(themeManager.fonts.caption)
+                        .foregroundColor(themeManager.colors.textSecondary)
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, ThemeManager.shared.spacing.lg)
+                .padding(.vertical, themeManager.spacing.lg)
                 .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                        .fill(ThemeManager.shared.colors.cardBackground)
+                    RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                        .fill(themeManager.colors.cardBackground)
                 )
             }
             .buttonStyle(ScaleButtonStyle())
@@ -526,6 +528,7 @@ struct FriendsView: View {
     struct SettingsView: View {
         @EnvironmentObject var viewModel: SupabaseAppViewModel
         @EnvironmentObject var authViewModel: AuthViewModel
+        @ObservedObject private var themeManager = ThemeManager.shared
         @Environment(\.dismiss) private var dismiss
         @State private var showTenPlus = false
         @State private var showEditProfile = false
@@ -536,39 +539,39 @@ struct FriendsView: View {
         
         var body: some View {
             ZStack {
-                ThemeManager.shared.colors.background.ignoresSafeArea()
+                themeManager.colors.background.ignoresSafeArea()
                 
-                VStack(spacing: ThemeManager.shared.spacing.xl) {
+                VStack(spacing: themeManager.spacing.xl) {
                     // Header
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(themeManager.colors.textSecondary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(ThemeManager.shared.colors.cardBackground)
+                                        .fill(themeManager.colors.cardBackground)
                                 )
                         }
                         
                         Spacer()
                         
                         Text("settings")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                            .tracking(ThemeManager.shared.letterSpacing.wide)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
+                            .tracking(themeManager.letterSpacing.wide)
                         
                         Spacer()
                         
                         // Invisible spacer for centering
                         Color.clear.frame(width: 40, height: 40)
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                    .padding(.top, ThemeManager.shared.spacing.lg)
+                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                    .padding(.top, themeManager.spacing.lg)
                     
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: ThemeManager.shared.spacing.lg) {
+                        VStack(spacing: themeManager.spacing.lg) {
                             // Account Section
                             settingsSection(title: "account") {
                                 SettingsRow(icon: "person", title: "Edit Profile") {
@@ -613,16 +616,16 @@ struct FriendsView: View {
                                 }
                             }) {
                                 Text("sign out")
-                                    .font(ThemeManager.shared.fonts.body)
+                                    .font(themeManager.fonts.body)
                                     .foregroundColor(.red.opacity(0.8))
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, ThemeManager.shared.spacing.md)
+                                    .padding(.vertical, themeManager.spacing.md)
                                     .background(
-                                        RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                                            .fill(ThemeManager.shared.colors.cardBackground)
+                                        RoundedRectangle(cornerRadius: themeManager.radius.md)
+                                            .fill(themeManager.colors.cardBackground)
                                     )
                             }
-                            .padding(.top, ThemeManager.shared.spacing.lg)
+                            .padding(.top, themeManager.spacing.lg)
                             
                             // Delete Account
                             Button(action: {
@@ -635,21 +638,21 @@ struct FriendsView: View {
                                             .scaleEffect(0.8)
                                     }
                                     Text(isDeleting ? "deleting..." : "delete account")
-                                        .font(ThemeManager.shared.fonts.body)
+                                        .font(themeManager.fonts.body)
                                 }
                                 .foregroundColor(.red)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, ThemeManager.shared.spacing.md)
+                                .padding(.vertical, themeManager.spacing.md)
                                 .background(
-                                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                                    RoundedRectangle(cornerRadius: themeManager.radius.md)
                                         .stroke(Color.red.opacity(0.3), lineWidth: 1)
                                 )
                             }
                             .disabled(isDeleting)
-                            .padding(.top, ThemeManager.shared.spacing.sm)
+                            .padding(.top, themeManager.spacing.sm)
                         }
-                        .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                        .padding(.top, ThemeManager.shared.spacing.lg)
+                        .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                        .padding(.top, themeManager.spacing.lg)
                     }
                 }
             }
@@ -683,28 +686,30 @@ struct FriendsView: View {
         }
         
         func settingsSection(title: String, @ViewBuilder content: () -> some View) -> some View {
-            VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+            VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
                 Text(title)
-                    .font(ThemeManager.shared.fonts.caption)
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                    .tracking(ThemeManager.shared.letterSpacing.wide)
+                    .font(themeManager.fonts.caption)
+                    .foregroundColor(themeManager.colors.textTertiary)
+                    .tracking(themeManager.letterSpacing.wide)
                     .textCase(.uppercase)
                 
                 VStack(spacing: 1) {
                     content()
                 }
                 .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                        .fill(ThemeManager.shared.colors.cardBackground)
+                    RoundedRectangle(cornerRadius: themeManager.radius.md)
+                        .fill(themeManager.colors.cardBackground)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md))
+                .clipShape(RoundedRectangle(cornerRadius: themeManager.radius.md))
             }
+            .id("\(title)-\(themeManager.currentTheme.id)") // Force refresh when theme changes
         }
     }
     
     // MARK: - Settings Row
     
     struct SettingsRow: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
         let icon: String
         let title: String
         var subtitle: String? = nil
@@ -713,21 +718,21 @@ struct FriendsView: View {
         
         var body: some View {
             Button(action: action) {
-                HStack(spacing: ThemeManager.shared.spacing.md) {
+                HStack(spacing: themeManager.spacing.md) {
                     Image(systemName: icon)
                         .font(.system(size: 16, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        .foregroundColor(themeManager.colors.textSecondary)
                         .frame(width: 24)
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         if let subtitle = subtitle {
                             Text(subtitle)
-                                .font(ThemeManager.shared.fonts.caption)
-                                .foregroundColor(ThemeManager.shared.colors.accent2)
+                                .font(themeManager.fonts.caption)
+                                .foregroundColor(themeManager.colors.accent2)
                         }
                     }
                     
@@ -739,7 +744,7 @@ struct FriendsView: View {
                             .padding(.vertical, 2)
                             .background(
                                 Capsule()
-                                    .fill(ThemeManager.shared.colors.accent1)
+                                    .fill(themeManager.colors.accent1)
                             )
                     }
                     
@@ -747,12 +752,13 @@ struct FriendsView: View {
                     
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                 }
-                .padding(.horizontal, ThemeManager.shared.spacing.md)
-                .padding(.vertical, ThemeManager.shared.spacing.md)
-                .background(ThemeManager.shared.colors.cardBackground)
+                .padding(.horizontal, themeManager.spacing.md)
+                .padding(.vertical, themeManager.spacing.md)
+                .background(themeManager.colors.cardBackground)
             }
+            .id(themeManager.currentTheme.id) // Force refresh when theme changes
         }
     }
     
@@ -760,6 +766,7 @@ struct FriendsView: View {
     
     struct AddFriendView: View {
         @EnvironmentObject var viewModel: SupabaseAppViewModel
+        @ObservedObject private var themeManager = ThemeManager.shared
         @Environment(\.dismiss) private var dismiss
         @State private var searchText = ""
         @State private var searchResults: [User] = []
@@ -769,49 +776,49 @@ struct FriendsView: View {
         
         var body: some View {
             ZStack {
-                ThemeManager.shared.colors.background.ignoresSafeArea()
+                themeManager.colors.background.ignoresSafeArea()
                 
-                VStack(spacing: ThemeManager.shared.spacing.xl) {
+                VStack(spacing: themeManager.spacing.xl) {
                     // Header
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(themeManager.colors.textSecondary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(ThemeManager.shared.colors.cardBackground)
+                                        .fill(themeManager.colors.cardBackground)
                                 )
                         }
                         
                         Spacer()
                         
                         Text("add friend")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                            .tracking(ThemeManager.shared.letterSpacing.wide)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
+                            .tracking(themeManager.letterSpacing.wide)
                         
                         Spacer()
                         
                         Color.clear.frame(width: 40, height: 40)
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                    .padding(.top, ThemeManager.shared.spacing.lg)
+                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                    .padding(.top, themeManager.spacing.lg)
                     
                     // Search
-                    HStack(spacing: ThemeManager.shared.spacing.sm) {
+                    HStack(spacing: themeManager.spacing.sm) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 14, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(themeManager.colors.textTertiary)
                         
                         TextField("", text: $searchText)
                             .placeholder(when: searchText.isEmpty) {
                                 Text("search by username")
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                             }
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                             .autocapitalization(.none)
                             .autocorrectionDisabled()
                             .onChange(of: searchText) { _, newValue in
@@ -827,7 +834,7 @@ struct FriendsView: View {
                         
                         if isSearching {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                                .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
                                 .scaleEffect(0.8)
                         } else if !searchText.isEmpty {
                             Button(action: {
@@ -836,54 +843,54 @@ struct FriendsView: View {
                             }) {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.system(size: 16))
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                             }
                         }
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.md)
-                    .padding(.vertical, ThemeManager.shared.spacing.sm + 4)
+                    .padding(.horizontal, themeManager.spacing.md)
+                    .padding(.vertical, themeManager.spacing.sm + 4)
                     .background(
-                        RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                            .fill(ThemeManager.shared.colors.cardBackground)
+                        RoundedRectangle(cornerRadius: themeManager.radius.md)
+                            .fill(themeManager.colors.cardBackground)
                     )
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
                     
                     // Results
                     if searchText.isEmpty {
                         Spacer()
-                        VStack(spacing: ThemeManager.shared.spacing.md) {
+                        VStack(spacing: themeManager.spacing.md) {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 40, weight: .ultraLight))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                             
                             Text("search for friends")
-                                .font(ThemeManager.shared.fonts.body)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .font(themeManager.fonts.body)
+                                .foregroundColor(themeManager.colors.textTertiary)
                             
                             Text("enter a username to find friends")
-                                .font(ThemeManager.shared.fonts.caption)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .font(themeManager.fonts.caption)
+                                .foregroundColor(themeManager.colors.textTertiary)
                         }
                         Spacer()
                     } else if searchResults.isEmpty && !isSearching {
                         Spacer()
-                        VStack(spacing: ThemeManager.shared.spacing.md) {
+                        VStack(spacing: themeManager.spacing.md) {
                             Image(systemName: "person.slash")
                                 .font(.system(size: 40, weight: .ultraLight))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                             
                             Text("no users found")
-                                .font(ThemeManager.shared.fonts.body)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .font(themeManager.fonts.body)
+                                .foregroundColor(themeManager.colors.textTertiary)
                             
                             Text("try a different username")
-                                .font(ThemeManager.shared.fonts.caption)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .font(themeManager.fonts.caption)
+                                .foregroundColor(themeManager.colors.textTertiary)
                         }
                         Spacer()
                     } else {
                         ScrollView(showsIndicators: false) {
-                            LazyVStack(spacing: ThemeManager.shared.spacing.sm) {
+                            LazyVStack(spacing: themeManager.spacing.sm) {
                                 ForEach(searchResults) { user in
                                     UserSearchResultRow(
                                         user: user,
@@ -905,7 +912,7 @@ struct FriendsView: View {
                                         }
                                     )
                                 }                          }
-                            .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                            .padding(.horizontal, themeManager.spacing.screenHorizontal)
                         }
                     }
                 }
@@ -934,6 +941,7 @@ struct FriendsView: View {
     // MARK: - User Search Result Row
 
     struct UserSearchResultRow: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
         let user: User
         let hasSentRequest: Bool
         let onSendRequest: () async -> Void
@@ -973,26 +981,26 @@ struct FriendsView: View {
         
         var body: some View {
             Button(action: { showProfile = true }) {
-                HStack(spacing: ThemeManager.shared.spacing.md) {
+                HStack(spacing: themeManager.spacing.md) {
                     // Avatar
                     Circle()
-                        .fill(ThemeManager.shared.colors.cardBackground)
+                        .fill(themeManager.colors.cardBackground)
                         .frame(width: 48, height: 48)
                         .overlay(
                             Text(String(user.displayName.prefix(1)).lowercased())
                                 .font(.system(size: 18, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(themeManager.colors.textSecondary)
                         )
                     
                     // User info
                     VStack(alignment: .leading, spacing: 4) {
                         Text(user.displayName.lowercased())
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
                         
                         Text("@\(user.username)")
-                            .font(ThemeManager.shared.fonts.caption)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(themeManager.colors.textTertiary)
                         
                         if hasIncomingRequest {
                             Text("wants to connect with you")
@@ -1001,7 +1009,7 @@ struct FriendsView: View {
                         } else if requestPending {
                             Text("request pending")
                                 .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                         }
                     }
                     
@@ -1010,7 +1018,7 @@ struct FriendsView: View {
                     // Action buttons
                     if isSending {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                            .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
                             .scaleEffect(0.8)
                             .frame(width: 40, height: 40)
                     } else if hasIncomingRequest {
@@ -1030,11 +1038,11 @@ struct FriendsView: View {
                             }) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(themeManager.colors.textTertiary)
                                     .frame(width: 36, height: 36)
                                     .background(
                                         Circle()
-                                            .stroke(ThemeManager.shared.colors.textTertiary.opacity(0.3), lineWidth: 1)
+                                            .stroke(themeManager.colors.textTertiary.opacity(0.3), lineWidth: 1)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -1076,11 +1084,11 @@ struct FriendsView: View {
                         }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .stroke(ThemeManager.shared.colors.textTertiary.opacity(0.3), lineWidth: 1)
+                                        .stroke(themeManager.colors.textTertiary.opacity(0.3), lineWidth: 1)
                                 )
                         }
                         .buttonStyle(.plain)
@@ -1096,20 +1104,20 @@ struct FriendsView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                .foregroundColor(themeManager.colors.textPrimary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .stroke(ThemeManager.shared.colors.textPrimary.opacity(0.3), lineWidth: 1)
+                                        .stroke(themeManager.colors.textPrimary.opacity(0.3), lineWidth: 1)
                                 )
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(ThemeManager.shared.spacing.md)
+                .padding(themeManager.spacing.md)
                 .background(
-                    RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                        .fill(ThemeManager.shared.colors.cardBackground)
+                    RoundedRectangle(cornerRadius: themeManager.radius.md)
+                        .fill(themeManager.colors.cardBackground)
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -1133,6 +1141,7 @@ struct FriendsView: View {
     
     struct FriendRequestsView: View {
         @EnvironmentObject var viewModel: SupabaseAppViewModel
+        @ObservedObject private var themeManager = ThemeManager.shared
         @Environment(\.dismiss) private var dismiss
         @State private var requestUsers: [String: User] = [:]
         @State private var isLoading = true
@@ -1143,56 +1152,56 @@ struct FriendsView: View {
         
         var body: some View {
             ZStack {
-                ThemeManager.shared.colors.background.ignoresSafeArea()
+                themeManager.colors.background.ignoresSafeArea()
                 
-                VStack(spacing: ThemeManager.shared.spacing.xl) {
+                VStack(spacing: themeManager.spacing.xl) {
                     // Header
                     HStack {
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(themeManager.colors.textSecondary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(ThemeManager.shared.colors.cardBackground)
+                                        .fill(themeManager.colors.cardBackground)
                                 )
                         }
                         
                         Spacer()
                         
                         Text("requests")
-                            .font(ThemeManager.shared.fonts.body)
-                            .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                            .tracking(ThemeManager.shared.letterSpacing.wide)
+                            .font(themeManager.fonts.body)
+                            .foregroundColor(themeManager.colors.textPrimary)
+                            .tracking(themeManager.letterSpacing.wide)
                         
                         Spacer()
                         
                         Color.clear.frame(width: 40, height: 40)
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                    .padding(.top, ThemeManager.shared.spacing.lg)
+                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                    .padding(.top, themeManager.spacing.lg)
                     
                     if isLoading {
                         Spacer()
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                            .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
                         Spacer()
                     } else if pendingRequests.isEmpty {
                         Spacer()
-                        VStack(spacing: ThemeManager.shared.spacing.md) {
+                        VStack(spacing: themeManager.spacing.md) {
                             Image(systemName: "tray")
                                 .font(.system(size: 40, weight: .ultraLight))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(themeManager.colors.textTertiary)
                             
                             Text("no pending requests")
-                                .font(ThemeManager.shared.fonts.body)
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .font(themeManager.fonts.body)
+                                .foregroundColor(themeManager.colors.textTertiary)
                         }
                         Spacer()
                     } else {
                         ScrollView(showsIndicators: false) {
-                            LazyVStack(spacing: ThemeManager.shared.spacing.sm) {
+                            LazyVStack(spacing: themeManager.spacing.sm) {
                                 ForEach(pendingRequests) { request in
                                     FriendRequestRow(
                                         request: request,
@@ -1206,7 +1215,7 @@ struct FriendsView: View {
                                     )
                                 }
                             }
-                            .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                            .padding(.horizontal, themeManager.spacing.screenHorizontal)
                         }
                     }
                 }
@@ -1234,6 +1243,7 @@ struct FriendsView: View {
 
 struct ConnectionNetworkCard: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     let connection: SupabaseAppViewModel.ConnectionPairing
     @Binding var connectionRequestSent: Bool
     @Binding var showConnectionProfile: Bool  // Keep for compatibility but won't use
@@ -1289,9 +1299,9 @@ struct ConnectionNetworkCard: View {
                 Text(isMatched ? "you connected!" : "you matched with")
                     .font(.system(size: 12, weight: .light))
                     .tracking(1)
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(themeManager.colors.textTertiary)
                     .opacity(showContent ? 1 : 0)
-                    .padding(.top, ThemeManager.shared.spacing.lg)
+                    .padding(.top, themeManager.spacing.lg)
                 
                 // Network visualization area
                 ZStack {
@@ -1311,7 +1321,7 @@ struct ConnectionNetworkCard: View {
                 Text(connection.matchedUser.displayName)
                     .font(.system(size: 32, weight: .light))
                     .tracking(2)
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(themeManager.colors.textPrimary)
                     .opacity(showContent ? 1 : 0)
                     .offset(y: showContent ? 0 : 10)
                 
@@ -1336,14 +1346,14 @@ struct ConnectionNetworkCard: View {
                             .font(.system(size: 13, weight: .light))
                             .tracking(0.5)
                     }
-                    .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                    .foregroundColor(themeManager.colors.textSecondary)
                     .padding(.top, 8)
                     .transition(.opacity.combined(with: .scale))
                 } else {
                     Text("tap to connect")
                         .font(.system(size: 13, weight: .light))
                         .tracking(0.5)
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                         .padding(.top, 8)
                         .opacity(showContent ? 1 : 0)
                 }
@@ -1351,9 +1361,9 @@ struct ConnectionNetworkCard: View {
                 // Time remaining - live countdown
                 Text(isMatched ? "next match \(timeRemaining)" : timeRemaining)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary.opacity(0.7))
+                    .foregroundColor(themeManager.colors.textTertiary.opacity(0.7))
                     .padding(.top, 12)
-                    .padding(.bottom, ThemeManager.shared.spacing.lg)
+                    .padding(.bottom, themeManager.spacing.lg)
                     .opacity(showContent ? 1 : 0)
                 
                 // Reason badge at bottom (only if not matched)
@@ -1364,26 +1374,26 @@ struct ConnectionNetworkCard: View {
                         Text(connection.reasonText)
                             .font(.system(size: 11, weight: .regular))
                     }
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(themeManager.colors.textTertiary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(
                         Capsule()
-                            .fill(ThemeManager.shared.colors.background.opacity(0.5))
+                            .fill(themeManager.colors.background.opacity(0.5))
                     )
-                    .padding(.bottom, ThemeManager.shared.spacing.md)
+                    .padding(.bottom, themeManager.spacing.md)
                 } else if isMatched {
-                    Spacer().frame(height: ThemeManager.shared.spacing.md)
+                    Spacer().frame(height: themeManager.spacing.md)
                 }
             }
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                    .fill(ThemeManager.shared.colors.cardBackground)
+                RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                    .fill(themeManager.colors.cardBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                    .stroke(isMatched ? Color.green.opacity(0.3) : ThemeManager.shared.colors.textPrimary.opacity(0.05), lineWidth: 1)
+                RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                    .stroke(isMatched ? Color.green.opacity(0.3) : themeManager.colors.textPrimary.opacity(0.05), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1408,9 +1418,12 @@ struct ConnectionNetworkCard: View {
             showContent = true
         }
     }
-}// MARK: - Connection Web
+}
+
+// MARK: - Connection Web
 
 struct ConnectionWeb: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let showNetwork: Bool
     
     // Node positions - asymmetric, larger sizes (x, y, size, depthLevel)
@@ -1449,7 +1462,7 @@ struct ConnectionWeb: View {
                         path.addLine(to: CGPoint(x: centerX, y: centerY))
                     }
                     .stroke(
-                        ThemeManager.shared.colors.textPrimary.opacity(showNetwork ? 0.1 : 0),
+                        themeManager.colors.textPrimary.opacity(showNetwork ? 0.1 : 0),
                         lineWidth: 0.5
                     )
                     .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.05), value: showNetwork)
@@ -1514,7 +1527,7 @@ struct ConnectionWeb: View {
             ))
         }
         .stroke(
-            ThemeManager.shared.colors.textPrimary.opacity(showNetwork ? 0.06 : 0),
+            themeManager.colors.textPrimary.opacity(showNetwork ? 0.06 : 0),
             lineWidth: 0.5
         )
         .animation(.easeOut(duration: 0.6).delay(0.3), value: showNetwork)
@@ -1522,6 +1535,7 @@ struct ConnectionWeb: View {
 }
 
 struct ConnectionLine: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
         let from: CGPoint
         let to: CGPoint
         let show: Bool
@@ -1532,7 +1546,7 @@ struct ConnectionLine: View {
                 path.addLine(to: to)
             }
             .stroke(
-                ThemeManager.shared.colors.textPrimary.opacity(show ? 0.08 : 0),
+                themeManager.colors.textPrimary.opacity(show ? 0.08 : 0),
                 lineWidth: 1
             )
             .animation(.easeOut(duration: 0.6).delay(0.3), value: show)
@@ -1540,6 +1554,7 @@ struct ConnectionLine: View {
     }
 
 struct PeripheralNode: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let size: CGFloat
     let depthLevel: Int  // 1 = furthest (most blur), 2 = medium, 3 = closest (least blur)
     
@@ -1565,18 +1580,18 @@ struct PeripheralNode: View {
         ZStack {
             // Node circle
             Circle()
-                .fill(ThemeManager.shared.colors.cardBackground)
+                .fill(themeManager.colors.cardBackground)
                 .frame(width: size, height: size)
             
             // Subtle border
             Circle()
-                .stroke(ThemeManager.shared.colors.textPrimary.opacity(0.2), lineWidth: 0.5)
+                .stroke(themeManager.colors.textPrimary.opacity(0.2), lineWidth: 0.5)
                 .frame(width: size, height: size)
             
             // Person icon
             Image(systemName: "person.fill")
                 .font(.system(size: size * 0.35, weight: .ultraLight))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(themeManager.colors.textTertiary)
         }
         .blur(radius: blurAmount)
         .opacity(opacity)
@@ -1586,6 +1601,7 @@ struct PeripheralNode: View {
 // MARK: - Central User Avatar
 
 struct CentralUserAvatar: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let initial: String
     let show: Bool
     var isMatched: Bool = false
@@ -1597,9 +1613,9 @@ struct CentralUserAvatar: View {
                 .fill(
                     RadialGradient(
                         colors: [
-                            (isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.12),
-                            (isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.06),
-                            (isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.02),
+                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.12),
+                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.06),
+                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.02),
                             .clear
                         ],
                         center: .center,
@@ -1614,8 +1630,8 @@ struct CentralUserAvatar: View {
                 .stroke(
                     RadialGradient(
                         colors: [
-                            (isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.2),
-                            (isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.05)
+                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.2),
+                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.05)
                         ],
                         center: .center,
                         startRadius: 30,
@@ -1628,17 +1644,17 @@ struct CentralUserAvatar: View {
             
             // Outer ring
             Circle()
-                .stroke((isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.15), lineWidth: 1)
+                .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.15), lineWidth: 1)
                 .frame(width: 72, height: 72)
             
             // Main avatar circle
             Circle()
-                .fill(ThemeManager.shared.colors.cardBackground)
+                .fill(themeManager.colors.cardBackground)
                 .frame(width: 64, height: 64)
             
             // Inner subtle border
             Circle()
-                .stroke((isMatched ? Color.green : ThemeManager.shared.colors.textPrimary).opacity(0.08), lineWidth: 1)
+                .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.08), lineWidth: 1)
                 .frame(width: 64, height: 64)
             
             // Initial or checkmark
@@ -1650,16 +1666,18 @@ struct CentralUserAvatar: View {
                 Text(initial.lowercased())
                     .font(.system(size: 28, weight: .ultraLight))
                     .tracking(2)
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(themeManager.colors.textPrimary)
             }
         }
         .scaleEffect(show ? 1 : 0.5)
         .opacity(show ? 1 : 0)
     }
 }
+
 // MARK: - Friend Request Row
 
 struct FriendRequestRow: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let request: FriendRequest
     let fromUser: User?
     let onAccept: () async -> Void
@@ -1669,32 +1687,32 @@ struct FriendRequestRow: View {
     @State private var isRejecting = false
     
     var body: some View {
-        HStack(spacing: ThemeManager.shared.spacing.md) {
+        HStack(spacing: themeManager.spacing.md) {
             // Avatar
             Circle()
-                .fill(ThemeManager.shared.colors.cardBackground)
+                .fill(themeManager.colors.cardBackground)
                 .frame(width: 48, height: 48)
                 .overlay(
                     Text(String(fromUser?.displayName.prefix(1) ?? "?").lowercased())
                         .font(.system(size: 18, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        .foregroundColor(themeManager.colors.textSecondary)
                 )
             
             // User info
             VStack(alignment: .leading, spacing: 4) {
                 Text(fromUser?.displayName.lowercased() ?? "unknown")
-                    .font(ThemeManager.shared.fonts.body)
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .font(themeManager.fonts.body)
+                    .foregroundColor(themeManager.colors.textPrimary)
                 
                 Text("@\(fromUser?.username ?? "unknown")")
-                    .font(ThemeManager.shared.fonts.caption)
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .font(themeManager.fonts.caption)
+                    .foregroundColor(themeManager.colors.textTertiary)
             }
             
             Spacer()
             
             // Action buttons
-            HStack(spacing: ThemeManager.shared.spacing.sm) {
+            HStack(spacing: themeManager.spacing.sm) {
                 // Reject
                 Button(action: {
                     Task {
@@ -1750,10 +1768,10 @@ struct FriendRequestRow: View {
                 .disabled(isAccepting || isRejecting)
             }
         }
-        .padding(ThemeManager.shared.spacing.md)
+        .padding(themeManager.spacing.md)
         .background(
-            RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                .fill(ThemeManager.shared.colors.cardBackground)
+            RoundedRectangle(cornerRadius: themeManager.radius.md)
+                .fill(themeManager.colors.cardBackground)
         )
     }
 }
