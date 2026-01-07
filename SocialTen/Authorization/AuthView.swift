@@ -72,6 +72,13 @@ struct AuthView: View {
                         .autocapitalization(.none)
                         .autocorrectionDisabled()
                         .focused($focusedField, equals: .username)
+                        .onChange(of: username) { _, newValue in
+                            // Filter out emojis and spaces, lowercase
+                            let filtered = newValue.lowercased().filter { !$0.isWhitespace && !$0.isEmoji }
+                            if filtered != newValue {
+                                username = filtered
+                            }
+                        }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 18)
                         .background(
