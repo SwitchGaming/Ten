@@ -11,8 +11,14 @@ struct ContentView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var appViewModel = SupabaseAppViewModel()
     @StateObject private var badgeManager = BadgeManager.shared
+    @StateObject private var themeManager = ThemeManager.shared
     @State private var isOnboardingComplete = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     @Environment(\.scenePhase) private var scenePhase
+    
+    init() {
+        // Ensure premium theme is loaded on app launch
+        _ = PremiumManager.shared
+    }
     
     var body: some View {
         ZStack {
@@ -123,6 +129,7 @@ struct ContentView: View {
 // MARK: - Enhanced Loading Screen
 
 struct LoadingScreen: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var logoOpacity: Double = 0
     @State private var logoScale: CGFloat = 0.8
     @State private var showLoader = false
@@ -130,7 +137,7 @@ struct LoadingScreen: View {
     
     var body: some View {
         ZStack {
-            ThemeManager.shared.colors.background.ignoresSafeArea()
+            themeManager.colors.background.ignoresSafeArea()
             
             VStack(spacing: 32) {
                 ZStack {
@@ -138,7 +145,7 @@ struct LoadingScreen: View {
                     Text("ten")
                         .font(.system(size: 56, weight: .ultraLight))
                         .tracking(12)
-                        .foregroundColor(ThemeManager.shared.colors.accent2)
+                        .foregroundColor(themeManager.colors.accent2)
                         .blur(radius: 20)
                         .opacity(glowOpacity)
                     
@@ -146,7 +153,7 @@ struct LoadingScreen: View {
                     Text("ten")
                         .font(.system(size: 56, weight: .ultraLight))
                         .tracking(12)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        .foregroundColor(themeManager.colors.textPrimary)
                 }
                 .scaleEffect(logoScale)
                 .opacity(logoOpacity)
@@ -180,6 +187,7 @@ struct LoadingScreen: View {
 // MARK: - Loading Dots Animation
 
 struct LoadingDots: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var activeIndex = 0
     let timer = Timer.publish(every: 0.3, on: .main, in: .common).autoconnect()
     
@@ -187,7 +195,7 @@ struct LoadingDots: View {
         HStack(spacing: 8) {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
-                    .fill(ThemeManager.shared.colors.textTertiary)
+                    .fill(themeManager.colors.textTertiary)
                     .frame(width: 6, height: 6)
                     .scaleEffect(activeIndex == index ? 1.3 : 1)
                     .opacity(activeIndex == index ? 1 : 0.4)

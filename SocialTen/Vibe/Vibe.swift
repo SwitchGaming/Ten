@@ -15,7 +15,7 @@ struct Vibe: Identifiable, Codable {
     var responses: [VibeResponse]
     var isActive: Bool
     
-    init(
+    init(   
         id: String = UUID().uuidString,
         userId: String,
         title: String,

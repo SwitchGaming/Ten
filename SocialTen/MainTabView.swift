@@ -7,6 +7,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var selectedTab = 0
     @State private var vibeTabExpandedId: String? = nil
     
@@ -43,7 +44,7 @@ struct MainTabView: View {
                 .tag(3)
                 .badge(viewModel.pendingRequestCount > 0 ? viewModel.pendingRequestCount : 0)
         }
-        .tint(ThemeManager.shared.colors.accent1)
+        .tint(themeManager.colors.accent1)
         .onChange(of: selectedTab) { _, newTab in
             handleTabChange(newTab)
         }
