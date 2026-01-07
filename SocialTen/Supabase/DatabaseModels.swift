@@ -80,6 +80,7 @@ struct DBPost: Codable, Identifiable {
     let caption: String?
     let promptResponse: String?
     let promptId: String?
+    let promptText: String?
     let timestamp: Date?
     let rating: Int?
     
@@ -90,6 +91,7 @@ struct DBPost: Codable, Identifiable {
         case caption
         case promptResponse = "prompt_response"
         case promptId = "prompt_id"
+        case promptText = "prompt_text"
         case timestamp
         case rating
     }

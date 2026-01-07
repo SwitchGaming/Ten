@@ -309,7 +309,7 @@ struct FeedPostCard: View {
                 // Prompt Response
                 if let promptResponse = post.promptResponse {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(viewModel.todaysPrompt.text)
+                        Text(post.promptText ?? viewModel.todaysPrompt.text)
                             .font(ThemeManager.shared.fonts.caption)
                             .foregroundColor(ThemeManager.shared.colors.textTertiary)
                             .tracking(ThemeManager.shared.letterSpacing.wide)

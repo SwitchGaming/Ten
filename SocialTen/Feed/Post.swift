@@ -16,6 +16,7 @@ struct Post: Identifiable, Codable {
     let timestamp: Date
     var promptResponse: String?
     var promptId: String?
+    var promptText: String?  // The actual prompt text at time of post
     var rating: Int?  // Rating at time of post creation
     
     init(
@@ -29,6 +30,7 @@ struct Post: Identifiable, Codable {
         timestamp: Date = Date(),
         promptResponse: String? = nil,
         promptId: String? = nil,
+        promptText: String? = nil,
         rating: Int? = nil
     ) {
         self.id = id
@@ -41,6 +43,7 @@ struct Post: Identifiable, Codable {
         self.timestamp = timestamp
         self.promptResponse = promptResponse
         self.promptId = promptId
+        self.promptText = promptText
         self.rating = rating
     }
     
