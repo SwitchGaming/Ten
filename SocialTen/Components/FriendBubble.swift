@@ -7,6 +7,7 @@ import SwiftUI
 
 struct FriendBubble: View {
     let friend: User
+    var isStale: Bool = false  // True if friend hasn't rated today
     @State private var glowAnimation = false
     @ObservedObject private var themeManager = ThemeManager.shared
     
@@ -17,6 +18,11 @@ struct FriendBubble: View {
     
     var bubbleBackground: Color {
         friend.isPremium ? friend.selectedTheme.colors.cardBackground : themeManager.colors.cardBackground
+    }
+    
+    // Opacity modifier for stale ratings
+    var staleOpacity: Double {
+        isStale ? 0.4 : 1.0
     }
     
     var body: some View {
@@ -64,6 +70,7 @@ struct FriendBubble: View {
             }
             .frame(width: 64)
         }
+        .opacity(staleOpacity)  // Fade stale ratings
         .onAppear {
             if friend.isPremium {
                 withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {

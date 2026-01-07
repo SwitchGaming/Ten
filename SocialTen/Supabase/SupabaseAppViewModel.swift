@@ -1303,6 +1303,23 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Daily Rating Reset
+    
+    /// Checks if the user's rating is from a previous day and resets it locally.
+    /// This ensures users are prompted to rate each new day fresh.
+    func checkAndResetDailyRating() {
+        guard let profile = currentUserProfile else { return }
+        
+        // If the rating timestamp is not from today, clear the local rating
+        if !profile.hasRatedToday && profile.todayRating != nil {
+            var updatedProfile = profile
+            updatedProfile.todayRating = nil
+            // Keep ratingTimestamp so we know when they last rated
+            currentUserProfile = updatedProfile
+            print("Daily rating reset - previous rating was from \(profile.ratingTimestamp?.description ?? "unknown")")
+        }
+    }
+    
     func updateRating(_ rating: Int) async {
         guard let userId = currentUser?.id else { return }
         

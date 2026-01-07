@@ -67,9 +67,23 @@ struct SwipeableRatingCard: View {
                 }
                 .padding(.top, 16)
                 
-                // Hint text
-                if showHint && rating == nil {
-                    Text("swipe left or right to rate")
+                // Hint text - show prompt when unrated, or update hint when already rated
+                if rating == nil {
+                    VStack(spacing: 4) {
+                        Text("how's your day going?")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(themeManager.colors.textSecondary)
+                        
+                        if showHint {
+                            Text("swipe left or right to rate")
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(themeManager.colors.textTertiary)
+                        }
+                    }
+                    .padding(.top, 8)
+                    .transition(.opacity)
+                } else if showHint {
+                    Text("swipe to update your rating")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundColor(themeManager.colors.textTertiary)
                         .padding(.top, 8)

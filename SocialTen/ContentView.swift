@@ -86,6 +86,9 @@ struct ContentView: View {
                 case .active:
                     // App came to foreground - refresh data and reconnect realtime
                     if authViewModel.isAuthenticated {
+                        // Check if daily rating should be reset (new day in user's timezone)
+                        appViewModel.checkAndResetDailyRating()
+                        
                         await appViewModel.loadPosts()
                         await appViewModel.loadVibes()
                         await appViewModel.loadFriendRequests()

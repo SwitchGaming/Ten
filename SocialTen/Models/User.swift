@@ -18,6 +18,12 @@ struct User: Identifiable, Codable {
     var profileCustomization: ProfileCustomization
     var friendIds: [String]
     
+    /// Returns true if the user has rated today (based on local device timezone)
+    var hasRatedToday: Bool {
+        guard let ratingTimestamp = ratingTimestamp else { return false }
+        return Calendar.current.isDateInToday(ratingTimestamp)
+    }
+    
     init(
         id: String = UUID().uuidString,
         username: String,
