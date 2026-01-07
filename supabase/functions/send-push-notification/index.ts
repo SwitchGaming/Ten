@@ -14,6 +14,51 @@ const APNS_HOST = Deno.env.get('APNS_ENVIRONMENT') === 'production'
   ? 'api.push.apple.com' 
   : 'api.sandbox.push.apple.com'
 
+// Rate limiting constants
+const MAX_NOTIFICATIONS_PER_DAY = 20
+const MIN_SAME_TYPE_INTERVAL_MINUTES = 5
+const COLLAPSE_THRESHOLD = 3 // Collapse if 3+ similar notifications pending
+
+// Notification copy templates - enticing and curiosity-driven
+const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number) => string, body: (name?: string) => string }> = {
+  vibe: {
+    title: (name) => `${name} started a vibe ✨`,
+    body: () => "see what's happening"
+  },
+  vibe_collapsed: {
+    title: (_, count) => `${count} friends started vibes`,
+    body: () => "see what everyone's up to"
+  },
+  vibe_response: {
+    title: () => "someone's in! 🎉",
+    body: (name) => `${name} responded to your vibe`
+  },
+  vibe_response_collapsed: {
+    title: (_, count) => `${count} people responded`,
+    body: () => "your vibe is taking off"
+  },
+  friend_request: {
+    title: () => "new connection request 👋",
+    body: (name) => `${name} wants to be friends`
+  },
+  reply: {
+    title: (name) => `${name} replied 💬`,
+    body: () => "tap to see what they said"
+  },
+  reply_collapsed: {
+    title: (_, count) => `${count} new replies`,
+    body: () => "people are talking on your post"
+  },
+  connection_match: {
+    title: () => "your match is here! 🌟",
+    body: () => "meet this week's connection"
+  },
+  daily_reminder: {
+    title: () => "how's your day going?",
+    body: () => "take a moment to check in"
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -27,9 +72,9 @@ serve(async (req) => {
   }
 
   try {
-    const { type, userId, title, body, data } = await req.json()
+    const { type, userId, senderName, data } = await req.json()
     
-    console.log(`📬 Sending ${type} notification to user ${userId}`)
+    console.log(`📬 Processing ${type} notification for user ${userId}`)
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     
@@ -55,8 +100,6 @@ serve(async (req) => {
       })
     }
     
-    console.log(`Found ${tokens.length} device token(s)`)
-    
     // Check user's notification preferences
     const { data: prefs } = await supabase
       .from('notification_preferences')
@@ -66,38 +109,42 @@ serve(async (req) => {
     
     // Check if this notification type is enabled
     if (prefs) {
-      if (type === 'vibe' && !prefs.vibes_enabled) {
-        console.log('Vibes notifications disabled for user')
-        return new Response(JSON.stringify({ skipped: 'disabled' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
-      }
-      if (type === 'friend_request' && !prefs.friend_requests_enabled) {
-        console.log('Friend request notifications disabled for user')
-        return new Response(JSON.stringify({ skipped: 'disabled' }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
-      }
-      if (type === 'reply' && !prefs.replies_enabled) {
-        console.log('Reply notifications disabled for user')
+      const typeEnabled = checkNotificationTypeEnabled(type, prefs)
+      if (!typeEnabled) {
+        console.log(`${type} notifications disabled for user`)
         return new Response(JSON.stringify({ skipped: 'disabled' }), {
           headers: { 'Content-Type': 'application/json' }
         })
       }
       
-      // Check quiet hours
-      const now = new Date()
-      const currentHour = now.getHours()
-      const currentMinute = now.getMinutes()
-      const currentTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
-      
-      if (isInQuietHours(currentTime, prefs.quiet_hours_start, prefs.quiet_hours_end)) {
-        console.log('User is in quiet hours')
-        return new Response(JSON.stringify({ skipped: 'quiet_hours' }), {
+      // Check rate limiting
+      const rateLimitCheck = await checkRateLimits(supabase, userId, type)
+      if (!rateLimitCheck.allowed) {
+        console.log(`Rate limited: ${rateLimitCheck.reason}`)
+        return new Response(JSON.stringify({ skipped: 'rate_limited', reason: rateLimitCheck.reason }), {
           headers: { 'Content-Type': 'application/json' }
         })
+      }
+      
+      // Check quiet hours (only if enabled)
+      if (prefs.quiet_hours_enabled !== false) {
+        const quietHoursCheck = checkQuietHours(prefs)
+        if (quietHoursCheck.inQuietHours) {
+          // Queue the notification instead of dropping it
+          console.log('User is in quiet hours - queuing notification')
+          await queueNotification(supabase, userId, type, senderName, data, quietHoursCheck.deliverAfter!)
+          return new Response(JSON.stringify({ queued: true, deliver_after: quietHoursCheck.deliverAfter }), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        }
       }
     }
+    
+    // Check for collapsible notifications
+    const collapseCheck = await checkForCollapse(supabase, userId, type)
+    
+    // Generate notification content
+    const { title, body } = generateNotificationContent(type, senderName, collapseCheck.count)
     
     // Generate JWT for APNs
     console.log('Generating APNs JWT...')
@@ -117,10 +164,21 @@ serve(async (req) => {
       notification_type: type,
       title,
       body,
-      status: results.every(r => r.ok) ? 'sent' : 'partial_failure'
+      status: results.every(r => r.ok) ? 'sent' : 'partial_failure',
+      created_at: new Date().toISOString()
     })
     
-    return new Response(JSON.stringify({ success: true, results }), { 
+    // If we collapsed notifications, mark queued ones as processed
+    if (collapseCheck.count > 1) {
+      await supabase
+        .from('notification_queue')
+        .update({ processed: true, processed_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('type', type)
+        .eq('processed', false)
+    }
+    
+    return new Response(JSON.stringify({ success: true, results, collapsed: collapseCheck.count }), { 
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     })
@@ -133,15 +191,156 @@ serve(async (req) => {
   }
 })
 
+// Check if notification type is enabled in preferences
+function checkNotificationTypeEnabled(type: string, prefs: any): boolean {
+  switch (type) {
+    case 'vibe':
+      return prefs.vibes_enabled !== false
+    case 'vibe_response':
+      return prefs.vibe_responses_enabled !== false
+    case 'friend_request':
+      return prefs.friend_requests_enabled !== false
+    case 'reply':
+      return prefs.replies_enabled !== false
+    case 'connection_match':
+      return prefs.connection_match_enabled !== false
+    case 'daily_reminder':
+      return prefs.daily_reminder_enabled === true
+    default:
+      return true
+  }
+}
+
+// Check rate limits
+async function checkRateLimits(supabase: any, userId: string, type: string): Promise<{ allowed: boolean, reason?: string }> {
+  const now = new Date()
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const fiveMinutesAgo = new Date(now.getTime() - MIN_SAME_TYPE_INTERVAL_MINUTES * 60 * 1000)
+  
+  // Check daily limit
+  const { count: dailyCount } = await supabase
+    .from('notification_logs')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', startOfDay.toISOString())
+  
+  if (dailyCount >= MAX_NOTIFICATIONS_PER_DAY) {
+    return { allowed: false, reason: 'daily_limit_exceeded' }
+  }
+  
+  // Check same-type cooldown
+  const { data: recentSameType } = await supabase
+    .from('notification_logs')
+    .select('created_at')
+    .eq('user_id', userId)
+    .eq('notification_type', type)
+    .gte('created_at', fiveMinutesAgo.toISOString())
+    .limit(1)
+  
+  if (recentSameType && recentSameType.length > 0) {
+    return { allowed: false, reason: 'same_type_cooldown' }
+  }
+  
+  return { allowed: true }
+}
+
+// Check quiet hours and return when to deliver
+function checkQuietHours(prefs: any): { inQuietHours: boolean, deliverAfter?: string } {
+  const userTimezone = prefs.timezone || 'America/New_York'
+  const start = prefs.quiet_hours_start || '22:00'
+  const end = prefs.quiet_hours_end || '08:00'
+  
+  // Get current time in user's timezone
+  const now = new Date()
+  const userTime = new Date(now.toLocaleString('en-US', { timeZone: userTimezone }))
+  const currentHour = userTime.getHours()
+  const currentMinute = userTime.getMinutes()
+  const currentTime = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`
+  
+  const inQuietHours = isInQuietHours(currentTime, start, end)
+  
+  if (inQuietHours) {
+    // Calculate when quiet hours end
+    const [endHour, endMinute] = end.split(':').map(Number)
+    const deliverDate = new Date(userTime)
+    deliverDate.setHours(endHour, endMinute, 0, 0)
+    
+    // If end time is earlier than current time, it's tomorrow
+    if (deliverDate <= userTime) {
+      deliverDate.setDate(deliverDate.getDate() + 1)
+    }
+    
+    return { inQuietHours: true, deliverAfter: deliverDate.toISOString() }
+  }
+  
+  return { inQuietHours: false }
+}
+
 function isInQuietHours(current: string, start: string, end: string): boolean {
   if (!start || !end) return false
   
   if (start <= end) {
-    // Normal range (e.g., 22:00 to 08:00 doesn't apply here)
     return current >= start && current < end
   } else {
     // Quiet hours span midnight (e.g., 22:00 to 08:00)
     return current >= start || current < end
+  }
+}
+
+// Queue notification for later delivery
+async function queueNotification(supabase: any, userId: string, type: string, senderName: string, data: any, deliverAfter: string) {
+  const { title, body } = generateNotificationContent(type, senderName, 1)
+  
+  await supabase.from('notification_queue').insert({
+    user_id: userId,
+    type,
+    title,
+    body,
+    data: { senderName, ...data },
+    deliver_after: deliverAfter,
+    processed: false
+  })
+}
+
+// Check for notifications to collapse
+async function checkForCollapse(supabase: any, userId: string, type: string): Promise<{ count: number }> {
+  // Only collapse certain types
+  const collapsibleTypes = ['vibe', 'vibe_response', 'reply']
+  if (!collapsibleTypes.includes(type)) {
+    return { count: 1 }
+  }
+  
+  // Check pending queue for same type
+  const { count } = await supabase
+    .from('notification_queue')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('type', type)
+    .eq('processed', false)
+  
+  const totalCount = (count || 0) + 1
+  
+  if (totalCount >= COLLAPSE_THRESHOLD) {
+    return { count: totalCount }
+  }
+  
+  return { count: 1 }
+}
+
+// Generate notification content based on type
+function generateNotificationContent(type: string, senderName?: string, count: number = 1): { title: string, body: string } {
+  // Check if we should use collapsed version
+  const useCollapsed = count >= COLLAPSE_THRESHOLD
+  const copyType = useCollapsed && NOTIFICATION_COPY[`${type}_collapsed`] ? `${type}_collapsed` : type
+  
+  const template = NOTIFICATION_COPY[copyType] || NOTIFICATION_COPY[type] || {
+    title: () => 'ten',
+    body: () => 'you have a new notification'
+  }
+  
+  return {
+    title: template.title(senderName, count),
+    body: template.body(senderName)
   }
 }
 
