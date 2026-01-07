@@ -34,6 +34,8 @@ struct EditProfileView: View {
         let trimmed = displayName.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty { return false }
         if trimmed.count > maxLength { return false }
+        // Don't allow emojis
+        if trimmed.containsEmoji { return false }
         return true
     }
     
@@ -247,6 +249,11 @@ struct EditProfileView: View {
                 .font(ThemeManager.shared.fonts.body)
                 .foregroundColor(ThemeManager.shared.colors.textPrimary)
                 .onChange(of: displayName) { _, newValue in
+                    // Filter out emojis
+                    let filtered = newValue.filter { !$0.isEmoji }
+                    if filtered != newValue {
+                        displayName = filtered
+                    }
                     if displayName.count > maxLength {
                         displayName = String(displayName.prefix(maxLength))
                     }
@@ -322,6 +329,21 @@ struct EditProfileView: View {
                 usernameError = message
             }
         }
+    }
+}
+
+// MARK: - Emoji Detection Extensions
+
+extension Character {
+    var isEmoji: Bool {
+        guard let scalar = unicodeScalars.first else { return false }
+        return scalar.properties.isEmoji && (scalar.value > 0x238C || unicodeScalars.count > 1)
+    }
+}
+
+extension String {
+    var containsEmoji: Bool {
+        contains { $0.isEmoji }
     }
 }
 
