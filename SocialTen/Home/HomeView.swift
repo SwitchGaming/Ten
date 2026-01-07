@@ -133,10 +133,23 @@ struct FriendsSection: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, themeManager.spacing.lg)
             } else {
+                // Sort friends: those who rated today first (by rating desc), then stale ratings last (by rating desc)
+                let sortedFriends = viewModel.friends.sorted { friend1, friend2 in
+                    let today1 = friend1.hasRatedToday
+                    let today2 = friend2.hasRatedToday
+                    
+                    // Friends who rated today come first
+                    if today1 != today2 {
+                        return today1
+                    }
+                    // Within same group, sort by rating descending
+                    return (friend1.todayRating ?? 0) > (friend2.todayRating ?? 0)
+                }
+                
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: themeManager.spacing.md) {
-                        ForEach(viewModel.friends.sorted { ($0.todayRating ?? 0) > ($1.todayRating ?? 0) }) { friend in
-                            FriendBubble(friend: friend)
+                        ForEach(sortedFriends) { friend in
+                            FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
                         }
                     }
                 }

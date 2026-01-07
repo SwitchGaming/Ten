@@ -30,6 +30,12 @@ struct User: Identifiable, Codable {
         return expiresAt > Date()
     }
     
+    /// Returns true if the user has rated today (based on local device timezone)
+    var hasRatedToday: Bool {
+        guard let ratingTimestamp = ratingTimestamp else { return false }
+        return Calendar.current.isDateInToday(ratingTimestamp)
+    }
+    
     // Get the user's selected theme
     var selectedTheme: AppTheme {
         guard let themeId = selectedThemeId else { return .default }
