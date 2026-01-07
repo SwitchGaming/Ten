@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct DepthCard<Content: View>: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let depth: DepthLevel
     let content: Content
     
@@ -47,8 +48,8 @@ struct DepthCard<Content: View>: View {
     var body: some View {
         content
             .background(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
-                    .fill(ThemeManager.shared.colors.cardBackground)
+                RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                    .fill(themeManager.colors.cardBackground)
                     .shadow(
                         color: Color.black.opacity(depth.shadowOpacity),
                         radius: depth.shadowRadius,
@@ -57,7 +58,7 @@ struct DepthCard<Content: View>: View {
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.lg)
+                RoundedRectangle(cornerRadius: themeManager.radius.lg)
                     .stroke(Color.white.opacity(0.05), lineWidth: 1)
             )
     }

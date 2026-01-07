@@ -6,6 +6,7 @@
 import SwiftUI
 
 struct SwipeableRatingCard: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
     let rating: Int?
     var onRatingChanged: ((Int) -> Void)?
     
@@ -39,7 +40,7 @@ struct SwipeableRatingCard: View {
                 // Rating number
                 Text("\(displayRating)")
                     .font(.system(size: 140, weight: .ultraLight))
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(themeManager.colors.textPrimary)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.3), value: displayRating)
                 
@@ -48,18 +49,18 @@ struct SwipeableRatingCard: View {
                     Text(dayOfWeek)
                         .font(.system(size: 18, weight: .light))
                         .tracking(4)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        .foregroundColor(themeManager.colors.textPrimary)
                     
                     Text(formattedDate)
                         .font(.system(size: 14, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                 }
                 
                 // Rating dots indicator
                 HStack(spacing: 8) {
                     ForEach(1...10, id: \.self) { i in
                         Circle()
-                            .fill(i == displayRating ? ThemeManager.shared.colors.accent1 : ThemeManager.shared.colors.accent3.opacity(0.5))
+                            .fill(i == displayRating ? themeManager.colors.accent1 : themeManager.colors.accent3.opacity(0.5))
                             .frame(width: i == displayRating ? 10 : 6, height: i == displayRating ? 10 : 6)
                             .animation(.spring(response: 0.3), value: displayRating)
                     }
@@ -70,7 +71,7 @@ struct SwipeableRatingCard: View {
                 if showHint && rating == nil {
                     Text("swipe left or right to rate")
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(themeManager.colors.textTertiary)
                         .padding(.top, 8)
                         .transition(.opacity)
                 }
