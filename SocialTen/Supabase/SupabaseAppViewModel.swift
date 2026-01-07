@@ -1320,6 +1320,43 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
+    func deleteReply(replyId: String, from postId: String) async {
+        guard let replyUUID = UUID(uuidString: replyId) else {
+            print("Invalid reply ID format: \(replyId)")
+            return
+        }
+        
+        // Store the reply in case we need to restore it
+        var replyToDelete: Reply?
+        var postIndex: Int?
+        
+        if let idx = posts.firstIndex(where: { $0.id == postId }) {
+            postIndex = idx
+            replyToDelete = posts[idx].replies.first { $0.id == replyId }
+            // Optimistic update - remove from local state immediately
+            posts[idx].replies.removeAll { $0.id == replyId }
+        }
+        
+        do {
+            // Delete the reply from the database
+            try await supabase
+                .from("post_replies")
+                .delete()
+                .eq("id", value: replyUUID)
+                .execute()
+            
+            print("Successfully deleted reply: \(replyId)")
+        } catch {
+            print("Error deleting reply: \(error)")
+            // Restore the reply if delete failed
+            if let reply = replyToDelete, let idx = postIndex {
+                posts[idx].replies.append(reply)
+            }
+            // Reload posts to sync with server
+            await loadPosts()
+        }
+    }
+    
     // MARK: - Rating
     
     func loadRatingHistory() async {

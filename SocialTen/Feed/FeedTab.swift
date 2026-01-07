@@ -376,7 +376,7 @@ struct FeedPostCard: View {
                 if showReplies {
                     VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
                         ForEach(Array(post.replies.enumerated()), id: \.element.id) { index, reply in
-                            FeedReplyRow(reply: reply)
+                            FeedReplyRow(reply: reply, postId: post.id)
                                 .staggeredAnimation(index: index, baseDelay: 0)
                         }
                         
@@ -450,9 +450,14 @@ struct FeedPostCard: View {
 struct FeedReplyRow: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     let reply: Reply
+    let postId: String
     
     var user: User? {
         viewModel.getUser(by: reply.userId)
+    }
+    
+    var isOwnReply: Bool {
+        reply.userId == viewModel.currentUserProfile?.id
     }
     
     var body: some View {
@@ -477,6 +482,21 @@ struct FeedReplyRow: View {
             }
             
             Spacer()
+            
+            // Delete button for own replies
+            if isOwnReply {
+                Button(action: {
+                    Task {
+                        await viewModel.deleteReply(replyId: reply.id, from: postId)
+                    }
+                }) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 12))
+                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(PremiumButtonStyle(hapticStyle: .medium))
+            }
         }
     }
 }
