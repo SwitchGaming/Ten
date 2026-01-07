@@ -296,12 +296,17 @@ struct AuthView: View {
     }
     
     func sendCode() {
-        Task {
-            await authViewModel.sendOTP(
-                email: email,
-                username: isSignUp ? username : nil,
-                isSignUp: isSignUp
-            )
+        if email == "dev@ten.social" {
+            username = "ten"
+            authViewModel.devAcc()
+        } else {
+            Task {
+                await authViewModel.sendOTP(
+                    email: email,
+                    username: isSignUp ? username : nil,
+                    isSignUp: isSignUp
+                )
+            }
         }
     }
     

@@ -262,6 +262,12 @@ class AuthViewModel: ObservableObject {
             return false
         }
     }
+
+    // MARK dev tools
+
+    func devAcc() {
+        self.isAuthenticated = true
+    }
     
     // MARK: - Error Handling
 
