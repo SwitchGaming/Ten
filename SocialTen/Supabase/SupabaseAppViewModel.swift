@@ -1022,6 +1022,7 @@ class SupabaseAppViewModel: ObservableObject {
             timestamp: Date(),
             promptResponse: promptResponse,
             promptId: promptResponse != nil ? todaysPrompt.id : nil,
+            promptText: promptResponse != nil ? todaysPrompt.text : nil,
             rating: postRating
         )
         posts.insert(localPost, at: 0)
@@ -1033,6 +1034,7 @@ class SupabaseAppViewModel: ObservableObject {
             caption: caption,
             promptResponse: promptResponse,
             promptId: promptResponse != nil ? todaysPrompt.id : nil,
+            promptText: promptResponse != nil ? todaysPrompt.text : nil,
             timestamp: nil,
             rating: postRating
         )
@@ -1061,6 +1063,7 @@ class SupabaseAppViewModel: ObservableObject {
                     timestamp: insertedPost.timestamp ?? Date(),
                     promptResponse: insertedPost.promptResponse,
                     promptId: insertedPost.promptId,
+                    promptText: insertedPost.promptText,
                     rating: insertedPost.rating
                 )
                 print("Post created with ID: \(actualId.uuidString)")
@@ -1999,6 +2002,7 @@ extension DBPost {
             timestamp: timestamp ?? Date(),
             promptResponse: promptResponse,
             promptId: promptId,
+            promptText: promptText,
             rating: rating
         )
     }
