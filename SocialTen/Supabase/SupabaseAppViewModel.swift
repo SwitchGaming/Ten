@@ -1829,6 +1829,60 @@ class SupabaseAppViewModel: ObservableObject {
     
     // MARK: - Friendship Score
     
+    /// Preload all friendship scores in background (batch RPC)
+    func preloadAllFriendshipScores() async {
+        guard let currentUserId = currentUser?.id else { return }
+        
+        // Don't reload if we have recent scores for all friends
+        let allCached = friends.allSatisfy { friend in
+            FriendshipScoreCache.shared.getScore(for: friend.id) != nil
+        }
+        if allCached && !friends.isEmpty { return }
+        
+        print("📊 Preloading all friendship scores...")
+        
+        do {
+            // Try batch RPC first
+            let response: BatchFriendshipScoreResponse = try await supabase
+                .rpc("calculate_batch_friendship_scores", params: [
+                    "current_user_id": currentUserId.uuidString
+                ])
+                .execute()
+                .value
+            
+            // Cache all scores
+            for scoreData in response.scores {
+                let breakdown = FriendshipScore.ScoreBreakdown(
+                    likesGiven: scoreData.likesGiven,
+                    likesReceived: scoreData.likesReceived,
+                    repliesGiven: scoreData.repliesGiven,
+                    repliesReceived: scoreData.repliesReceived,
+                    vibeResponsesGiven: scoreData.vibeResponsesGiven,
+                    vibeResponsesReceived: scoreData.vibeResponsesReceived,
+                    matchingRatingDays: scoreData.matchingRatingDays,
+                    friendshipWeeks: scoreData.friendshipWeeks
+                )
+                let friendshipScore = FriendshipScore(
+                    id: scoreData.friendId,
+                    score: scoreData.score,
+                    breakdown: breakdown
+                )
+                FriendshipScoreCache.shared.cacheScore(friendshipScore)
+            }
+            print("📊 Cached \(response.scores.count) friendship scores")
+        } catch {
+            print("📊 Batch RPC failed, falling back to individual loading: \(error.localizedDescription)")
+            // Fallback: Load individually in parallel (limited concurrency)
+            await withTaskGroup(of: Void.self) { group in
+                for friend in friends.prefix(10) {
+                    group.addTask {
+                        _ = await self.calculateFriendshipScore(for: friend.id)
+                    }
+                }
+            }
+        }
+    }
+    
     /// Calculate friendship score for a specific friend
     /// Optimized: Uses RPC if available, falls back to client-side batched queries
     func calculateFriendshipScore(for friendId: String) async -> FriendshipScore? {

@@ -158,6 +158,38 @@ struct FriendshipScoreResponse: Codable {
     }
 }
 
+// MARK: - Batch Friendship Score RPC Response
+
+struct BatchFriendshipScoreResponse: Codable {
+    let scores: [BatchScoreItem]
+    
+    struct BatchScoreItem: Codable {
+        let friendId: String
+        let score: Int
+        let likesGiven: Int
+        let likesReceived: Int
+        let repliesGiven: Int
+        let repliesReceived: Int
+        let vibeResponsesGiven: Int
+        let vibeResponsesReceived: Int
+        let matchingRatingDays: Int
+        let friendshipWeeks: Int
+        
+        enum CodingKeys: String, CodingKey {
+            case friendId = "friend_id"
+            case score
+            case likesGiven = "likes_given"
+            case likesReceived = "likes_received"
+            case repliesGiven = "replies_given"
+            case repliesReceived = "replies_received"
+            case vibeResponsesGiven = "vibe_responses_given"
+            case vibeResponsesReceived = "vibe_responses_received"
+            case matchingRatingDays = "matching_rating_days"
+            case friendshipWeeks = "friendship_weeks"
+        }
+    }
+}
+
 // MARK: - Friendship Score Cache Manager
 
 @MainActor
