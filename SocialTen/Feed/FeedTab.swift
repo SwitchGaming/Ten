@@ -235,6 +235,8 @@ struct FeedPostCard: View {
     
     @State private var showReplies = false
     @State private var replyText = ""
+    @State private var showLikeAnimation = false
+    @State private var showUnlikeAnimation = false
     
     var user: User? {
         viewModel.getUser(by: post.userId)
@@ -249,34 +251,40 @@ struct FeedPostCard: View {
         return post.plusOnes.contains { $0.userId == userId }
     }
     
+    // Theme accent color for the heart
+    var heartColor: Color {
+        ThemeManager.shared.colors.accent1
+    }
+    
     var body: some View {
         DepthCard(depth: .low) {
-            VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
-                // Header
-                HStack(spacing: ThemeManager.shared.spacing.sm) {
-                    Circle()
-                        .fill(ThemeManager.shared.colors.background)
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Text(String(user?.displayName.prefix(1) ?? "?").lowercased())
-                                .font(.system(size: 16, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
-                        )
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(user?.displayName.lowercased() ?? "unknown")
-                                .font(ThemeManager.shared.fonts.body)
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                            
-                            if isOwnPost {
-                                Text("· you")
-                                    .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(ThemeManager.shared.colors.accent2)
-                            }
-                        }
+            ZStack {
+                VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.md) {
+                    // Header
+                    HStack(spacing: ThemeManager.shared.spacing.sm) {
+                        Circle()
+                            .fill(ThemeManager.shared.colors.background)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Text(String(user?.displayName.prefix(1) ?? "?").lowercased())
+                                    .font(.system(size: 16, weight: .light))
+                                    .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                            )
                         
-                        Text(timeAgo(post.timestamp))
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(user?.displayName.lowercased() ?? "unknown")
+                                    .font(ThemeManager.shared.fonts.body)
+                                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                
+                                if isOwnPost {
+                                    Text("· you")
+                                        .font(ThemeManager.shared.fonts.caption)
+                                        .foregroundColor(ThemeManager.shared.colors.accent2)
+                                }
+                            }
+                            
+                            Text(timeAgo(post.timestamp))
                             .font(ThemeManager.shared.fonts.caption)
                             .foregroundColor(ThemeManager.shared.colors.textTertiary)
                     }
@@ -334,16 +342,27 @@ struct FeedPostCard: View {
                         }
                     }) {
                         HStack(spacing: 6) {
-                            Image(systemName: hasLiked ? "heart.fill" : "heart")
-                                .font(.system(size: 16))
-                                .foregroundColor(hasLiked ? .red : ThemeManager.shared.colors.textSecondary)
-                                .scaleEffect(hasLiked ? 1.1 : 1.0)
-                                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: hasLiked)
+                            ZStack {
+                                // Glow effect when liked
+                                if hasLiked {
+                                    Image(systemName: "heart.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(heartColor)
+                                        .blur(radius: 6)
+                                        .opacity(0.6)
+                                }
+                                
+                                Image(systemName: hasLiked ? "heart.fill" : "heart")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(hasLiked ? heartColor : ThemeManager.shared.colors.textSecondary)
+                                    .scaleEffect(hasLiked ? 1.1 : 1.0)
+                                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: hasLiked)
+                            }
                             
                             if post.plusOneCount > 0 {
                                 Text("\(post.plusOneCount)")
                                     .font(ThemeManager.shared.fonts.caption)
-                                    .foregroundColor(hasLiked ? .red : ThemeManager.shared.colors.textSecondary)
+                                    .foregroundColor(hasLiked ? heartColor : ThemeManager.shared.colors.textSecondary)
                             }
                         }
                     }
@@ -424,8 +443,78 @@ struct FeedPostCard: View {
                     .padding(.top, ThemeManager.shared.spacing.sm)
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
+                }
+                .padding(ThemeManager.shared.spacing.md)
+                
+                // Double-tap heart animation overlay
+                if showLikeAnimation {
+                    ZStack {
+                        // Glow
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(heartColor)
+                            .blur(radius: 20)
+                            .opacity(0.6)
+                        
+                        // Heart
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(heartColor)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
+                
+                // Double-tap unlike animation overlay
+                if showUnlikeAnimation {
+                    Image(systemName: "heart.slash")
+                        .font(.system(size: 70))
+                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 1.2).combined(with: .opacity),
+                            removal: .scale(scale: 0.5).combined(with: .opacity)
+                        ))
+                }
             }
-            .padding(ThemeManager.shared.spacing.md)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            if hasLiked {
+                // Unlike animation
+                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                impactFeedback.impactOccurred()
+                
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    showUnlikeAnimation = true
+                }
+                
+                Task {
+                    await viewModel.toggleLike(for: post.id)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        showUnlikeAnimation = false
+                    }
+                }
+            } else {
+                // Like animation
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    showLikeAnimation = true
+                }
+                
+                Task {
+                    await viewModel.toggleLike(for: post.id)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        showLikeAnimation = false
+                    }
+                }
+            }
         }
     }
     
