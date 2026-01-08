@@ -191,9 +191,15 @@ struct NotificationSettingsView: View {
                     .padding(.top, ThemeManager.shared.spacing.lg)
                 }
             }
-            .navigationTitle("notifications")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("notifications")
+                        .font(.system(size: 17, weight: .light))
+                        .tracking(4)
+                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                }
+                
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
@@ -211,6 +217,8 @@ struct NotificationSettingsView: View {
                     .foregroundColor(ThemeManager.shared.colors.accent1)
                 }
             }
+            .toolbarBackground(ThemeManager.shared.colors.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
     
@@ -292,7 +300,7 @@ struct NotificationToggleRow: View {
             
             Toggle("", isOn: $isOn)
                 .labelsHidden()
-                .tint(ThemeManager.shared.colors.accent1)
+                .tint(ThemeManager.shared.colors.accent2)
         }
         .padding(.horizontal, ThemeManager.shared.spacing.md)
         .padding(.vertical, ThemeManager.shared.spacing.md)
