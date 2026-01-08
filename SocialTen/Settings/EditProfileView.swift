@@ -57,7 +57,7 @@ struct EditProfileView: View {
                 // Header
                 header
                 
-                ScrollView(showsIndicators: false) {
+                SmartScrollView {
                     VStack(spacing: ThemeManager.shared.spacing.xl) {
                         // Avatar
                         avatarSection

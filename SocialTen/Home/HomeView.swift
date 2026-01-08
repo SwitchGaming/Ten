@@ -13,7 +13,7 @@ struct HomeView: View {
     @State private var expandedVibeId: String? = nil
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
+        SmartScrollView {
             VStack(spacing: themeManager.spacing.xl) {
                 // Header
                 Text("ten")
@@ -146,13 +146,52 @@ struct FriendsSection: View {
                     return (friend1.todayRating ?? 0) > (friend2.todayRating ?? 0)
                 }
                 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: themeManager.spacing.md) {
-                        ForEach(sortedFriends) { friend in
-                            FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
-                        }
+                FriendsScrollView(sortedFriends: sortedFriends)
+            }
+        }
+    }
+}
+
+// MARK: - Friends Scroll View with swipe indicator
+
+struct FriendsScrollView: View {
+    let sortedFriends: [User]
+    @ObservedObject private var themeManager = ThemeManager.shared
+    @State private var showArrow = true
+    
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            ScrollView(.horizontal, showsIndicators: true) {
+                HStack(spacing: themeManager.spacing.md) {
+                    ForEach(sortedFriends) { friend in
+                        FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
                     }
                 }
+                .padding(.vertical, 12)
+                .padding(.bottom, 8)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onChange(of: geo.frame(in: .named("friendsScroll")).minX) { _, minX in
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    showArrow = minX >= -10
+                                }
+                            }
+                    }
+                )
+            }
+            .coordinateSpace(name: "friendsScroll")
+            .scrollIndicators(.visible)
+            .scrollClipDisabled()
+            
+            // Swipe indicator arrow
+            if sortedFriends.count > 3 && showArrow {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(themeManager.colors.textSecondary.opacity(0.7))
+                    .padding(.trailing, 4)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
             }
         }
     }

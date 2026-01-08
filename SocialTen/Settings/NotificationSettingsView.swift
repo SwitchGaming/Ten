@@ -21,7 +21,7 @@ struct NotificationSettingsView: View {
             ZStack {
                 ThemeManager.shared.colors.background.ignoresSafeArea()
                 
-                ScrollView(showsIndicators: false) {
+                SmartScrollView {
                     VStack(spacing: ThemeManager.shared.spacing.xl) {
                         // Status Card
                         if !notificationManager.isNotificationsEnabled {
