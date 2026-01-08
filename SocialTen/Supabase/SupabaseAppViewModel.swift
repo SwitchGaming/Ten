@@ -714,12 +714,18 @@ class SupabaseAppViewModel: ObservableObject {
     // MARK: - Vibes
     
     func loadVibes() async {
+        guard let currentUserId = currentUserProfile?.id else { return }
+        
+        let friendIds = friends.map { $0.id }
+        let allowedUserIds = ([currentUserId] + friendIds).compactMap { UUID(uuidString: $0) }
+        
         do {
             let dbVibes: [DBVibe] = try await supabase
                 .from("vibes")
                 .select()
                 .eq("is_active", value: true)
                 .gt("expires_at", value: ISO8601DateFormatter().string(from: Date()))
+                .in("user_id", values: allowedUserIds)
                 .order("timestamp", ascending: false)
                 .execute()
                 .value
