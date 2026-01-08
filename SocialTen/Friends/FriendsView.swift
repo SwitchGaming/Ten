@@ -71,6 +71,10 @@ struct FriendsView: View {
                     Spacer(minLength: 100)
                 }
                 .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    hideKeyboard()
+                }
             }
             
             // Badge toast notification
@@ -233,6 +237,10 @@ struct FriendsView: View {
                 }
                 .font(themeManager.fonts.body)
                 .foregroundColor(themeManager.colors.textPrimary)
+                .submitLabel(.search)
+                .onSubmit {
+                    hideKeyboard()
+                }
         }
         .padding(.horizontal, themeManager.spacing.md)
         .padding(.vertical, themeManager.spacing.sm + 4)
@@ -777,6 +785,9 @@ struct FriendsView: View {
         var body: some View {
             ZStack {
                 themeManager.colors.background.ignoresSafeArea()
+                    .onTapGesture {
+                        hideKeyboard()
+                    }
                 
                 VStack(spacing: themeManager.spacing.xl) {
                     // Header
@@ -821,6 +832,10 @@ struct FriendsView: View {
                             .foregroundColor(themeManager.colors.textPrimary)
                             .autocapitalization(.none)
                             .autocorrectionDisabled()
+                            .submitLabel(.search)
+                            .onSubmit {
+                                hideKeyboard()
+                            }
                             .onChange(of: searchText) { _, newValue in
                                 // Debounce search
                                 searchTask?.cancel()
