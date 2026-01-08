@@ -39,22 +39,7 @@ struct SwipeableRatingCard: View {
     
     var body: some View {
         DepthCard(depth: .medium) {
-            ZStack {
-                // Confirmation ripple animation (contained within card)
-                Circle()
-                    .fill(themeManager.colors.accent1.opacity(0.2))
-                    .scaleEffect(confirmRippleScale)
-                    .opacity(confirmRippleOpacity)
-                
-                // Particle effects
-                ForEach(particles) { particle in
-                    Circle()
-                        .fill(particle.color)
-                        .frame(width: particle.size, height: particle.size)
-                        .offset(x: particle.x, y: particle.y)
-                        .opacity(particle.opacity)
-                }
-                
+            ZStack { 
                 VStack(spacing: 16) {
                     Spacer()
                         .frame(height: 20)
