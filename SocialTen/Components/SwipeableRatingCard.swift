@@ -59,7 +59,7 @@ struct SwipeableRatingCard: View {
                     Spacer()
                         .frame(height: 20)
                     
-                    // Rating number
+                    // Rating number with overlay for ripple + particles (so it's centered on the number)
                     Text("\(displayRating)")
                         .font(.system(size: 140, weight: .ultraLight))
                         .foregroundColor(showConfirmAnimation ? themeManager.colors.accent1 : themeManager.colors.textPrimary)
@@ -67,6 +67,28 @@ struct SwipeableRatingCard: View {
                         .animation(.spring(response: 0.3), value: displayRating)
                         .scaleEffect(showConfirmAnimation ? 1.15 : 1.0)
                         .animation(.spring(response: 0.4, dampingFraction: 0.5), value: showConfirmAnimation)
+                        .overlay {
+                            // ZStack overlay positioned at the center of the number
+                            ZStack {
+                                // Confirmation ripple animation (centered on number)
+                                Circle()
+                                    .fill(themeManager.colors.accent1.opacity(0.2))
+                                    .scaleEffect(confirmRippleScale)
+                                    .opacity(confirmRippleOpacity)
+                                
+                                // Particle effects (centered around number)
+                                ForEach(particles) { particle in
+                                    Circle()
+                                        .fill(particle.color)
+                                        .frame(width: particle.size, height: particle.size)
+                                        .offset(x: particle.x, y: particle.y)
+                                        .opacity(particle.opacity)
+                                }
+                            }
+                            .allowsHitTesting(false)
+                            // slight upward nudge so the effects sit nicely around the digits
+                            .offset(y: -6)
+                        }
                     
                     // Date info
                     VStack(spacing: 4) {
