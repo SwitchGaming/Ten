@@ -106,7 +106,7 @@ struct TenPlusView: View {
             ParticleView(particleSystem: particleSystem, color: currentTheme.accent)
                 .ignoresSafeArea()
             
-            ScrollView(showsIndicators: false) {
+            SmartScrollView {
                 VStack(spacing: 0) {
                     // Header
                     header
@@ -1044,7 +1044,7 @@ struct ThemeSelectorSheet: View {
             ZStack {
                 themeManager.colors.background.ignoresSafeArea()
                 
-                ScrollView(showsIndicators: false) {
+                SmartScrollView {
                     VStack(spacing: 24) {
                         // Current theme indicator
                         VStack(spacing: 8) {
@@ -1204,7 +1204,7 @@ struct PremiumManagementView: View {
         ZStack {
             themeManager.colors.background.ignoresSafeArea()
             
-            ScrollView(showsIndicators: false) {
+            SmartScrollView {
                 VStack(spacing: 32) {
                     // Header
                     HStack {

@@ -600,7 +600,7 @@ struct UserProfileView: View {
         ZStack {
             ThemeManager.shared.colors.background.ignoresSafeArea()
             
-            ScrollView(showsIndicators: false) {
+            SmartScrollView {
                 VStack(spacing: ThemeManager.shared.spacing.xl) {
                     // Header with close button
                     HStack {
@@ -1158,7 +1158,7 @@ struct BadgeCollectionView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 24)
                 
-                ScrollView(showsIndicators: false) {
+                SmartScrollView {
                     VStack(spacing: 28) {
                         ForEach(BadgeCategory.allCases, id: \.self) { category in
                             BadgeCategorySection(

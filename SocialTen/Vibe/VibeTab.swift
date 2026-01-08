@@ -30,7 +30,7 @@ struct VibeTab: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
+        SmartScrollView {
             VStack(spacing: themeManager.spacing.xl) {
                 // Header
                 Text("vibes")
@@ -628,7 +628,7 @@ struct CreateVibeSheet: View {
                 .padding(.top, themeManager.spacing.lg)
                 .padding(.bottom, themeManager.spacing.xl)
                 
-                ScrollView(showsIndicators: false) {
+                SmartScrollView {
                     VStack(spacing: themeManager.spacing.xl) {
                         // Title Input
                         VStack(alignment: .leading, spacing: themeManager.spacing.sm) {

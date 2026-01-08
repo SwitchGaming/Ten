@@ -98,7 +98,7 @@ struct CreatePostView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
                 
-                ScrollView {
+                SmartScrollView {
                     VStack(spacing: 24) {
                         switch postType {
                         case .post:

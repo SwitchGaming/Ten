@@ -41,7 +41,7 @@ struct FriendsView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            ScrollView(showsIndicators: false) {
+            SmartScrollView {
                 VStack(spacing: themeManager.spacing.xl) {
                     // Header
                     header
@@ -578,7 +578,7 @@ struct FriendsView: View {
                     .padding(.horizontal, themeManager.spacing.screenHorizontal)
                     .padding(.top, themeManager.spacing.lg)
                     
-                    ScrollView(showsIndicators: false) {
+                    SmartScrollView {
                         VStack(spacing: themeManager.spacing.lg) {
                             // Account Section
                             settingsSection(title: "account") {
@@ -904,7 +904,7 @@ struct FriendsView: View {
                         }
                         Spacer()
                     } else {
-                        ScrollView(showsIndicators: false) {
+                        SmartScrollView {
                             LazyVStack(spacing: themeManager.spacing.sm) {
                                 ForEach(searchResults) { user in
                                     UserSearchResultRow(
@@ -926,7 +926,8 @@ struct FriendsView: View {
                                             await viewModel.rejectFriendRequest(requestId)
                                         }
                                     )
-                                }                          }
+                                }
+                            }
                             .padding(.horizontal, themeManager.spacing.screenHorizontal)
                         }
                     }
@@ -954,7 +955,7 @@ struct FriendsView: View {
     }
     
     // MARK: - User Search Result Row
-
+    
     struct UserSearchResultRow: View {
         @ObservedObject private var themeManager = ThemeManager.shared
         let user: User
@@ -1151,405 +1152,405 @@ struct FriendsView: View {
             }
         }
     }
+        
+        // MARK: - Friend Requests View
+
+        struct FriendRequestsView: View {
+            @EnvironmentObject var viewModel: SupabaseAppViewModel
+            @ObservedObject private var themeManager = ThemeManager.shared
+            @Environment(\.dismiss) private var dismiss
+            @State private var requestUsers: [String: User] = [:]
+            @State private var isLoading = true
+            
+            var pendingRequests: [FriendRequest] {
+                viewModel.friendRequests.filter { $0.status == .pending }
+            }
+            
+            var body: some View {
+                ZStack {
+                    themeManager.colors.background.ignoresSafeArea()
+                    
+                    VStack(spacing: themeManager.spacing.xl) {
+                        // Header
+                        HStack {
+                            Button(action: { dismiss() }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(themeManager.colors.textSecondary)
+                                    .frame(width: 40, height: 40)
+                                    .background(
+                                        Circle()
+                                            .fill(themeManager.colors.cardBackground)
+                                    )
+                            }
+                            
+                            Spacer()
+                            
+                            Text("requests")
+                                .font(themeManager.fonts.body)
+                                .foregroundColor(themeManager.colors.textPrimary)
+                                .tracking(themeManager.letterSpacing.wide)
+                            
+                            Spacer()
+                            
+                            Color.clear.frame(width: 40, height: 40)
+                        }
+                        .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                        .padding(.top, themeManager.spacing.lg)
+                        
+                        if isLoading {
+                            Spacer()
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
+                            Spacer()
+                        } else if pendingRequests.isEmpty {
+                            Spacer()
+                            VStack(spacing: themeManager.spacing.md) {
+                                Image(systemName: "tray")
+                                    .font(.system(size: 40, weight: .ultraLight))
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                                
+                                Text("no pending requests")
+                                    .font(themeManager.fonts.body)
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                            }
+                            Spacer()
+                        } else {
+                            SmartScrollView {
+                                LazyVStack(spacing: themeManager.spacing.sm) {
+                                    ForEach(pendingRequests) { request in
+                                        FriendRequestRow(
+                                            request: request,
+                                            fromUser: requestUsers[request.fromUserId],
+                                            onAccept: {
+                                                await viewModel.acceptFriendRequest(request.id)
+                                            },
+                                            onReject: {
+                                                await viewModel.rejectFriendRequest(request.id)
+                                            }
+                                        )
+                                    }
+                                }
+                                .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                            }
+                        }
+                    }
+                }
+                .task {
+                    await loadRequestUsers()
+                }
+            }
+            
+            func loadRequestUsers() async {
+                isLoading = true
+                
+                for request in pendingRequests {
+                    if let user = await viewModel.getUser(byId: request.fromUserId) {
+                        requestUsers[request.fromUserId] = user
+                    }
+                }
+                
+                isLoading = false
+            }
+        }
+    }
     
-    // MARK: - Friend Requests View
+    // MARK: - Connection Network Card
     
-    struct FriendRequestsView: View {
+    struct ConnectionNetworkCard: View {
         @EnvironmentObject var viewModel: SupabaseAppViewModel
         @ObservedObject private var themeManager = ThemeManager.shared
-        @Environment(\.dismiss) private var dismiss
-        @State private var requestUsers: [String: User] = [:]
-        @State private var isLoading = true
+        let connection: SupabaseAppViewModel.ConnectionPairing
+        @Binding var connectionRequestSent: Bool
+        @Binding var showConnectionProfile: Bool  // Keep for compatibility but won't use
+        let onSendRequest: () -> Void
         
-        var pendingRequests: [FriendRequest] {
-            viewModel.friendRequests.filter { $0.status == .pending }
+        @State private var showNetwork = false
+        @State private var showCentralUser = false
+        @State private var showContent = false
+        @State private var showSparkles = false
+        @State private var currentTime = Date()
+        
+        // Live countdown timer
+        let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+        
+        // Check if the matched user is now a friend
+        var isNowFriends: Bool {
+            viewModel.friends.contains { $0.id == connection.matchedUser.id }
+        }
+        
+        var isMatched: Bool {
+            connection.isMatched || isNowFriends
+        }
+        
+        var isPending: Bool {
+            connectionRequestSent || viewModel.sentFriendRequests.contains(connection.matchedUser.id)
+        }
+        
+        var timeRemaining: String {
+            let remaining = connection.expiresAt.timeIntervalSince(currentTime)
+            if remaining <= 0 { return "refreshing soon..." }
+            
+            let days = Int(remaining / 86400)
+            let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
+            let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
+            let seconds = Int(remaining.truncatingRemainder(dividingBy: 60))
+            
+            if days > 0 {
+                return "\(days):\(String(format: "%02d", hours)):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds)) remaining"
+            } else {
+                return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds)) remaining"
+            }
         }
         
         var body: some View {
-            ZStack {
-                themeManager.colors.background.ignoresSafeArea()
-                
-                VStack(spacing: themeManager.spacing.xl) {
-                    // Header
-                    HStack {
-                        Button(action: { dismiss() }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(themeManager.colors.textSecondary)
-                                .frame(width: 40, height: 40)
-                                .background(
-                                    Circle()
-                                        .fill(themeManager.colors.cardBackground)
-                                )
-                        }
-                        
-                        Spacer()
-                        
-                        Text("requests")
-                            .font(themeManager.fonts.body)
-                            .foregroundColor(themeManager.colors.textPrimary)
-                            .tracking(themeManager.letterSpacing.wide)
-                        
-                        Spacer()
-                        
-                        Color.clear.frame(width: 40, height: 40)
-                    }
-                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
-                    .padding(.top, themeManager.spacing.lg)
-                    
-                    if isLoading {
-                        Spacer()
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: themeManager.colors.textTertiary))
-                        Spacer()
-                    } else if pendingRequests.isEmpty {
-                        Spacer()
-                        VStack(spacing: themeManager.spacing.md) {
-                            Image(systemName: "tray")
-                                .font(.system(size: 40, weight: .ultraLight))
-                                .foregroundColor(themeManager.colors.textTertiary)
-                            
-                            Text("no pending requests")
-                                .font(themeManager.fonts.body)
-                                .foregroundColor(themeManager.colors.textTertiary)
-                        }
-                        Spacer()
-                    } else {
-                        ScrollView(showsIndicators: false) {
-                            LazyVStack(spacing: themeManager.spacing.sm) {
-                                ForEach(pendingRequests) { request in
-                                    FriendRequestRow(
-                                        request: request,
-                                        fromUser: requestUsers[request.fromUserId],
-                                        onAccept: {
-                                            await viewModel.acceptFriendRequest(request.id)
-                                        },
-                                        onReject: {
-                                            await viewModel.rejectFriendRequest(request.id)
-                                        }
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, themeManager.spacing.screenHorizontal)
-                        }
-                    }
+            Button(action: {
+                // Only send request if not matched and not already pending
+                if !isMatched && !isPending {
+                    onSendRequest()
                 }
-            }
-            .task {
-                await loadRequestUsers()
-            }
-        }
-        
-        func loadRequestUsers() async {
-            isLoading = true
-            
-            for request in pendingRequests {
-                if let user = await viewModel.getUser(byId: request.fromUserId) {
-                    requestUsers[request.fromUserId] = user
-                }
-            }
-            
-            isLoading = false
-        }
-    }
-}
-
-// MARK: - Connection Network Card
-
-struct ConnectionNetworkCard: View {
-    @EnvironmentObject var viewModel: SupabaseAppViewModel
-    @ObservedObject private var themeManager = ThemeManager.shared
-    let connection: SupabaseAppViewModel.ConnectionPairing
-    @Binding var connectionRequestSent: Bool
-    @Binding var showConnectionProfile: Bool  // Keep for compatibility but won't use
-    let onSendRequest: () -> Void
-    
-    @State private var showNetwork = false
-    @State private var showCentralUser = false
-    @State private var showContent = false
-    @State private var showSparkles = false
-    @State private var currentTime = Date()
-    
-    // Live countdown timer
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    // Check if the matched user is now a friend
-    var isNowFriends: Bool {
-        viewModel.friends.contains { $0.id == connection.matchedUser.id }
-    }
-    
-    var isMatched: Bool {
-        connection.isMatched || isNowFriends
-    }
-    
-    var isPending: Bool {
-        connectionRequestSent || viewModel.sentFriendRequests.contains(connection.matchedUser.id)
-    }
-    
-    var timeRemaining: String {
-        let remaining = connection.expiresAt.timeIntervalSince(currentTime)
-        if remaining <= 0 { return "refreshing soon..." }
-        
-        let days = Int(remaining / 86400)
-        let hours = Int((remaining.truncatingRemainder(dividingBy: 86400)) / 3600)
-        let minutes = Int((remaining.truncatingRemainder(dividingBy: 3600)) / 60)
-        let seconds = Int(remaining.truncatingRemainder(dividingBy: 60))
-        
-        if days > 0 {
-            return "\(days):\(String(format: "%02d", hours)):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds)) remaining"
-        } else {
-            return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds)) remaining"
-        }
-    }
-    
-    var body: some View {
-        Button(action: {
-            // Only send request if not matched and not already pending
-            if !isMatched && !isPending {
-                onSendRequest()
-            }
-        }) {
-            VStack(spacing: 0) {
-                // Top label
-                Text(isMatched ? "you connected!" : "you matched with")
-                    .font(.system(size: 12, weight: .light))
-                    .tracking(1)
-                    .foregroundColor(themeManager.colors.textTertiary)
-                    .opacity(showContent ? 1 : 0)
-                    .padding(.top, themeManager.spacing.lg)
-                
-                // Network visualization area
-                ZStack {
-                    // Connection web
-                    ConnectionWeb(showNetwork: showNetwork)
-                    
-                    // Central focused user
-                    CentralUserAvatar(
-                        initial: String(connection.matchedUser.displayName.prefix(1)),
-                        show: showCentralUser,
-                        isMatched: isMatched
-                    )
-                }
-                .frame(height: 180)
-                
-                // User name - large and prominent
-                Text(connection.matchedUser.displayName)
-                    .font(.system(size: 32, weight: .light))
-                    .tracking(2)
-                    .foregroundColor(themeManager.colors.textPrimary)
-                    .opacity(showContent ? 1 : 0)
-                    .offset(y: showContent ? 0 : 10)
-                
-                // Action text / Matched state
-                if isMatched {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.green)
-                        Text("connection complete!")
-                            .font(.system(size: 13, weight: .light))
-                            .tracking(0.5)
-                            .foregroundColor(.green)
-                    }
-                    .padding(.top, 8)
-                    .transition(.opacity.combined(with: .scale))
-                } else if isPending {
-                    HStack(spacing: 6) {
-                        Image(systemName: "clock")
-                            .font(.system(size: 11, weight: .medium))
-                        Text("request pending")
-                            .font(.system(size: 13, weight: .light))
-                            .tracking(0.5)
-                    }
-                    .foregroundColor(themeManager.colors.textSecondary)
-                    .padding(.top, 8)
-                    .transition(.opacity.combined(with: .scale))
-                } else {
-                    Text("tap to connect")
-                        .font(.system(size: 13, weight: .light))
-                        .tracking(0.5)
+            }) {
+                VStack(spacing: 0) {
+                    // Top label
+                    Text(isMatched ? "you connected!" : "you matched with")
+                        .font(.system(size: 12, weight: .light))
+                        .tracking(1)
                         .foregroundColor(themeManager.colors.textTertiary)
-                        .padding(.top, 8)
                         .opacity(showContent ? 1 : 0)
-                }
-                
-                // Time remaining - live countdown
-                Text(isMatched ? "next match \(timeRemaining)" : timeRemaining)
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundColor(themeManager.colors.textTertiary.opacity(0.7))
-                    .padding(.top, 12)
-                    .padding(.bottom, themeManager.spacing.lg)
-                    .opacity(showContent ? 1 : 0)
-                
-                // Reason badge at bottom (only if not matched)
-                if showContent && !isMatched {
-                    HStack(spacing: 4) {
-                        Image(systemName: connection.similarityReason == "mutuals" ? "person.2" : "sparkle")
-                            .font(.system(size: 10))
-                        Text(connection.reasonText)
-                            .font(.system(size: 11, weight: .regular))
+                        .padding(.top, themeManager.spacing.lg)
+                    
+                    // Network visualization area
+                    ZStack {
+                        // Connection web
+                        ConnectionWeb(showNetwork: showNetwork)
+                        
+                        // Central focused user
+                        CentralUserAvatar(
+                            initial: String(connection.matchedUser.displayName.prefix(1)),
+                            show: showCentralUser,
+                            isMatched: isMatched
+                        )
                     }
-                    .foregroundColor(themeManager.colors.textTertiary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .fill(themeManager.colors.background.opacity(0.5))
-                    )
-                    .padding(.bottom, themeManager.spacing.md)
-                } else if isMatched {
-                    Spacer().frame(height: themeManager.spacing.md)
+                    .frame(height: 180)
+                    
+                    // User name - large and prominent
+                    Text(connection.matchedUser.displayName)
+                        .font(.system(size: 32, weight: .light))
+                        .tracking(2)
+                        .foregroundColor(themeManager.colors.textPrimary)
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : 10)
+                    
+                    // Action text / Matched state
+                    if isMatched {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.green)
+                            Text("connection complete!")
+                                .font(.system(size: 13, weight: .light))
+                                .tracking(0.5)
+                                .foregroundColor(.green)
+                        }
+                        .padding(.top, 8)
+                        .transition(.opacity.combined(with: .scale))
+                    } else if isPending {
+                        HStack(spacing: 6) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 11, weight: .medium))
+                            Text("request pending")
+                                .font(.system(size: 13, weight: .light))
+                                .tracking(0.5)
+                        }
+                        .foregroundColor(themeManager.colors.textSecondary)
+                        .padding(.top, 8)
+                        .transition(.opacity.combined(with: .scale))
+                    } else {
+                        Text("tap to connect")
+                            .font(.system(size: 13, weight: .light))
+                            .tracking(0.5)
+                            .foregroundColor(themeManager.colors.textTertiary)
+                            .padding(.top, 8)
+                            .opacity(showContent ? 1 : 0)
+                    }
+                    
+                    // Time remaining - live countdown
+                    Text(isMatched ? "next match \(timeRemaining)" : timeRemaining)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(themeManager.colors.textTertiary.opacity(0.7))
+                        .padding(.top, 12)
+                        .padding(.bottom, themeManager.spacing.lg)
+                        .opacity(showContent ? 1 : 0)
+                    
+                    // Reason badge at bottom (only if not matched)
+                    if showContent && !isMatched {
+                        HStack(spacing: 4) {
+                            Image(systemName: connection.similarityReason == "mutuals" ? "person.2" : "sparkle")
+                                .font(.system(size: 10))
+                            Text(connection.reasonText)
+                                .font(.system(size: 11, weight: .regular))
+                        }
+                        .foregroundColor(themeManager.colors.textTertiary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(themeManager.colors.background.opacity(0.5))
+                        )
+                        .padding(.bottom, themeManager.spacing.md)
+                    } else if isMatched {
+                        Spacer().frame(height: themeManager.spacing.md)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                        .fill(themeManager.colors.cardBackground)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: themeManager.radius.lg)
+                        .stroke(isMatched ? Color.green.opacity(0.3) : themeManager.colors.textPrimary.opacity(0.05), lineWidth: 1)
+                )
             }
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: themeManager.radius.lg)
-                    .fill(themeManager.colors.cardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: themeManager.radius.lg)
-                    .stroke(isMatched ? Color.green.opacity(0.3) : themeManager.colors.textPrimary.opacity(0.05), lineWidth: 1)
-            )
+            .buttonStyle(.plain)
+            .disabled(isMatched || isPending)  // Disable tap when matched or pending
+            .onAppear {
+                startAnimations()
+            }
+            .onReceive(timer) { time in
+                currentTime = time
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(isMatched || isPending)  // Disable tap when matched or pending
-        .onAppear {
-            startAnimations()
-        }
-        .onReceive(timer) { time in
-            currentTime = time
+        
+        private func startAnimations() {
+            // Staggered reveal
+            withAnimation(.easeOut(duration: 0.8).delay(0.1)) {
+                showNetwork = true
+            }
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
+                showCentralUser = true
+            }
+            withAnimation(.easeOut(duration: 0.5).delay(0.6)) {
+                showContent = true
+            }
         }
     }
     
-    private func startAnimations() {
-        // Staggered reveal
-        withAnimation(.easeOut(duration: 0.8).delay(0.1)) {
-            showNetwork = true
-        }
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
-            showCentralUser = true
-        }
-        withAnimation(.easeOut(duration: 0.5).delay(0.6)) {
-            showContent = true
-        }
-    }
-}
-
-// MARK: - Connection Web
-
-struct ConnectionWeb: View {
-    @ObservedObject private var themeManager = ThemeManager.shared
-    let showNetwork: Bool
+    // MARK: - Connection Web
     
-    // Node positions - asymmetric, larger sizes (x, y, size, depthLevel)
-    let nodes: [(x: CGFloat, y: CGFloat, size: CGFloat, depthLevel: Int)] = [
-        // Smaller distant nodes (most blur)
-        (-0.7, -0.3, 26, 1),      // Left, slightly high
-        (0.6, 0.5, 24, 1),        // Lower right
-        (0.12, -0.72, 24, 1),     // Top, slightly right
+    struct ConnectionWeb: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
+        let showNetwork: Bool
         
-        // Medium nodes (medium blur)
-        (0.72, -0.15, 30, 2),     // Right side
-        (-0.45, 0.55, 32, 2),     // Bottom left area
-        (-0.35, -0.6, 30, 2),     // Upper left
-        
-        // Larger closer nodes (least blur)
-        (0.52, -0.5, 36, 3),      // Upper right
-        (-0.65, 0.18, 34, 3),     // Left side
-    ]
-    
-    var body: some View {
-        GeometryReader { geometry in
-            let centerX = geometry.size.width / 2
-            let centerY = geometry.size.height / 2
-            let scaleX = geometry.size.width * 0.42  // Reduced from 0.48
-            let scaleY = geometry.size.height * 0.42 // Reduced from 0.48
+        // Node positions - asymmetric, larger sizes (x, y, size, depthLevel)
+        let nodes: [(x: CGFloat, y: CGFloat, size: CGFloat, depthLevel: Int)] = [
+            // Smaller distant nodes (most blur)
+            (-0.7, -0.3, 26, 1),      // Left, slightly high
+            (0.6, 0.5, 24, 1),        // Lower right
+            (0.12, -0.72, 24, 1),     // Top, slightly right
             
-            ZStack {
-                // Connection lines from nodes to center
-                ForEach(0..<nodes.count, id: \.self) { index in
-                    let node = nodes[index]
-                    Path { path in
-                        path.move(to: CGPoint(
-                            x: centerX + node.x * scaleX,
-                            y: centerY + node.y * scaleY
-                        ))
-                        path.addLine(to: CGPoint(x: centerX, y: centerY))
+            // Medium nodes (medium blur)
+            (0.72, -0.15, 30, 2),     // Right side
+            (-0.45, 0.55, 32, 2),     // Bottom left area
+            (-0.35, -0.6, 30, 2),     // Upper left
+            
+            // Larger closer nodes (least blur)
+            (0.52, -0.5, 36, 3),      // Upper right
+            (-0.65, 0.18, 34, 3),     // Left side
+        ]
+        
+        var body: some View {
+            GeometryReader { geometry in
+                let centerX = geometry.size.width / 2
+                let centerY = geometry.size.height / 2
+                let scaleX = geometry.size.width * 0.42  // Reduced from 0.48
+                let scaleY = geometry.size.height * 0.42 // Reduced from 0.48
+                
+                ZStack {
+                    // Connection lines from nodes to center
+                    ForEach(0..<nodes.count, id: \.self) { index in
+                        let node = nodes[index]
+                        Path { path in
+                            path.move(to: CGPoint(
+                                x: centerX + node.x * scaleX,
+                                y: centerY + node.y * scaleY
+                            ))
+                            path.addLine(to: CGPoint(x: centerX, y: centerY))
+                        }
+                        .stroke(
+                            themeManager.colors.textPrimary.opacity(showNetwork ? 0.1 : 0),
+                            lineWidth: 0.5
+                        )
+                        .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.05), value: showNetwork)
                     }
-                    .stroke(
-                        themeManager.colors.textPrimary.opacity(showNetwork ? 0.1 : 0),
-                        lineWidth: 0.5
-                    )
-                    .animation(.easeOut(duration: 0.6).delay(Double(index) * 0.05), value: showNetwork)
-                }
-                
-                // Inter-node connections (organic, not all connected)
-                Group {
-                    nodeLine(from: 2, to: 5, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 5, to: 6, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 2, to: 6, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 6, to: 3, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 3, to: 1, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 0, to: 5, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 0, to: 7, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 7, to: 4, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                    nodeLine(from: 4, to: 1, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                }
-                
-                // Peripheral nodes - render back to front
-                ForEach(nodes.indices.filter { nodes[$0].depthLevel == 1 }, id: \.self) { index in
-                    nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                }
-                ForEach(nodes.indices.filter { nodes[$0].depthLevel == 2 }, id: \.self) { index in
-                    nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
-                }
-                ForEach(nodes.indices.filter { nodes[$0].depthLevel == 3 }, id: \.self) { index in
-                    nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                    
+                    // Inter-node connections (organic, not all connected)
+                    Group {
+                        nodeLine(from: 2, to: 5, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 5, to: 6, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 2, to: 6, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 6, to: 3, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 3, to: 1, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 0, to: 5, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 0, to: 7, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 7, to: 4, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                        nodeLine(from: 4, to: 1, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                    }
+                    
+                    // Peripheral nodes - render back to front
+                    ForEach(nodes.indices.filter { nodes[$0].depthLevel == 1 }, id: \.self) { index in
+                        nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                    }
+                    ForEach(nodes.indices.filter { nodes[$0].depthLevel == 2 }, id: \.self) { index in
+                        nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                    }
+                    ForEach(nodes.indices.filter { nodes[$0].depthLevel == 3 }, id: \.self) { index in
+                        nodeView(index: index, centerX: centerX, centerY: centerY, scaleX: scaleX, scaleY: scaleY)
+                    }
                 }
             }
         }
-    }
-    
-    @ViewBuilder
-    private func nodeView(index: Int, centerX: CGFloat, centerY: CGFloat, scaleX: CGFloat, scaleY: CGFloat) -> some View {
-        let node = nodes[index]
-        PeripheralNode(
-            size: node.size,
-            depthLevel: node.depthLevel
-        )
-        .position(
-            x: centerX + node.x * scaleX,
-            y: centerY + node.y * scaleY
-        )
-        .opacity(showNetwork ? 1 : 0)
-        .scaleEffect(showNetwork ? 1 : 0.5)
-        .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(Double(index) * 0.06), value: showNetwork)
-    }
-    
-    @ViewBuilder
-    private func nodeLine(from: Int, to: Int, centerX: CGFloat, centerY: CGFloat, scaleX: CGFloat, scaleY: CGFloat) -> some View {
-        let fromNode = nodes[from]
-        let toNode = nodes[to]
         
-        Path { path in
-            path.move(to: CGPoint(
-                x: centerX + fromNode.x * scaleX,
-                y: centerY + fromNode.y * scaleY
-            ))
-            path.addLine(to: CGPoint(
-                x: centerX + toNode.x * scaleX,
-                y: centerY + toNode.y * scaleY
-            ))
+        @ViewBuilder
+        private func nodeView(index: Int, centerX: CGFloat, centerY: CGFloat, scaleX: CGFloat, scaleY: CGFloat) -> some View {
+            let node = nodes[index]
+            PeripheralNode(
+                size: node.size,
+                depthLevel: node.depthLevel
+            )
+            .position(
+                x: centerX + node.x * scaleX,
+                y: centerY + node.y * scaleY
+            )
+            .opacity(showNetwork ? 1 : 0)
+            .scaleEffect(showNetwork ? 1 : 0.5)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(Double(index) * 0.06), value: showNetwork)
         }
-        .stroke(
-            themeManager.colors.textPrimary.opacity(showNetwork ? 0.06 : 0),
-            lineWidth: 0.5
-        )
-        .animation(.easeOut(duration: 0.6).delay(0.3), value: showNetwork)
+        
+        @ViewBuilder
+        private func nodeLine(from: Int, to: Int, centerX: CGFloat, centerY: CGFloat, scaleX: CGFloat, scaleY: CGFloat) -> some View {
+            let fromNode = nodes[from]
+            let toNode = nodes[to]
+            
+            Path { path in
+                path.move(to: CGPoint(
+                    x: centerX + fromNode.x * scaleX,
+                    y: centerY + fromNode.y * scaleY
+                ))
+                path.addLine(to: CGPoint(
+                    x: centerX + toNode.x * scaleX,
+                    y: centerY + toNode.y * scaleY
+                ))
+            }
+            .stroke(
+                themeManager.colors.textPrimary.opacity(showNetwork ? 0.06 : 0),
+                lineWidth: 0.5
+            )
+            .animation(.easeOut(duration: 0.6).delay(0.3), value: showNetwork)
+        }
     }
-}
-
-struct ConnectionLine: View {
+    
+    struct ConnectionLine: View {
         @ObservedObject private var themeManager = ThemeManager.shared
         let from: CGPoint
         let to: CGPoint
@@ -1567,235 +1568,236 @@ struct ConnectionLine: View {
             .animation(.easeOut(duration: 0.6).delay(0.3), value: show)
         }
     }
-
-struct PeripheralNode: View {
-    @ObservedObject private var themeManager = ThemeManager.shared
-    let size: CGFloat
-    let depthLevel: Int  // 1 = furthest (most blur), 2 = medium, 3 = closest (least blur)
     
-    private var blurAmount: CGFloat {
-        switch depthLevel {
-        case 1: return 4    // Furthest - most blur
-        case 2: return 2    // Medium distance
-        case 3: return 0.5  // Closest - almost sharp
-        default: return 2
-        }
-    }
-    
-    private var opacity: Double {
-        switch depthLevel {
-        case 1: return 0.4   // Furthest - more faded
-        case 2: return 0.6   // Medium
-        case 3: return 0.85  // Closest - more visible
-        default: return 0.6
-        }
-    }
-    
-    var body: some View {
-        ZStack {
-            // Node circle
-            Circle()
-                .fill(themeManager.colors.cardBackground)
-                .frame(width: size, height: size)
-            
-            // Subtle border
-            Circle()
-                .stroke(themeManager.colors.textPrimary.opacity(0.2), lineWidth: 0.5)
-                .frame(width: size, height: size)
-            
-            // Person icon
-            Image(systemName: "person.fill")
-                .font(.system(size: size * 0.35, weight: .ultraLight))
-                .foregroundColor(themeManager.colors.textTertiary)
-        }
-        .blur(radius: blurAmount)
-        .opacity(opacity)
-    }
-}
-
-// MARK: - Central User Avatar
-
-struct CentralUserAvatar: View {
-    @ObservedObject private var themeManager = ThemeManager.shared
-    let initial: String
-    let show: Bool
-    var isMatched: Bool = false
-    
-    var body: some View {
-        ZStack {
-            // Premium static glow - outer layer
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.12),
-                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.06),
-                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.02),
-                            .clear
-                        ],
-                        center: .center,
-                        startRadius: 32,
-                        endRadius: 70
-                    )
-                )
-                .frame(width: 120, height: 120)
-            
-            // Inner glow ring
-            Circle()
-                .stroke(
-                    RadialGradient(
-                        colors: [
-                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.2),
-                            (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.05)
-                        ],
-                        center: .center,
-                        startRadius: 30,
-                        endRadius: 40
-                    ),
-                    lineWidth: 2
-                )
-                .frame(width: 76, height: 76)
-                .blur(radius: 2)
-            
-            // Outer ring
-            Circle()
-                .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.15), lineWidth: 1)
-                .frame(width: 72, height: 72)
-            
-            // Main avatar circle
-            Circle()
-                .fill(themeManager.colors.cardBackground)
-                .frame(width: 64, height: 64)
-            
-            // Inner subtle border
-            Circle()
-                .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.08), lineWidth: 1)
-                .frame(width: 64, height: 64)
-            
-            // Initial or checkmark
-            if isMatched {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 24, weight: .light))
-                    .foregroundColor(.green)
-            } else {
-                Text(initial.lowercased())
-                    .font(.system(size: 28, weight: .ultraLight))
-                    .tracking(2)
-                    .foregroundColor(themeManager.colors.textPrimary)
+    struct PeripheralNode: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
+        let size: CGFloat
+        let depthLevel: Int  // 1 = furthest (most blur), 2 = medium, 3 = closest (least blur)
+        
+        private var blurAmount: CGFloat {
+            switch depthLevel {
+            case 1: return 4    // Furthest - most blur
+            case 2: return 2    // Medium distance
+            case 3: return 0.5  // Closest - almost sharp
+            default: return 2
             }
         }
-        .scaleEffect(show ? 1 : 0.5)
-        .opacity(show ? 1 : 0)
-    }
-}
-
-// MARK: - Friend Request Row
-
-struct FriendRequestRow: View {
-    @ObservedObject private var themeManager = ThemeManager.shared
-    let request: FriendRequest
-    let fromUser: User?
-    let onAccept: () async -> Void
-    let onReject: () async -> Void
-    
-    @State private var isAccepting = false
-    @State private var isRejecting = false
-    
-    var body: some View {
-        HStack(spacing: themeManager.spacing.md) {
-            // Avatar
-            Circle()
-                .fill(themeManager.colors.cardBackground)
-                .frame(width: 48, height: 48)
-                .overlay(
-                    Text(String(fromUser?.displayName.prefix(1) ?? "?").lowercased())
-                        .font(.system(size: 18, weight: .light))
-                        .foregroundColor(themeManager.colors.textSecondary)
-                )
-            
-            // User info
-            VStack(alignment: .leading, spacing: 4) {
-                Text(fromUser?.displayName.lowercased() ?? "unknown")
-                    .font(themeManager.fonts.body)
-                    .foregroundColor(themeManager.colors.textPrimary)
+        
+        private var opacity: Double {
+            switch depthLevel {
+            case 1: return 0.4   // Furthest - more faded
+            case 2: return 0.6   // Medium
+            case 3: return 0.85  // Closest - more visible
+            default: return 0.6
+            }
+        }
+        
+        var body: some View {
+            ZStack {
+                // Node circle
+                Circle()
+                    .fill(themeManager.colors.cardBackground)
+                    .frame(width: size, height: size)
                 
-                Text("@\(fromUser?.username ?? "unknown")")
-                    .font(themeManager.fonts.caption)
+                // Subtle border
+                Circle()
+                    .stroke(themeManager.colors.textPrimary.opacity(0.2), lineWidth: 0.5)
+                    .frame(width: size, height: size)
+                
+                // Person icon
+                Image(systemName: "person.fill")
+                    .font(.system(size: size * 0.35, weight: .ultraLight))
                     .foregroundColor(themeManager.colors.textTertiary)
             }
-            
-            Spacer()
-            
-            // Action buttons
-            HStack(spacing: themeManager.spacing.sm) {
-                // Reject
-                Button(action: {
-                    Task {
-                        isRejecting = true
-                        await onReject()
-                        isRejecting = false
-                    }
-                }) {
-                    Group {
-                        if isRejecting {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.red.opacity(0.8))
-                        }
-                    }
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(Color.red.opacity(0.1))
-                    )
-                }
-                .disabled(isAccepting || isRejecting)
-                
-                // Accept
-                Button(action: {
-                    Task {
-                        isAccepting = true
-                        await onAccept()
-                        isAccepting = false
-                    }
-                }) {
-                    Group {
-                        if isAccepting {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .green))
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.green)
-                        }
-                    }
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(Color.green.opacity(0.15))
-                    )
-                }
-                .disabled(isAccepting || isRejecting)
-            }
+            .blur(radius: blurAmount)
+            .opacity(opacity)
         }
-        .padding(themeManager.spacing.md)
-        .background(
-            RoundedRectangle(cornerRadius: themeManager.radius.md)
-                .fill(themeManager.colors.cardBackground)
-        )
     }
-}
+    
+    // MARK: - Central User Avatar
+    
+    struct CentralUserAvatar: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
+        let initial: String
+        let show: Bool
+        var isMatched: Bool = false
+        
+        var body: some View {
+            ZStack {
+                // Premium static glow - outer layer
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.12),
+                                (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.06),
+                                (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.02),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 32,
+                            endRadius: 70
+                        )
+                    )
+                    .frame(width: 120, height: 120)
+                
+                // Inner glow ring
+                Circle()
+                    .stroke(
+                        RadialGradient(
+                            colors: [
+                                (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.2),
+                                (isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.05)
+                            ],
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: 40
+                        ),
+                        lineWidth: 2
+                    )
+                    .frame(width: 76, height: 76)
+                    .blur(radius: 2)
+                
+                // Outer ring
+                Circle()
+                    .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.15), lineWidth: 1)
+                    .frame(width: 72, height: 72)
+                
+                // Main avatar circle
+                Circle()
+                    .fill(themeManager.colors.cardBackground)
+                    .frame(width: 64, height: 64)
+                
+                // Inner subtle border
+                Circle()
+                    .stroke((isMatched ? Color.green : themeManager.colors.textPrimary).opacity(0.08), lineWidth: 1)
+                    .frame(width: 64, height: 64)
+                
+                // Initial or checkmark
+                if isMatched {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundColor(.green)
+                } else {
+                    Text(initial.lowercased())
+                        .font(.system(size: 28, weight: .ultraLight))
+                        .tracking(2)
+                        .foregroundColor(themeManager.colors.textPrimary)
+                }
+            }
+            .scaleEffect(show ? 1 : 0.5)
+            .opacity(show ? 1 : 0)
+        }
+    }
+    
+    // MARK: - Friend Request Row
+    
+    struct FriendRequestRow: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
+        let request: FriendRequest
+        let fromUser: User?
+        let onAccept: () async -> Void
+        let onReject: () async -> Void
+        
+        @State private var isAccepting = false
+        @State private var isRejecting = false
+        
+        var body: some View {
+            HStack(spacing: themeManager.spacing.md) {
+                // Avatar
+                Circle()
+                    .fill(themeManager.colors.cardBackground)
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Text(String(fromUser?.displayName.prefix(1) ?? "?").lowercased())
+                            .font(.system(size: 18, weight: .light))
+                            .foregroundColor(themeManager.colors.textSecondary)
+                    )
+                
+                // User info
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(fromUser?.displayName.lowercased() ?? "unknown")
+                        .font(themeManager.fonts.body)
+                        .foregroundColor(themeManager.colors.textPrimary)
+                    
+                    Text("@\(fromUser?.username ?? "unknown")")
+                        .font(themeManager.fonts.caption)
+                        .foregroundColor(themeManager.colors.textTertiary)
+                }
+                
+                Spacer()
+                
+                // Action buttons
+                HStack(spacing: themeManager.spacing.sm) {
+                    // Reject
+                    Button(action: {
+                        Task {
+                            isRejecting = true
+                            await onReject()
+                            isRejecting = false
+                        }
+                    }) {
+                        Group {
+                            if isRejecting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                                    .scaleEffect(0.7)
+                            } else {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.red.opacity(0.8))
+                            }
+                        }
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(Color.red.opacity(0.1))
+                        )
+                    }
+                    .disabled(isAccepting || isRejecting)
+                    
+                    // Accept
+                    Button(action: {
+                        Task {
+                            isAccepting = true
+                            await onAccept()
+                            isAccepting = false
+                        }
+                    }) {
+                        Group {
+                            if isAccepting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .green))
+                                    .scaleEffect(0.7)
+                            } else {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(Color.green.opacity(0.15))
+                        )
+                    }
+                    .disabled(isAccepting || isRejecting)
+                }
+            }
+            .padding(themeManager.spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: themeManager.radius.md)
+                    .fill(themeManager.colors.cardBackground)
+            )
+        }
+    }
     
     
+    
+    #Preview {
+        FriendsView()
+            .environmentObject(SupabaseAppViewModel())
+            .environmentObject(AuthViewModel())
+            .environmentObject(BadgeManager.shared)
+    }
 
-#Preview {
-    FriendsView()
-        .environmentObject(SupabaseAppViewModel())
-        .environmentObject(AuthViewModel())
-        .environmentObject(BadgeManager.shared)
-}
