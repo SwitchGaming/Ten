@@ -75,6 +75,7 @@ struct SmartScrollView<Content: View>: View {
                             proxy.scrollTo("__smartScrollTop", anchor: .top)
                         }
                     } label: {
+                        #if compiler(>=6.2)
                         if #available(iOS 26.0, *) {
                             Image(systemName: "arrow.up")
                                 .font(.system(size: 14, weight: .semibold))
@@ -83,18 +84,11 @@ struct SmartScrollView<Content: View>: View {
                                 .glassEffect(.regular.interactive())
                                 .clipShape(Circle())
                         } else {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 44, height: 44)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
-                                )
-                                .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 4)
+                            scrollToTopFallbackButton
                         }
+                        #else
+                        scrollToTopFallbackButton
+                        #endif
                     }
                     .contentShape(Circle())
                     .padding(.trailing, 16)
@@ -105,6 +99,20 @@ struct SmartScrollView<Content: View>: View {
                 }
             }
         }
+    }
+    
+    private var scrollToTopFallbackButton: some View {
+        Image(systemName: "arrow.up")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundColor(.white)
+            .frame(width: 44, height: 44)
+            .background(.ultraThinMaterial)
+            .clipShape(Circle())
+            .overlay(
+                Circle()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 4)
     }
 }
 
