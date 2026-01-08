@@ -117,6 +117,13 @@ struct DailyPromptCard: View {
 struct FriendsSection: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var themeManager = ThemeManager.shared
+    @State private var hasScrolled = false
+    @State private var scrollOffset: CGFloat = 0
+    
+    // Show indicator if more than 4 friends (enough to require scrolling)
+    private var showScrollIndicator: Bool {
+        viewModel.friends.count > 4 && !hasScrolled
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: themeManager.spacing.md) {
@@ -146,11 +153,40 @@ struct FriendsSection: View {
                     return (friend1.todayRating ?? 0) > (friend2.todayRating ?? 0)
                 }
                 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: themeManager.spacing.md) {
-                        ForEach(sortedFriends) { friend in
-                            FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
+                ZStack(alignment: .trailing) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: themeManager.spacing.md) {
+                            ForEach(sortedFriends) { friend in
+                                FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
+                            }
                         }
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear
+                                    .onChange(of: geo.frame(in: .global).minX) { _, newValue in
+                                        if scrollOffset != 0 && newValue != scrollOffset {
+                                            withAnimation(.easeOut(duration: 0.3)) {
+                                                hasScrolled = true
+                                            }
+                                        }
+                                        scrollOffset = newValue
+                                    }
+                            }
+                        )
+                    }
+                    
+                    // Subtle scroll indicator
+                    if showScrollIndicator {
+                        HStack(spacing: 2) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .light))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .light))
+                                .opacity(0.5)
+                        }
+                        .foregroundColor(themeManager.colors.textTertiary)
+                        .padding(.trailing, 4)
+                        .transition(.opacity)
                     }
                 }
             }
