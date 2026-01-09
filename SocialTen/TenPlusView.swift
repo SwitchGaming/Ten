@@ -1383,6 +1383,8 @@ struct PremiumManagementView: View {
 // MARK: - Premium Theme Chip
 
 struct PremiumThemeChip: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
+    
     let theme: AppTheme
     let isSelected: Bool
     let action: () -> Void
@@ -1411,7 +1413,7 @@ struct PremiumThemeChip: View {
                 
                 Text(theme.name.lowercased())
                     .font(.system(size: 11, weight: isSelected ? .medium : .regular))
-                    .foregroundColor(isSelected ? ThemeManager.shared.colors.textPrimary : ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(isSelected ? themeManager.colors.textPrimary : themeManager.colors.textTertiary)
             }
         }
         .animation(.spring(response: 0.3), value: isSelected)
@@ -1421,6 +1423,8 @@ struct PremiumThemeChip: View {
 // MARK: - Premium Feature Row
 
 struct PremiumFeatureRow: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
+    
     let icon: String
     let title: String
     let description: String
@@ -1430,17 +1434,17 @@ struct PremiumFeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.accent2)
+                .foregroundColor(themeManager.colors.accent2)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(themeManager.colors.textPrimary)
                 
                 Text(description)
                     .font(.system(size: 12, weight: .light))
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(themeManager.colors.textTertiary)
             }
             
             Spacer()

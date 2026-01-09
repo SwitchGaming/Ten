@@ -455,6 +455,8 @@ struct MysteryBadgeIcon: View {
 // MARK: - Mystery Stat Row
 
 struct MysteryStatRow: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
+    
     let icon: String
     let label: String
     let iconColor: Color
@@ -470,11 +472,11 @@ struct MysteryStatRow: View {
             
             Text("?")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(isPulsing ? 0.4 : 0.2))
+                .foregroundColor(themeManager.colors.textPrimary.opacity(isPulsing ? 0.4 : 0.2))
             
             Text(label)
                 .font(.system(size: 14, weight: .light))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(themeManager.colors.textPrimary.opacity(0.4))
             
             Spacer()
         }
@@ -489,6 +491,8 @@ struct MysteryStatRow: View {
 // MARK: - Stat Row
 
 struct StatRow: View {
+    @ObservedObject private var themeManager = ThemeManager.shared
+    
     let icon: String
     let value: String
     let label: String
@@ -503,11 +507,11 @@ struct StatRow: View {
             
             Text(value)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundColor(themeManager.colors.textPrimary)
             
             Text(label)
                 .font(.system(size: 14, weight: .light))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(themeManager.colors.textSecondary)
             
             Spacer()
         }
