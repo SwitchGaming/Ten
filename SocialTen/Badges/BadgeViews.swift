@@ -193,7 +193,13 @@ struct BadgeTooltipView: View {
     let earnedDate: Date?
     let onDismiss: () -> Void
     
+    @ObservedObject private var badgeStats = BadgeStatsCache.shared
     @State private var isAnimating = false
+    
+    /// Dynamic percentile text: "be the first!" or "X% of users", fallback to static rarity
+    private var percentileText: String {
+        badgeStats.formattedPercentage(for: badge.id) ?? badge.rarity.percentile
+    }
     
     var body: some View {
         VStack(spacing: 28) {
@@ -243,7 +249,8 @@ struct BadgeTooltipView: View {
                         .tracking(1)
                         .foregroundColor(.white.opacity(0.35))
                     
-                    Text(badge.rarity.percentile)
+                    // Show rarity tier + actual percentage
+                    Text("\(badge.rarity.displayName.lowercased()) · \(percentileText)")
                         .font(.system(size: 10, weight: .medium))
                         .tracking(1)
                         .foregroundColor(badge.rarity.color.opacity(0.6))
@@ -316,8 +323,14 @@ struct BadgeToastNotification: View {
     let badge: BadgeDefinition
     @Binding var isVisible: Bool
     
+    @ObservedObject private var badgeStats = BadgeStatsCache.shared
     @State private var opacity: Double = 0
     @State private var offset: CGFloat = 30
+    
+    /// Dynamic percentile text: "be the first!" or "X% of users", fallback to static rarity
+    private var percentileText: String {
+        badgeStats.formattedPercentage(for: badge.id) ?? badge.rarity.percentile
+    }
     
     var body: some View {
         HStack(spacing: 14) {
@@ -338,8 +351,8 @@ struct BadgeToastNotification: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white)
                 
-                // Rarity + percentile
-                Text("\(badge.rarity.displayName.lowercased()) · \(badge.rarity.percentile)")
+                // Rarity + percentile (dynamic)
+                Text("\(badge.rarity.displayName.lowercased()) · \(percentileText)")
                     .font(.system(size: 10, weight: .regular))
                     .foregroundColor(.white.opacity(0.45))
             }

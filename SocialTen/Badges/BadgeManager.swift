@@ -213,6 +213,9 @@ class BadgeManager: ObservableObject {
             }
             
             print("Loaded \(badges.count) badges from Supabase")
+            
+            // Also load badge stats for dynamic percentiles
+            await BadgeStatsCache.shared.fetchIfNeeded()
         } catch {
             print("Error loading badges from Supabase: \(error)")
             // Fall back to UserDefaults data
@@ -342,6 +345,9 @@ class BadgeManager: ObservableObject {
                 
                 // Save to Supabase
                 await saveBadgeToSupabase(badge.id)
+                
+                // Invalidate badge stats cache so percentile updates
+                BadgeStatsCache.shared.invalidate(badgeId: badge.id)
             }
         }
         
