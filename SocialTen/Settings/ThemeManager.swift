@@ -174,8 +174,27 @@ struct AppTheme: Identifiable {
         glowColor: Color(hex: "F472B6")
     )
     
-    static let allThemes: [AppTheme] = [.default, .ocean, .forest, .sunset, .aurora, .rose]
-    static let premiumThemes: [AppTheme] = [.ocean, .forest, .sunset, .aurora, .rose]
+    static let ivory = AppTheme(
+        id: "ivory",
+        name: "Ivory",
+        description: "Clean & minimal",
+        colors: ThemeColors(
+            background: Color(hex: "FAF9F6"),
+            cardBackground: Color(hex: "FFFFFF"),
+            surfaceLight: Color(hex: "F0EDE8"),
+            accent1: Color(hex: "1A1A1A"),
+            accent2: Color(hex: "6B7280"),
+            accent3: Color(hex: "E5E2DC"),
+            textPrimary: Color(hex: "1A1A1A"),
+            textSecondary: Color(hex: "4B5563"),
+            textTertiary: Color(hex: "9CA3AF")
+        ),
+        isPremium: true,
+        glowColor: Color(hex: "6B7280")
+    )
+    
+    static let allThemes: [AppTheme] = [.default, .ocean, .forest, .sunset, .aurora, .rose, .ivory]
+    static let premiumThemes: [AppTheme] = [.ocean, .forest, .sunset, .aurora, .rose, .ivory]
 }
 
 // MARK: - Theme Colors
