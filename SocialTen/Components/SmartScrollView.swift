@@ -79,7 +79,7 @@ struct SmartScrollView<Content: View>: View {
                         if #available(iOS 26.0, *) {
                             Image(systemName: "arrow.up")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.colors.textPrimary)
                                 .frame(width: 44, height: 44)
                                 .glassEffect(.regular.interactive())
                                 .clipShape(Circle())
@@ -104,13 +104,13 @@ struct SmartScrollView<Content: View>: View {
     private var scrollToTopFallbackButton: some View {
         Image(systemName: "arrow.up")
             .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(.white)
+            .foregroundColor(themeManager.colors.textPrimary)
             .frame(width: 44, height: 44)
-            .background(.ultraThinMaterial)
+            .background(themeManager.colors.cardBackground.opacity(0.9))
             .clipShape(Circle())
             .overlay(
                 Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                    .stroke(themeManager.colors.accent3.opacity(0.2), lineWidth: 0.5)
             )
             .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 4)
     }
