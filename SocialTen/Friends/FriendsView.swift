@@ -121,23 +121,55 @@ struct FriendsView: View {
             VStack(spacing: themeManager.spacing.md) {
                 HStack(spacing: themeManager.spacing.md) {
                     // Avatar
-                    Circle()
-                        .fill(themeManager.colors.cardBackground)
-                        .frame(width: 56, height: 56)
-                        .overlay(
-                            Text(String(viewModel.currentUserProfile?.displayName.prefix(1) ?? "?").lowercased())
-                                .font(.system(size: 22, weight: .light))
-                                .foregroundColor(themeManager.colors.textSecondary)
-                        )
+                    ZStack {
+                        // Outer glow for premium users
+                        if PremiumManager.shared.isPremium {
+                            Circle()
+                                .stroke(themeManager.currentTheme.glowColor.opacity(0.4), lineWidth: 2)
+                                .frame(width: 60, height: 60)
+                                .blur(radius: 3)
+                        }
+                        
+                        Circle()
+                            .fill(themeManager.colors.cardBackground)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Circle()
+                                    .stroke(PremiumManager.shared.isPremium ? themeManager.currentTheme.glowColor.opacity(0.5) : Color.clear, lineWidth: 1.5)
+                            )
+                            .overlay(
+                                Text(String(viewModel.currentUserProfile?.displayName.prefix(1) ?? "?").lowercased())
+                                    .font(.system(size: 22, weight: .light))
+                                    .foregroundColor(PremiumManager.shared.isPremium ? themeManager.currentTheme.glowColor : themeManager.colors.textSecondary)
+                            )
+                    }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.currentUserProfile?.displayName.lowercased() ?? "you")
-                            .font(themeManager.fonts.body)
-                            .foregroundColor(themeManager.colors.textPrimary)
+                        HStack(spacing: 8) {
+                            Text(viewModel.currentUserProfile?.displayName.lowercased() ?? "you")
+                                .font(themeManager.fonts.body)
+                                .foregroundColor(themeManager.colors.textPrimary)
+                            
+                            // ten+ badge for premium users
+                            if PremiumManager.shared.isPremium {
+                                TenPlusBadge(glowColor: themeManager.currentTheme.glowColor, size: .small)
+                            }
+                        }
                         
-                        Text("@\(viewModel.currentUserProfile?.username ?? "username")")
-                            .font(themeManager.fonts.caption)
-                            .foregroundColor(themeManager.colors.textTertiary)
+                        HStack(spacing: 8) {
+                            Text("@\(viewModel.currentUserProfile?.username ?? "username")")
+                                .font(themeManager.fonts.caption)
+                                .foregroundColor(themeManager.colors.textTertiary)
+                            
+                            // Show theme name for premium users
+                            if PremiumManager.shared.isPremium {
+                                Text("·")
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                                Text(themeManager.currentTheme.name.lowercased())
+                                    .font(themeManager.fonts.caption)
+                                    .foregroundColor(themeManager.currentTheme.glowColor.opacity(0.8))
+                            }
+                        }
                     }
                     
                     Spacer()
@@ -504,6 +536,61 @@ struct FriendsView: View {
                 )
             }
             .buttonStyle(ScaleButtonStyle())
+        }
+    }
+    
+    // MARK: - Ten Plus Badge Component
+    
+    struct TenPlusBadge: View {
+        let glowColor: Color
+        let size: BadgeSize
+        @State private var glowAnimation = false
+        
+        enum BadgeSize {
+            case small
+            case medium
+            case large
+            
+            var iconSize: CGFloat {
+                switch self {
+                case .small: return 10
+                case .medium: return 14
+                case .large: return 18
+                }
+            }
+            
+            var fontSize: CGFloat {
+                switch self {
+                case .small: return 9
+                case .medium: return 12
+                case .large: return 14
+                }
+            }
+            
+            var tracking: CGFloat {
+                switch self {
+                case .small: return 0.5
+                case .medium: return 1
+                case .large: return 1.5
+                }
+            }
+        }
+        
+        var body: some View {
+            HStack(spacing: 2) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: size.iconSize))
+                Text("ten+")
+                    .font(.system(size: size.fontSize, weight: .medium))
+                    .tracking(size.tracking)
+            }
+            .foregroundColor(glowColor)
+            .shadow(color: glowColor.opacity(glowAnimation ? 0.6 : 0.3), radius: glowAnimation ? 4 : 2)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                    glowAnimation = true
+                }
+            }
         }
     }
     
