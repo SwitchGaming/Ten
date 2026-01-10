@@ -285,8 +285,8 @@ struct ChatView: View {
                     Button(action: sendMessage) {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty 
-                                ? ThemeManager.shared.colors.textTertiary 
+                            .foregroundColor(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                ? ThemeManager.shared.colors.textTertiary
                                 : ThemeManager.shared.colors.background)
                             .frame(width: 32, height: 32)
                             .background(
@@ -518,26 +518,32 @@ struct SwipeableMessageBubble: View {
                 }
                 
                 // Message bubble with reactions
-                ZStack(alignment: isFromCurrentUser ? .bottomLeading : .bottomTrailing) {
-                    // Message content
+                ZStack(alignment: isFromCurrentUser ? .topLeading : .topTrailing) {
                     Text(message.content)
                         .font(.system(size: 15))
                         .foregroundColor(isFromCurrentUser ? ThemeManager.shared.colors.background : ThemeManager.shared.colors.textPrimary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .padding(.bottom, reactions.isEmpty ? 0 : 8) // Extra padding if reactions
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(isFromCurrentUser 
-                                    ? ThemeManager.shared.colors.accent1 
+                                .fill(isFromCurrentUser
+                                    ? ThemeManager.shared.colors.accent1
                                     : ThemeManager.shared.colors.cardBackground)
                         )
-                    
-                    // Reactions display
-                    if !reactions.isEmpty {
-                        reactionsView
-                            .offset(y: 12)
-                    }
+                        .overlay(alignment: isFromCurrentUser ? .topLeading : .topTrailing) {
+                            if !reactions.isEmpty {
+                                ReactionBubbleWithTail(
+                                    isFromCurrentUser: isFromCurrentUser,
+                                    groupedReactions: groupedReactions,
+                                    chipTextColor: ThemeManager.shared.colors.textTertiary,
+                                    tint: ThemeManager.shared.colors.cardBackground
+                                ) { emoji in
+                                    onReact(emoji)
+                                }
+                                // position so it slightly overlaps the message bubble corner
+                                .offset(x: isFromCurrentUser ? -6 : 6, y: -8)
+                            }
+                        }
                 }
                 .onTapGesture(count: 2) {
                     // Double tap for heart
@@ -558,12 +564,12 @@ struct SwipeableMessageBubble: View {
                         Text(formatTime(message.createdAt))
                             .font(.system(size: 10))
                             .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                        
+
                         if isFromCurrentUser && showReadReceipt {
                             MessageStatusIcon(status: message.status)
                         }
                     }
-                    .padding(.top, reactions.isEmpty ? 0 : 8)
+                    .padding(.top, 0)
                 }
             }
             .offset(x: offset)
@@ -631,33 +637,17 @@ struct SwipeableMessageBubble: View {
     }
     
     // MARK: - Reactions View
-    
+
     private var reactionsView: some View {
-        HStack(spacing: 2) {
-            ForEach(groupedReactions, id: \.emoji) { reaction in
-                HStack(spacing: 2) {
-                    Text(reaction.emoji)
-                        .font(.system(size: 11))
-                    if reaction.count > 1 {
-                        Text("\(reaction.count)")
-                            .font(.system(size: 9))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                    }
-                }
-                .padding(.horizontal, 5)
-                .padding(.vertical, 2)
-                .background(
-                    Capsule()
-                        .fill(ThemeManager.shared.colors.surfaceLight)
-                )
-                .onTapGesture {
-                    // Tap existing reaction to toggle
-                    onReact(reaction.emoji)
-                }
-            }
+        ReactionStackBubble(
+            groupedReactions: groupedReactions,
+            chipTextColor: ThemeManager.shared.colors.textTertiary,
+            tint: ThemeManager.shared.colors.cardBackground
+        ) { emoji in
+            onReact(emoji)
         }
     }
-    
+
     private var groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)] {
         var grouped: [String: (count: Int, hasCurrentUser: Bool)] = [:]
         for reaction in reactions {
@@ -668,10 +658,11 @@ struct SwipeableMessageBubble: View {
                 grouped[reaction.emoji] = (1, hasUser)
             }
         }
-        return grouped.map { ($0.key, $0.value.count, $0.value.hasCurrentUser) }
+        return grouped
+            .map { (emoji: $0.key, count: $0.value.count, hasCurrentUser: $0.value.hasCurrentUser) }
             .sorted { $0.count > $1.count }
     }
-    
+
     // MARK: - Emoji Picker
     
     private var emojiPickerView: some View {
@@ -712,7 +703,7 @@ struct SwipeableMessageBubble: View {
         .padding(.vertical, 5)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isFromCurrentUser 
+                .fill(isFromCurrentUser
                     ? ThemeManager.shared.colors.background.opacity(0.2)
                     : ThemeManager.shared.colors.surfaceLight)
         )
@@ -722,6 +713,144 @@ struct SwipeableMessageBubble: View {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Reactions Bubble Subviews
+
+private struct ReactionBubbleWithTail: View {
+    let isFromCurrentUser: Bool
+    let groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)]
+    let chipTextColor: Color
+    let tint: Color
+    let onTapEmoji: (String) -> Void
+
+    init(
+        isFromCurrentUser: Bool,
+        groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)],
+        chipTextColor: Color,
+        tint: Color,
+        onTapEmoji: @escaping (String) -> Void
+    ) {
+        self.isFromCurrentUser = isFromCurrentUser
+        self.groupedReactions = groupedReactions
+        self.chipTextColor = chipTextColor
+        self.tint = tint
+        self.onTapEmoji = onTapEmoji
+    }
+
+    var body: some View {
+        ZStack(alignment: isFromCurrentUser ? .bottomTrailing : .bottomLeading) {
+            ReactionStackBubble(
+                groupedReactions: groupedReactions,
+                chipTextColor: chipTextColor,
+                tint: tint,
+                onTapEmoji: onTapEmoji
+            )
+
+            // Small tail that overlaps the message bubble edge so it feels attached.
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .frame(width: 16, height: 10)
+                .overlay(
+                    Capsule()
+                        .strokeBorder(chipTextColor.opacity(0.12), lineWidth: 0.6)
+                )
+                .background(
+                    Capsule()
+                        .fill(tint.opacity(0.20))
+                )
+                .rotationEffect(.degrees(isFromCurrentUser ? 20 : -20))
+                .offset(x: isFromCurrentUser ? -6 : 6, y: 6)
+                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
+        }
+        .accessibilityElement(children: .contain)
+    }
+}
+
+private struct ReactionStackBubble: View {
+    let groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)]
+    let chipTextColor: Color
+    let tint: Color
+    let onTapEmoji: (String) -> Void
+
+    init(
+        groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)],
+        chipTextColor: Color,
+        tint: Color,
+        onTapEmoji: @escaping (String) -> Void
+    ) {
+        self.groupedReactions = groupedReactions
+        self.chipTextColor = chipTextColor
+        self.tint = tint
+        self.onTapEmoji = onTapEmoji
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(groupedReactions, id: \.emoji) { reaction in
+                ReactionChip(
+                    emoji: reaction.emoji,
+                    count: reaction.count,
+                    countColor: chipTextColor
+                ) {
+                    onTapEmoji(reaction.emoji)
+                }
+            }
+        }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 3)
+        .background(glassCapsule)
+        .shadow(color: Color.black.opacity(0.10), radius: 10, x: 0, y: 3)
+        .compositingGroup()
+    }
+
+    private var glassCapsule: some View {
+        Capsule()
+            .fill(.ultraThinMaterial)
+            .overlay(
+                Capsule()
+                    .strokeBorder(chipTextColor.opacity(0.14), lineWidth: 0.75)
+            )
+            .background(
+                Capsule()
+                    .fill(tint.opacity(0.25))
+            )
+    }
+}
+
+private struct ReactionChip: View {
+    let emoji: String
+    let count: Int
+    let countColor: Color
+    let onTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Text(emoji)
+                .font(.system(size: 11))
+            if count > 1 {
+                Text("\(count)")
+                    .font(.system(size: 9))
+                    .foregroundColor(countColor)
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(chipBackground)
+        .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 2)
+        .onTapGesture {
+            onTap()
+        }
+    }
+
+    private var chipBackground: some View {
+        Capsule()
+            .fill(.ultraThinMaterial)
+            .overlay(
+                Capsule()
+                    .strokeBorder(countColor.opacity(0.18), lineWidth: 0.75)
+            )
     }
 }
 

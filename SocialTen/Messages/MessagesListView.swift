@@ -418,9 +418,15 @@ struct NewMessageSheet: View {
                 }
             }
             .background(ThemeManager.shared.colors.background)
-            .navigationTitle("New Message")
+            //.navigationTitle("New Message")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("new message")
+                        .font(.system(size: 17, weight: .light))
+                        .tracking(4)
+                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
