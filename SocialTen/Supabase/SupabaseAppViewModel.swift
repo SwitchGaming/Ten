@@ -5,6 +5,7 @@
 
 import Foundation
 import Supabase
+import WidgetKit
 
 @MainActor
 class SupabaseAppViewModel: ObservableObject {
@@ -386,6 +387,9 @@ class SupabaseAppViewModel: ObservableObject {
                 self.friends = friendUsers.map { $0.toUser() }
                 print("Loaded \(self.friends.count) friends")
             }
+            
+            // Update widgets with latest friend data
+            updateWidgetData()
         } catch {
             print("Error loading friends: \(error)")
         }
@@ -1365,6 +1369,90 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Widgets
+    
+    func updateWidgetData() {
+        guard let user = currentUserProfile else {
+            print("⚠️ updateWidgetData: No user profile")
+            return
+        }
+        
+        // Get streak from UserDefaults
+        let currentStreak = UserDefaults.standard.integer(forKey: "currentStreak")
+        
+        // Get current theme
+        let theme = ThemeManager.shared.currentTheme
+        let widgetTheme = WidgetThemeColors(
+            background: theme.colors.background.hexString,
+            cardBackground: theme.colors.cardBackground.hexString,
+            surfaceLight: theme.colors.surfaceLight.hexString,
+            accent1: theme.colors.accent1.hexString,
+            accent2: theme.colors.accent2.hexString,
+            textPrimary: theme.colors.textPrimary.hexString,
+            textSecondary: theme.colors.textSecondary.hexString,
+            textTertiary: theme.colors.textTertiary.hexString,
+            glowColor: theme.glowColor.hexString
+        )
+        
+        // Sort friends by most recent rating first
+        let sortedFriends = friends.sorted { friend1, friend2 in
+            guard let time1 = friend1.ratingTimestamp else { return false }
+            guard let time2 = friend2.ratingTimestamp else { return true }
+            return time1 > time2
+        }
+        
+        // Build user data for widget
+        let widgetUser = WidgetUserData(
+            displayName: user.displayName,
+            todayRating: user.todayRating,
+            ratingTimestamp: user.ratingTimestamp,
+            currentStreak: currentStreak,
+            isPremium: user.isPremium,
+            themeId: PremiumManager.shared.selectedThemeId
+        )
+        
+        // Build friends data for widget with full theme info
+        let widgetFriends = sortedFriends.map { friend in
+            WidgetFriendData(
+                id: friend.id,
+                username: friend.username,
+                displayName: friend.displayName,
+                todayRating: friend.todayRating,
+                ratingTimestamp: friend.ratingTimestamp,
+                profileImageUrl: nil,
+                isPremium: friend.isPremium,
+                themeId: friend.isPremium ? friend.selectedTheme.id : nil,
+                themeAccent: friend.isPremium ? friend.selectedTheme.glowColor.hexString : nil,
+                themeCardBackground: friend.isPremium ? friend.selectedTheme.colors.cardBackground.hexString : nil
+            )
+        }
+        
+        // Get latest post for premium widget
+        let latestPost: WidgetPostData? = posts.first.map { post in
+            let author = getUser(by: post.userId)
+            return WidgetPostData(
+                id: post.id,
+                authorName: author?.displayName ?? "unknown",
+                authorIsPremium: author?.isPremium ?? false,
+                authorThemeAccent: author?.isPremium == true ? author?.selectedTheme.glowColor.hexString : nil,
+                content: post.caption ?? post.promptResponse ?? "",
+                rating: post.rating,
+                promptText: post.promptText,
+                createdAt: post.timestamp,
+                replyCount: post.replies.count
+            )
+        }
+        
+        // Update widget
+        WidgetDataManager.shared.updateWidgetData(
+            user: widgetUser,
+            friends: widgetFriends,
+            todaysPrompt: todaysPrompt.text,
+            latestPost: latestPost,
+            theme: widgetTheme
+        )
+    }
+    
     // MARK: - Rating
     
     func loadRatingHistory() async {
@@ -1453,6 +1541,9 @@ class SupabaseAppViewModel: ObservableObject {
                     rating: rating
                 )
             }
+            
+            // Update widgets
+            updateWidgetData()
         } catch {
             print("Error updating rating: \(error)")
             // Reload user profile if update failed

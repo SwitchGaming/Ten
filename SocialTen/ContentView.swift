@@ -54,6 +54,8 @@ struct ContentView: View {
                                         friendCount: appViewModel.friends.count
                                     )
                                 }
+                                // Update widgets with latest data
+                                appViewModel.updateWidgetData()
                             }                            .transition(.opacity)
                     }
                 } else {

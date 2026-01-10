@@ -16,6 +16,10 @@
 		B831AD222EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */; };
 		B831AD242EFBEA6F00E7B1E7 /* Authorization/AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */; };
 		B831AD262EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B831AD252EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift */; };
+		B83FBD882F12ED4C000005BF /* WidgetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83FBD862F12ED4C000005BF /* WidgetManager.swift */; };
+		B83FBD932F12EDB6000005BF /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B83FBD922F12EDB6000005BF /* WidgetKit.framework */; };
+		B83FBD952F12EDB6000005BF /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B83FBD942F12EDB6000005BF /* SwiftUI.framework */; };
+		B83FBDA22F12EDB6000005BF /* TenWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B83FBD912F12EDB5000005BF /* TenWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B85383A12F0C411500E18824 /* Settings/PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */; };
 		B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */; };
 		B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */; };
@@ -51,11 +55,40 @@
 		B8FFBA502EFBEF3D005B073B /* Authorization/OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B83FBDA02F12EDB6000005BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B8F9FAFC2EE0F1E8004A2584 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B83FBD902F12EDB5000005BF;
+			remoteInfo = TenWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B83FBDA72F12EDB6000005BF /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B83FBDA22F12EDB6000005BF /* TenWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseManager.swift; sourceTree = "<group>"; };
 		B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthViewModel.swift; sourceTree = "<group>"; };
 		B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthView.swift; sourceTree = "<group>"; };
 		B831AD252EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseAppViewModel.swift; sourceTree = "<group>"; };
+		B83FBD862F12ED4C000005BF /* WidgetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetManager.swift; sourceTree = "<group>"; };
+		B83FBD912F12EDB5000005BF /* TenWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TenWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B83FBD922F12EDB6000005BF /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B83FBD942F12EDB6000005BF /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		B83FBDA92F12F00B000005BF /* TenWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TenWidgetExtension.entitlements; sourceTree = "<group>"; };
 		B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/PremiumManager.swift; sourceTree = "<group>"; };
 		B85383A22F0C438500E18824 /* SocialTen.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SocialTen.xctestplan; sourceTree = SOURCE_ROOT; };
 		B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendshipScore.swift; sourceTree = "<group>"; };
@@ -94,11 +127,31 @@
 		B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/OnBoardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B83FBDA32F12EDB6000005BF /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B83FBD902F12EDB5000005BF /* TenWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B83FBD962F12EDB6000005BF /* TenWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B83FBDA32F12EDB6000005BF /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TenWidget; sourceTree = "<group>"; };
 		B8C99EA22EFE5C000050E1A3 /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B83FBD8E2F12EDB5000005BF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B83FBD952F12EDB6000005BF /* SwiftUI.framework in Frameworks */,
+				B83FBD932F12EDB6000005BF /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB012EE0F1E8004A2584 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +168,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B83FBD872F12ED4C000005BF /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				B83FBD862F12ED4C000005BF /* WidgetManager.swift */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
 		B88E3D722F128BB2009649FE /* Messages */ = {
 			isa = PBXGroup;
 			children = (
@@ -129,7 +190,9 @@
 		B8F9FAFB2EE0F1E8004A2584 = {
 			isa = PBXGroup;
 			children = (
+				B83FBDA92F12F00B000005BF /* TenWidgetExtension.entitlements */,
 				B8F9FB062EE0F1E8004A2584 /* SocialTen */,
+				B83FBD962F12EDB6000005BF /* TenWidget */,
 				B8FFBA4A2EFBEC97005B073B /* Frameworks */,
 				B8F9FB052EE0F1E8004A2584 /* Products */,
 			);
@@ -139,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				B8F9FB042EE0F1E8004A2584 /* SocialTen.app */,
+				B83FBD912F12EDB5000005BF /* TenWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -146,6 +210,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B83FBD872F12ED4C000005BF /* Widget */,
 				B88E3D722F128BB2009649FE /* Messages */,
 				B88172962F02F98B00923E9C /* Info.plist */,
 				B88172952F02F95700923E9C /* SocialTen.entitlements */,
@@ -198,6 +263,8 @@
 		B8FFBA4A2EFBEC97005B073B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B83FBD922F12EDB6000005BF /* WidgetKit.framework */,
+				B83FBD942F12EDB6000005BF /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -205,6 +272,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B83FBD902F12EDB5000005BF /* TenWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B83FBDA42F12EDB6000005BF /* Build configuration list for PBXNativeTarget "TenWidgetExtension" */;
+			buildPhases = (
+				B83FBD8D2F12EDB5000005BF /* Sources */,
+				B83FBD8E2F12EDB5000005BF /* Frameworks */,
+				B83FBD8F2F12EDB5000005BF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B83FBD962F12EDB6000005BF /* TenWidget */,
+			);
+			name = TenWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = TenWidgetExtension;
+			productReference = B83FBD912F12EDB5000005BF /* TenWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B8F9FB032EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B8F9FB122EE0F1E9004A2584 /* Build configuration list for PBXNativeTarget "SocialTen" */;
@@ -212,10 +301,12 @@
 				B8F9FB002EE0F1E8004A2584 /* Sources */,
 				B8F9FB012EE0F1E8004A2584 /* Frameworks */,
 				B8F9FB022EE0F1E8004A2584 /* Resources */,
+				B83FBDA72F12EDB6000005BF /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B83FBDA12F12EDB6000005BF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B8C99EA22EFE5C000050E1A3 /* Components */,
@@ -232,9 +323,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1540;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
+					B83FBD902F12EDB5000005BF = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					B8F9FB032EE0F1E8004A2584 = {
 						CreatedOnToolsVersion = 15.4;
 					};
@@ -257,11 +351,19 @@
 			projectRoot = "";
 			targets = (
 				B8F9FB032EE0F1E8004A2584 /* SocialTen */,
+				B83FBD902F12EDB5000005BF /* TenWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B83FBD8F2F12EDB5000005BF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB022EE0F1E8004A2584 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -274,6 +376,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B83FBD8D2F12EDB5000005BF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB002EE0F1E8004A2584 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -282,6 +391,7 @@
 				B85383A12F0C411500E18824 /* Settings/PremiumManager.swift in Sources */,
 				B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */,
 				B8FFBA502EFBEF3D005B073B /* Authorization/OnBoardingView.swift in Sources */,
+				B83FBD882F12ED4C000005BF /* WidgetManager.swift in Sources */,
 				B831AD202EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift in Sources */,
 				B881729A2F030A8800923E9C /* Settings/NotificationSettingsView.swift in Sources */,
 				B8F9FB1E2EE0F350004A2584 /* Home/HomeView.swift in Sources */,
@@ -317,7 +427,79 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		B83FBDA12F12EDB6000005BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B83FBD902F12EDB5000005BF /* TenWidgetExtension */;
+			targetProxy = B83FBDA02F12EDB6000005BF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		B83FBDA52F12EDB6000005BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TenWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU22NG348K;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TenWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen.TenWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B83FBDA62F12EDB6000005BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TenWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU22NG348K;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TenWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen.TenWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		B8F9FB102EE0F1E9004A2584 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -504,6 +686,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B83FBDA42F12EDB6000005BF /* Build configuration list for PBXNativeTarget "TenWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B83FBDA52F12EDB6000005BF /* Debug */,
+				B83FBDA62F12EDB6000005BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B8F9FAFF2EE0F1E8004A2584 /* Build configuration list for PBXProject "SocialTen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
