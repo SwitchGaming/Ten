@@ -1354,6 +1354,7 @@ struct PremiumManagementView: View {
                     }
                 }
                 .padding(.horizontal, 20)
+                .padding(.vertical, 16) // Add vertical padding for glow visibility
             }
         }
     }

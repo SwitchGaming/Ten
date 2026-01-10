@@ -517,8 +517,8 @@ struct SwipeableMessageBubble: View {
                     replyQuote(for: replyMsg)
                 }
                 
-                // Message bubble with reactions
-                ZStack(alignment: isFromCurrentUser ? .topLeading : .topTrailing) {
+                // Message bubble
+                VStack(alignment: isFromCurrentUser ? .trailing : .leading, spacing: -6) {
                     Text(message.content)
                         .font(.system(size: 15))
                         .foregroundColor(isFromCurrentUser ? ThemeManager.shared.colors.background : ThemeManager.shared.colors.textPrimary)
@@ -530,32 +530,41 @@ struct SwipeableMessageBubble: View {
                                     ? ThemeManager.shared.colors.accent1
                                     : ThemeManager.shared.colors.cardBackground)
                         )
-                        .overlay(alignment: isFromCurrentUser ? .topLeading : .topTrailing) {
-                            if !reactions.isEmpty {
-                                ReactionBubbleWithTail(
-                                    isFromCurrentUser: isFromCurrentUser,
-                                    groupedReactions: groupedReactions,
-                                    chipTextColor: ThemeManager.shared.colors.textTertiary,
-                                    tint: ThemeManager.shared.colors.cardBackground
-                                ) { emoji in
-                                    onReact(emoji)
-                                }
-                                // position so it slightly overlaps the message bubble corner
-                                .offset(x: isFromCurrentUser ? -6 : 6, y: -8)
-                            }
+                        .onTapGesture(count: 2) {
+                            // Double tap for heart
+                            let impact = UIImpactFeedbackGenerator(style: .light)
+                            impact.impactOccurred()
+                            onReact("❤️")
                         }
-                }
-                .onTapGesture(count: 2) {
-                    // Double tap for heart
-                    let impact = UIImpactFeedbackGenerator(style: .light)
-                    impact.impactOccurred()
-                    onReact("❤️")
-                }
-                .onLongPressGesture(minimumDuration: 0.4) {
-                    // Long press for emoji picker
-                    let impact = UIImpactFeedbackGenerator(style: .medium)
-                    impact.impactOccurred()
-                    showEmojiPicker = true
+                        .onLongPressGesture(minimumDuration: 0.4) {
+                            // Long press for emoji picker
+                            let impact = UIImpactFeedbackGenerator(style: .medium)
+                            impact.impactOccurred()
+                            showEmojiPicker = true
+                        }
+                        .sheet(isPresented: $showEmojiPicker) {
+                            emojiPickerSheet
+                                .presentationDetents([.height(80)])
+                                .presentationDragIndicator(.visible)
+                                .presentationBackground(ThemeManager.shared.colors.cardBackground)
+                        }
+                    
+                    // Reaction bubble floats below message
+                    if !reactions.isEmpty {
+                        HStack {
+                            if isFromCurrentUser { Spacer() }
+                            ReactionStackBubble(
+                                groupedReactions: groupedReactions,
+                                chipTextColor: ThemeManager.shared.colors.textTertiary,
+                                tint: ThemeManager.shared.colors.cardBackground
+                            ) { emoji in
+                                onReact(emoji)
+                            }
+                            .padding(.leading, isFromCurrentUser ? 0 : 12)
+                            .padding(.trailing, isFromCurrentUser ? 12 : 0)
+                            if !isFromCurrentUser { Spacer() }
+                        }
+                    }
                 }
                 
                 // Timestamp and status (only show for last message in group)
@@ -630,10 +639,6 @@ struct SwipeableMessageBubble: View {
                     }
                 }
         )
-        .popover(isPresented: $showEmojiPicker) {
-            emojiPickerView
-                .presentationCompactAdaptation(.popover)
-        }
     }
     
     // MARK: - Reactions View
@@ -665,21 +670,21 @@ struct SwipeableMessageBubble: View {
 
     // MARK: - Emoji Picker
     
-    private var emojiPickerView: some View {
-        HStack(spacing: 16) {
+    private var emojiPickerSheet: some View {
+        HStack(spacing: 24) {
             ForEach(quickReactionEmojis, id: \.self) { emoji in
                 Button(action: {
                     onReact(emoji)
                     showEmojiPicker = false
                 }) {
                     Text(emoji)
-                        .font(.system(size: 24))
+                        .font(.system(size: 32))
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 16)
     }
     
     private func replyQuote(for replyMsg: Message) -> some View {
@@ -718,56 +723,6 @@ struct SwipeableMessageBubble: View {
 
 // MARK: - Reactions Bubble Subviews
 
-private struct ReactionBubbleWithTail: View {
-    let isFromCurrentUser: Bool
-    let groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)]
-    let chipTextColor: Color
-    let tint: Color
-    let onTapEmoji: (String) -> Void
-
-    init(
-        isFromCurrentUser: Bool,
-        groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)],
-        chipTextColor: Color,
-        tint: Color,
-        onTapEmoji: @escaping (String) -> Void
-    ) {
-        self.isFromCurrentUser = isFromCurrentUser
-        self.groupedReactions = groupedReactions
-        self.chipTextColor = chipTextColor
-        self.tint = tint
-        self.onTapEmoji = onTapEmoji
-    }
-
-    var body: some View {
-        ZStack(alignment: isFromCurrentUser ? .bottomTrailing : .bottomLeading) {
-            ReactionStackBubble(
-                groupedReactions: groupedReactions,
-                chipTextColor: chipTextColor,
-                tint: tint,
-                onTapEmoji: onTapEmoji
-            )
-
-            // Small tail that overlaps the message bubble edge so it feels attached.
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .frame(width: 16, height: 10)
-                .overlay(
-                    Capsule()
-                        .strokeBorder(chipTextColor.opacity(0.12), lineWidth: 0.6)
-                )
-                .background(
-                    Capsule()
-                        .fill(tint.opacity(0.20))
-                )
-                .rotationEffect(.degrees(isFromCurrentUser ? 20 : -20))
-                .offset(x: isFromCurrentUser ? -6 : 6, y: 6)
-                .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
-        }
-        .accessibilityElement(children: .contain)
-    }
-}
-
 private struct ReactionStackBubble: View {
     let groupedReactions: [(emoji: String, count: Int, hasCurrentUser: Bool)]
     let chipTextColor: Color
@@ -787,7 +742,7 @@ private struct ReactionStackBubble: View {
     }
 
     var body: some View {
-        HStack(spacing: 2) {
+        HStack(spacing: 4) {
             ForEach(groupedReactions, id: \.emoji) { reaction in
                 ReactionChip(
                     emoji: reaction.emoji,
@@ -798,24 +753,6 @@ private struct ReactionStackBubble: View {
                 }
             }
         }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 3)
-        .background(glassCapsule)
-        .shadow(color: Color.black.opacity(0.10), radius: 10, x: 0, y: 3)
-        .compositingGroup()
-    }
-
-    private var glassCapsule: some View {
-        Capsule()
-            .fill(.ultraThinMaterial)
-            .overlay(
-                Capsule()
-                    .strokeBorder(chipTextColor.opacity(0.14), lineWidth: 0.75)
-            )
-            .background(
-                Capsule()
-                    .fill(tint.opacity(0.25))
-            )
     }
 }
 
@@ -828,29 +765,16 @@ private struct ReactionChip: View {
     var body: some View {
         HStack(spacing: 2) {
             Text(emoji)
-                .font(.system(size: 11))
+                .font(.system(size: 14))
             if count > 1 {
                 Text("\(count)")
-                    .font(.system(size: 9))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundColor(countColor)
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(chipBackground)
-        .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 2)
         .onTapGesture {
             onTap()
         }
-    }
-
-    private var chipBackground: some View {
-        Capsule()
-            .fill(.ultraThinMaterial)
-            .overlay(
-                Capsule()
-                    .strokeBorder(countColor.opacity(0.18), lineWidth: 0.75)
-            )
     }
 }
 

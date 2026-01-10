@@ -737,6 +737,11 @@ struct UserProfileView: View {
                     }
                     .padding(.top, 8)
                     
+                    // Message Button (for friends only, shown right under rating)
+                    if isFriend && !isCurrentUser {
+                        messageButtonSection
+                    }
+                    
                     // Friendship Score Card (only for friends, not current user)
                     if isFriend && !isCurrentUser {
                         FriendshipScoreCard(
@@ -818,13 +823,8 @@ struct UserProfileView: View {
                         addFriendButton
                             .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     } else if isFriend && !isCurrentUser {
-                        VStack(spacing: ThemeManager.shared.spacing.md) {
-                            // Message button
-                            messageButton
-                            
-                            // Remove friend button
-                            removeFriendButton
-                        }
+                        // Remove friend button only
+                        removeFriendButton
                     }
                     
                     Spacer(minLength: 40)
@@ -1019,6 +1019,26 @@ struct UserProfileView: View {
                 }
                 .disabled(hasSentRequest || isSending || viewModel.sentFriendRequests.contains(user.id))
             }
+        }
+    }
+    
+    // MARK: - Message Button Section (with low rating prompt)
+    
+    var messageButtonSection: some View {
+        VStack(spacing: 8) {
+            // Show prompt if friend's rating is low (less than 5)
+            if let rating = user.todayRating, rating < 5 {
+                HStack(spacing: 6) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 10))
+                    Text("\(user.displayName.components(separatedBy: " ").first ?? user.displayName) might need some support today")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(.orange)
+                .padding(.bottom, 4)
+            }
+            
+            messageButton
         }
     }
     
