@@ -5,6 +5,7 @@
 
 import Foundation
 import Supabase
+import WidgetKit
 
 @MainActor
 class SupabaseAppViewModel: ObservableObject {
@@ -115,6 +116,17 @@ class SupabaseAppViewModel: ObservableObject {
 
                 // Setup realtime subscriptions
                 await setupRealtimeSubscriptions()
+                
+                // Initialize ConversationManager with user ID
+                if let userId = dbUser.id?.uuidString {
+                    await MainActor.run {
+                        ConversationManager.shared.setCurrentUser(userId)
+                    }
+                    await ConversationManager.shared.loadConversations()
+                }
+                
+                // Update widgets with user data
+                updateWidgetData()
             }
         } catch {
             print("Error loading user: \(error)")
@@ -378,6 +390,9 @@ class SupabaseAppViewModel: ObservableObject {
                 self.friends = friendUsers.map { $0.toUser() }
                 print("Loaded \(self.friends.count) friends")
             }
+            
+            // Update widgets with latest friend data
+            updateWidgetData()
         } catch {
             print("Error loading friends: \(error)")
         }
@@ -1357,6 +1372,62 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Widgets
+    
+    func updateWidgetData() {
+        guard let user = currentUserProfile else {
+            print("⚠️ updateWidgetData: No user profile")
+            return
+        }
+        
+        // Get streak from UserDefaults
+        let currentStreak = UserDefaults.standard.integer(forKey: "currentStreak")
+        
+        // Get current theme colors
+        let theme = ThemeManager.shared.currentTheme
+        let widgetTheme = WidgetThemeColors(
+            background: theme.colors.background.hexString,
+            cardBackground: theme.colors.cardBackground.hexString,
+            surfaceLight: theme.colors.surfaceLight.hexString,
+            accent1: theme.colors.accent1.hexString,
+            accent2: theme.colors.accent2.hexString,
+            textPrimary: theme.colors.textPrimary.hexString,
+            textSecondary: theme.colors.textSecondary.hexString,
+            textTertiary: theme.colors.textTertiary.hexString,
+            glowColor: theme.glowColor.hexString
+        )
+        
+        // Sort friends by most recent rating first
+        let sortedFriends = friends.sorted { friend1, friend2 in
+            // Friends with ratings come before those without
+            guard let time1 = friend1.ratingTimestamp else { return false }
+            guard let time2 = friend2.ratingTimestamp else { return true }
+            // Most recent first
+            return time1 > time2
+        }
+        
+        // Build widget data
+        WidgetDataManager.shared.updateWidgetData(
+            rating: user.todayRating,
+            ratingTimestamp: user.ratingTimestamp,
+            streak: currentStreak,
+            prompt: todaysPrompt.text,
+            username: user.displayName,
+            friends: sortedFriends.map { friend in
+                WidgetFriendData(
+                    id: friend.id,
+                    username: friend.username,
+                    displayName: friend.displayName,
+                    todayRating: friend.todayRating,
+                    profileImageUrl: nil,
+                    isPremium: friend.isPremium,
+                    themeAccent: friend.selectedTheme.glowColor.hexString
+                )
+            },
+            theme: widgetTheme
+        )
+    }
+    
     // MARK: - Rating
     
     func loadRatingHistory() async {
@@ -1445,6 +1516,9 @@ class SupabaseAppViewModel: ObservableObject {
                     rating: rating
                 )
             }
+            
+            // Update widgets
+            updateWidgetData()
         } catch {
             print("Error updating rating: \(error)")
             // Reload user profile if update failed

@@ -6,13 +6,53 @@
 import SwiftUI
 import UserNotifications
 
+// MARK: - Deep Link Destination
+
+enum DeepLinkDestination {
+    case rate
+    case prompt
+    case home
+    case messages
+}
+
+class DeepLinkManager: ObservableObject {
+    static let shared = DeepLinkManager()
+    @Published var destination: DeepLinkDestination?
+    
+    func handle(url: URL) {
+        guard url.scheme == "socialten" else { return }
+        
+        switch url.host {
+        case "rate":
+            destination = .rate
+        case "prompt":
+            destination = .prompt
+        case "home":
+            destination = .home
+        case "messages":
+            destination = .messages
+        default:
+            break
+        }
+    }
+    
+    func clearDestination() {
+        destination = nil
+    }
+}
+
 @main
 struct SocialTenApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var deepLinkManager = DeepLinkManager.shared
     
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(deepLinkManager)
+                .onOpenURL { url in
+                    deepLinkManager.handle(url: url)
+                }
         }
     }
 }

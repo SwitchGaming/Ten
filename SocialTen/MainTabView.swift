@@ -7,7 +7,9 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @EnvironmentObject var deepLinkManager: DeepLinkManager
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var conversationManager = ConversationManager.shared
     @State private var selectedTab = 0
     @State private var vibeTabExpandedId: String? = nil
     
@@ -34,7 +36,7 @@ struct MainTabView: View {
                     Text("feed")
                 }
                 .tag(2)
-                .badge(viewModel.hasUnreadPosts ? "•" : nil)
+                .badge(unreadBadge)
             
             FriendsView()
                 .tabItem {
@@ -60,6 +62,34 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFeedTab"))) { _ in
             selectedTab = 2
         }
+        .onChange(of: deepLinkManager.destination) { _, destination in
+            handleDeepLink(destination)
+        }
+    }
+    
+    // Combined badge for feed tab (posts + messages)
+    private var unreadBadge: Text? {
+        let hasUnread = viewModel.hasUnreadPosts || conversationManager.totalUnreadCount > 0
+        return hasUnread ? Text("•") : nil
+    }
+    
+    func handleDeepLink(_ destination: DeepLinkDestination?) {
+        guard let destination = destination else { return }
+        
+        switch destination {
+        case .rate, .home:
+            // Navigate to home tab (rating is on home)
+            selectedTab = 0
+        case .prompt:
+            // Navigate to feed tab to respond to prompt
+            selectedTab = 2
+        case .messages:
+            // Navigate to feed tab (messages are there)
+            selectedTab = 2
+        }
+        
+        // Clear destination after handling
+        deepLinkManager.clearDestination()
     }
     
     func handleTabChange(_ tab: Int) {
@@ -78,4 +108,5 @@ struct MainTabView: View {
     MainTabView()
         .environmentObject(SupabaseAppViewModel())
         .environmentObject(AuthViewModel())
+        .environmentObject(DeepLinkManager.shared)
 }

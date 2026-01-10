@@ -20,6 +20,14 @@
 		B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */; };
 		B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */; };
 		B881729A2F030A8800923E9C /* Settings/NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */; };
+		B88E3D732F128BB2009649FE /* ConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D6F2F128BB2009649FE /* ConversationManager.swift */; };
+		B88E3D742F128BB2009649FE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D6E2F128BB2009649FE /* ChatView.swift */; };
+		B88E3D752F128BB2009649FE /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D702F128BB2009649FE /* Message.swift */; };
+		B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D712F128BB2009649FE /* MessagesListView.swift */; };
+		B88E3D7D2F12ACDC009649FE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88E3D7C2F12ACDC009649FE /* WidgetKit.framework */; };
+		B88E3D7F2F12ACDC009649FE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B88E3D7E2F12ACDC009649FE /* SwiftUI.framework */; };
+		B88E3D8C2F12ACDD009649FE /* TenWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B88E3D7B2F12ACDB009649FE /* TenWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B88E3D942F12AF58009649FE /* WidgetDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D922F12AF58009649FE /* WidgetDataManager.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -47,6 +55,30 @@
 		B8FFBA502EFBEF3D005B073B /* Authorization/OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B88E3D8A2F12ACDD009649FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B8F9FAFC2EE0F1E8004A2584 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B88E3D7A2F12ACDB009649FE;
+			remoteInfo = TenWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B88E3D912F12ACDD009649FE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B88E3D8C2F12ACDD009649FE /* TenWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseManager.swift; sourceTree = "<group>"; };
 		B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthViewModel.swift; sourceTree = "<group>"; };
@@ -55,10 +87,19 @@
 		B85383A02F0C411500E18824 /* Settings/PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/PremiumManager.swift; sourceTree = "<group>"; };
 		B85383A22F0C438500E18824 /* SocialTen.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SocialTen.xctestplan; sourceTree = SOURCE_ROOT; };
 		B85383A32F0C49C400E18824 /* Friends/FriendshipScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendshipScore.swift; sourceTree = "<group>"; };
+		B85E8B482F12B5FB00E8CBCC /* TenWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TenWidgetsExtension.entitlements; sourceTree = "<group>"; };
 		B88172952F02F95700923E9C /* SocialTen.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SocialTen.entitlements; sourceTree = "<group>"; };
 		B88172962F02F98B00923E9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationManager.swift; sourceTree = "<group>"; };
 		B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationSettingsView.swift; sourceTree = "<group>"; };
+		B88E3D6E2F128BB2009649FE /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		B88E3D6F2F128BB2009649FE /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
+		B88E3D702F128BB2009649FE /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		B88E3D712F128BB2009649FE /* MessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesListView.swift; sourceTree = "<group>"; };
+		B88E3D7B2F12ACDB009649FE /* TenWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TenWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B88E3D7C2F12ACDC009649FE /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B88E3D7E2F12ACDC009649FE /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		B88E3D922F12AF58009649FE /* WidgetDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataManager.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -86,11 +127,31 @@
 		B8FFBA4F2EFBEF3D005B073B /* Authorization/OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/OnBoardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B88E3D8D2F12ACDD009649FE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B88E3D7A2F12ACDB009649FE /* TenWidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B88E3D802F12ACDC009649FE /* TenWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B88E3D8D2F12ACDD009649FE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = TenWidgets; sourceTree = "<group>"; };
 		B8C99EA22EFE5C000050E1A3 /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B88E3D782F12ACDB009649FE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B88E3D7F2F12ACDC009649FE /* SwiftUI.framework in Frameworks */,
+				B88E3D7D2F12ACDC009649FE /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB012EE0F1E8004A2584 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -107,10 +168,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B88E3D722F128BB2009649FE /* Messages */ = {
+			isa = PBXGroup;
+			children = (
+				B88E3D6E2F128BB2009649FE /* ChatView.swift */,
+				B88E3D6F2F128BB2009649FE /* ConversationManager.swift */,
+				B88E3D702F128BB2009649FE /* Message.swift */,
+				B88E3D712F128BB2009649FE /* MessagesListView.swift */,
+			);
+			path = Messages;
+			sourceTree = "<group>";
+		};
+		B88E3D932F12AF58009649FE /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				B88E3D922F12AF58009649FE /* WidgetDataManager.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		B8F9FAFB2EE0F1E8004A2584 = {
 			isa = PBXGroup;
 			children = (
+				B85E8B482F12B5FB00E8CBCC /* TenWidgetsExtension.entitlements */,
 				B8F9FB062EE0F1E8004A2584 /* SocialTen */,
+				B88E3D802F12ACDC009649FE /* TenWidgets */,
 				B8FFBA4A2EFBEC97005B073B /* Frameworks */,
 				B8F9FB052EE0F1E8004A2584 /* Products */,
 			);
@@ -120,6 +202,7 @@
 			isa = PBXGroup;
 			children = (
 				B8F9FB042EE0F1E8004A2584 /* SocialTen.app */,
+				B88E3D7B2F12ACDB009649FE /* TenWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,6 +210,8 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B88E3D932F12AF58009649FE /* Shared */,
+				B88E3D722F128BB2009649FE /* Messages */,
 				B88172962F02F98B00923E9C /* Info.plist */,
 				B88172952F02F95700923E9C /* SocialTen.entitlements */,
 				B8F9FB072EE0F1E8004A2584 /* SocialTenApp.swift */,
@@ -178,6 +263,8 @@
 		B8FFBA4A2EFBEC97005B073B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B88E3D7C2F12ACDC009649FE /* WidgetKit.framework */,
+				B88E3D7E2F12ACDC009649FE /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -185,6 +272,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B88E3D7A2F12ACDB009649FE /* TenWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B88E3D8E2F12ACDD009649FE /* Build configuration list for PBXNativeTarget "TenWidgetsExtension" */;
+			buildPhases = (
+				B88E3D772F12ACDB009649FE /* Sources */,
+				B88E3D782F12ACDB009649FE /* Frameworks */,
+				B88E3D792F12ACDB009649FE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B88E3D802F12ACDC009649FE /* TenWidgets */,
+			);
+			name = TenWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = TenWidgetsExtension;
+			productReference = B88E3D7B2F12ACDB009649FE /* TenWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B8F9FB032EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B8F9FB122EE0F1E9004A2584 /* Build configuration list for PBXNativeTarget "SocialTen" */;
@@ -192,10 +301,12 @@
 				B8F9FB002EE0F1E8004A2584 /* Sources */,
 				B8F9FB012EE0F1E8004A2584 /* Frameworks */,
 				B8F9FB022EE0F1E8004A2584 /* Resources */,
+				B88E3D912F12ACDD009649FE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B88E3D8B2F12ACDD009649FE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B8C99EA22EFE5C000050E1A3 /* Components */,
@@ -212,9 +323,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1540;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
+					B88E3D7A2F12ACDB009649FE = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					B8F9FB032EE0F1E8004A2584 = {
 						CreatedOnToolsVersion = 15.4;
 					};
@@ -237,11 +351,19 @@
 			projectRoot = "";
 			targets = (
 				B8F9FB032EE0F1E8004A2584 /* SocialTen */,
+				B88E3D7A2F12ACDB009649FE /* TenWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B88E3D792F12ACDB009649FE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB022EE0F1E8004A2584 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -254,6 +376,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B88E3D772F12ACDB009649FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B8F9FB002EE0F1E8004A2584 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -272,6 +401,7 @@
 				B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */,
 				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,
 				B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */,
+				B88E3D942F12AF58009649FE /* WidgetDataManager.swift in Sources */,
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
@@ -283,6 +413,10 @@
 				B8F08B4D2F004BA600F1CDE5 /* Badges/Badge.swift in Sources */,
 				B8F9FB162EE0F304004A2584 /* Settings/User.swift in Sources */,
 				B8CD47712EEBC31600F2CC27 /* Vibe/Vibe.swift in Sources */,
+				B88E3D732F128BB2009649FE /* ConversationManager.swift in Sources */,
+				B88E3D742F128BB2009649FE /* ChatView.swift in Sources */,
+				B88E3D752F128BB2009649FE /* Message.swift in Sources */,
+				B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */,
 				B8F08B4F2F004C4200F1CDE5 /* Badges/BadgeManager.swift in Sources */,
 				B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */,
 				B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */,
@@ -293,7 +427,79 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		B88E3D8B2F12ACDD009649FE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B88E3D7A2F12ACDB009649FE /* TenWidgetsExtension */;
+			targetProxy = B88E3D8A2F12ACDD009649FE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		B88E3D8F2F12ACDD009649FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TenWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU22NG348K;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TenWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen.TenWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B88E3D902F12ACDD009649FE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = TenWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NU22NG348K;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TenWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TenWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.joealapatSocialTen.TenWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		B8F9FB102EE0F1E9004A2584 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -480,6 +686,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B88E3D8E2F12ACDD009649FE /* Build configuration list for PBXNativeTarget "TenWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B88E3D8F2F12ACDD009649FE /* Debug */,
+				B88E3D902F12ACDD009649FE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B8F9FAFF2EE0F1E8004A2584 /* Build configuration list for PBXProject "SocialTen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

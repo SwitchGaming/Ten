@@ -94,10 +94,18 @@ struct ContentView: View {
                         await appViewModel.loadFriendRequests()
                         await appViewModel.loadFriends()
                         await appViewModel.loadConnectionOfTheWeek()
+                        
+                        // Update widgets with latest data
+                        appViewModel.updateWidgetData()
                     }
                 case .background:
                     // App went to background - unsubscribe from realtime
                     await appViewModel.unsubscribeFromRealtime()
+                    
+                    // Update widgets before going to background
+                    if authViewModel.isAuthenticated {
+                        appViewModel.updateWidgetData()
+                    }
                 case .inactive:
                     break
                 @unknown default:

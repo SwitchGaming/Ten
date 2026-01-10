@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import WidgetKit
 
 // MARK: - Theme Manager
 
@@ -42,6 +43,20 @@ class ThemeManager: ObservableObject {
         withAnimation(.easeInOut(duration: 0.3)) {
             currentTheme = theme
         }
+        
+        // Update widget theme
+        let widgetTheme = WidgetThemeColors(
+            background: theme.colors.background.hexString,
+            cardBackground: theme.colors.cardBackground.hexString,
+            surfaceLight: theme.colors.surfaceLight.hexString,
+            accent1: theme.colors.accent1.hexString,
+            accent2: theme.colors.accent2.hexString,
+            textPrimary: theme.colors.textPrimary.hexString,
+            textSecondary: theme.colors.textSecondary.hexString,
+            textTertiary: theme.colors.textTertiary.hexString,
+            glowColor: theme.glowColor.hexString
+        )
+        WidgetDataManager.shared.updateTheme(widgetTheme)
     }
 }
 
@@ -297,6 +312,17 @@ extension Color {
             blue: Double(b) / 255,
             opacity: Double(a) / 255
         )
+    }
+    
+    /// Convert Color to hex string (for widget sharing)
+    var hexString: String {
+        guard let components = UIColor(self).cgColor.components else { return "000000" }
+        
+        let r: CGFloat = components.count > 0 ? components[0] : 0
+        let g: CGFloat = components.count > 1 ? components[1] : 0
+        let b: CGFloat = components.count > 2 ? components[2] : 0
+        
+        return String(format: "%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
     }
 }
 
