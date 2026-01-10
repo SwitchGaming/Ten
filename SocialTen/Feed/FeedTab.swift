@@ -5,8 +5,17 @@
 
 import SwiftUI
 
+// MARK: - Feed Section Enum
+
+enum FeedSection: String, CaseIterable {
+    case feed = "Feed"
+    case messages = "Messages"
+}
+
 struct FeedTab: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @StateObject private var conversationManager = ConversationManager.shared
+    @State private var selectedSection: FeedSection = .feed
     @State private var showCreatePost = false
     
     var feedPosts: [Post] {
@@ -14,35 +23,144 @@ struct FeedTab: View {
     }
     
     var body: some View {
+        VStack(spacing: 0) {
+            // Segmented Control Header
+            feedSegmentedControl
+                .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                .padding(.top, ThemeManager.shared.spacing.md)
+                .padding(.bottom, ThemeManager.shared.spacing.sm)
+            
+            // Content based on selection
+            if selectedSection == .feed {
+                feedContent
+            } else {
+                MessagesListView()
+                    .environmentObject(viewModel)
+            }
+        }
+        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
+        .fullScreenCover(isPresented: $showCreatePost) {
+            CreatePostView()
+        }
+        .task {
+            // Load conversations when tab appears
+            conversationManager.setCurrentUser(viewModel.currentUserProfile?.id ?? "")
+            await conversationManager.loadConversations()
+        }
+    }
+    
+    // MARK: - Segmented Control
+    
+    private var feedSegmentedControl: some View {
+        HStack(spacing: 0) {
+            #if compiler(>=6.2)
+            if #available(iOS 26.0, *) {
+                liquidGlassSegmentedControl
+            } else {
+                fallbackSegmentedControl
+            }
+            #else
+            fallbackSegmentedControl
+            #endif
+            
+            Spacer()
+            
+            // Plus button for new post (only shown in feed section)
+            if selectedSection == .feed {
+                Button(action: { showCreatePost = true }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(ThemeManager.shared.colors.cardBackground)
+                        )
+                }
+                .buttonStyle(PremiumButtonStyle())
+            }
+        }
+    }
+    
+    #if compiler(>=6.2)
+    @available(iOS 26.0, *)
+    private var liquidGlassSegmentedControl: some View {
+        HStack(spacing: 4) {
+            ForEach(FeedSection.allCases, id: \.self) { section in
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        selectedSection = section
+                    }
+                }) {
+                    HStack(spacing: 6) {
+                        Text(section.rawValue.lowercased())
+                            .font(.system(size: 14, weight: selectedSection == section ? .semibold : .regular))
+                            .foregroundColor(selectedSection == section ? ThemeManager.shared.colors.textPrimary : ThemeManager.shared.colors.textTertiary)
+                        
+                        // Unread dot for messages
+                        if section == .messages && conversationManager.totalUnreadCount > 0 {
+                            Circle()
+                                .fill(ThemeManager.shared.colors.accent1)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                }
+            }
+        }
+        .glassEffect(.regular.interactive())
+        .clipShape(Capsule())
+    }
+    #endif
+    
+    private var fallbackSegmentedControl: some View {
+        HStack(spacing: 4) {
+            ForEach(FeedSection.allCases, id: \.self) { section in
+                Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        selectedSection = section
+                    }
+                }) {
+                    HStack(spacing: 6) {
+                        Text(section.rawValue.lowercased())
+                            .font(.system(size: 14, weight: selectedSection == section ? .semibold : .regular))
+                            .foregroundColor(selectedSection == section ? ThemeManager.shared.colors.textPrimary : ThemeManager.shared.colors.textTertiary)
+                        
+                        // Unread dot for messages
+                        if section == .messages && conversationManager.totalUnreadCount > 0 {
+                            Circle()
+                                .fill(ThemeManager.shared.colors.accent1)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(selectedSection == section ? ThemeManager.shared.colors.cardBackground : Color.clear)
+                    )
+                }
+            }
+        }
+        .padding(4)
+        .background(
+            Capsule()
+                .fill(ThemeManager.shared.colors.surfaceLight.opacity(0.5))
+        )
+        .overlay(
+            Capsule()
+                .stroke(ThemeManager.shared.colors.textTertiary.opacity(0.1), lineWidth: 1)
+        )
+    }
+    
+    // MARK: - Feed Content
+    
+    private var feedContent: some View {
         SmartScrollView {
             VStack(spacing: ThemeManager.shared.spacing.xl) {
-                // Header
-                HStack {
-                    Text("feed")
-                        .font(ThemeManager.shared.fonts.title)
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
-                        .tracking(ThemeManager.shared.letterSpacing.wide)
-                    
-                    Spacer()
-                    
-                    Button(action: { showCreatePost = true }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
-                            .frame(width: 40, height: 40)
-                            .background(
-                                Circle()
-                                    .fill(ThemeManager.shared.colors.cardBackground)
-                            )
-                    }
-                    .buttonStyle(PremiumButtonStyle())
-                }
-                .padding(.top, ThemeManager.shared.spacing.lg)
-                .appearAnimation(delay: 0)
-                
                 // Posts
                 if viewModel.isLoadingPosts && feedPosts.isEmpty {
-                    // Loading state - only show when initially loading
                     FeedLoadingView()
                         .appearAnimation(delay: 0.1)
                 } else if feedPosts.isEmpty {
@@ -54,7 +172,6 @@ struct FeedTab: View {
                             FeedPostCard(post: post)
                                 .staggeredAnimation(index: index, baseDelay: 0.1)
                                 .onAppear {
-                                    // Load more when nearing the end
                                     if index == feedPosts.count - 3 {
                                         Task {
                                             await viewModel.loadMorePosts()
@@ -63,7 +180,6 @@ struct FeedTab: View {
                                 }
                         }
                         
-                        // Loading indicator at bottom
                         if viewModel.hasMorePosts && !feedPosts.isEmpty {
                             HStack {
                                 Spacer()
@@ -81,12 +197,8 @@ struct FeedTab: View {
             }
             .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
         }
-        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
         .refreshable {
             await viewModel.loadPosts()
-        }
-        .fullScreenCover(isPresented: $showCreatePost) {
-            CreatePostView()
         }
         .onAppear {
             viewModel.markPostsAsSeen()

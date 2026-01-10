@@ -8,6 +8,7 @@ import SwiftUI
 struct MainTabView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var conversationManager = ConversationManager.shared
     @State private var selectedTab = 0
     @State private var vibeTabExpandedId: String? = nil
     
@@ -34,7 +35,7 @@ struct MainTabView: View {
                     Text("feed")
                 }
                 .tag(2)
-                .badge(viewModel.hasUnreadPosts ? "•" : nil)
+                .badge(unreadBadge)
             
             FriendsView()
                 .tabItem {
@@ -60,6 +61,12 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFeedTab"))) { _ in
             selectedTab = 2
         }
+    }
+    
+    // Combined badge for feed tab (posts + messages)
+    private var unreadBadge: Text? {
+        let hasUnread = viewModel.hasUnreadPosts || conversationManager.totalUnreadCount > 0
+        return hasUnread ? Text("•") : nil
     }
     
     func handleTabChange(_ tab: Int) {

@@ -156,15 +156,22 @@ struct FriendsSection: View {
 
 struct FriendsScrollView: View {
     let sortedFriends: [User]
+    @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showArrow = true
+    @State private var selectedFriend: User?
     
     var body: some View {
         ZStack(alignment: .trailing) {
             ScrollView(.horizontal, showsIndicators: true) {
                 HStack(spacing: themeManager.spacing.md) {
                     ForEach(sortedFriends) { friend in
-                        FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
+                        Button(action: {
+                            selectedFriend = friend
+                        }) {
+                            FriendBubble(friend: friend, isStale: !friend.hasRatedToday)
+                        }
+                        .buttonStyle(ScaleButtonStyle())
                     }
                 }
                 .padding(.vertical, 12)
@@ -193,6 +200,21 @@ struct FriendsScrollView: View {
                     .allowsHitTesting(false)
                     .transition(.opacity)
             }
+        }
+        .fullScreenCover(item: $selectedFriend) { friend in
+            UserProfileView(
+                user: friend,
+                isFriend: true,
+                showAddButton: false,
+                onAddFriend: nil,
+                onRemoveFriend: {
+                    Task {
+                        await viewModel.removeFriend(friend.id)
+                    }
+                }
+            )
+            .environmentObject(viewModel)
+            .environmentObject(BadgeManager.shared)
         }
     }
 }
