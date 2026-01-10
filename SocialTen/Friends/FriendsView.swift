@@ -9,6 +9,7 @@ struct FriendsView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @EnvironmentObject var badgeManager: BadgeManager
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var scoreCache = FriendshipScoreCache.shared
     @State private var searchText = ""
     @State private var selectedFriend: User?
     @State private var showAddFriend = false
@@ -18,11 +19,46 @@ struct FriendsView: View {
     @State private var showConnectionProfile = false
     @State private var connectionRequestSent = false
     
-    var filteredFriends: [User] {
-        if searchText.isEmpty {
-            return viewModel.friends
+    // Check if any scores are loaded
+    private var hasLoadedScores: Bool {
+        viewModel.friends.contains { scoreCache.scores[$0.id] != nil }
+    }
+    
+    // Sort friends by friendship score (highest first), fallback to alphabetical
+    var sortedFriends: [User] {
+        if hasLoadedScores {
+            return viewModel.friends.sorted { friend1, friend2 in
+                let score1 = scoreCache.scores[friend1.id]?.score ?? 0
+                let score2 = scoreCache.scores[friend2.id]?.score ?? 0
+                if score1 != score2 {
+                    return score1 > score2
+                }
+                // Tiebreaker: alphabetical
+                return friend1.displayName.lowercased() < friend2.displayName.lowercased()
+            }
+        } else {
+            // Fallback: alphabetical sort
+            return viewModel.friends.sorted { $0.displayName.lowercased() < $1.displayName.lowercased() }
         }
-        return viewModel.friends.filter {
+    }
+    
+    // Best friend is the one with highest score (if they have any score)
+    var bestFriendId: String? {
+        guard !viewModel.friends.isEmpty, hasLoadedScores else { return nil }
+        let topFriend = sortedFriends.first
+        // Only mark as best friend if they have a meaningful score
+        if let id = topFriend?.id, let score = scoreCache.scores[id]?.score, score >= 10 {
+            return id
+        }
+        return nil
+    }
+    
+    var filteredFriends: [User] {
+        let base = sortedFriends
+        if searchText.isEmpty {
+            return base
+        }
+        return base.filter {
             $0.displayName.localizedCaseInsensitiveContains(searchText) ||
             $0.username.localizedCaseInsensitiveContains(searchText)
         }
@@ -91,6 +127,10 @@ struct FriendsView: View {
             }
         }
         .background(themeManager.colors.background.ignoresSafeArea())
+        .task {
+            // Preload all friendship scores in background
+            await viewModel.preloadAllFriendshipScores()
+        }
         .fullScreenCover(item: $selectedFriend) { friend in
             FriendDetailView(friend: friend)
         }
@@ -330,7 +370,10 @@ struct FriendsView: View {
             GridItem(.flexible(), spacing: themeManager.spacing.md)
         ], spacing: themeManager.spacing.md) {
             ForEach(filteredFriends) { friend in
-                FriendGridCard(friend: friend) {
+                FriendGridCard(
+                    friend: friend,
+                    isBestFriend: friend.id == bestFriendId
+                ) {
                     selectedFriend = friend
                 }
             }
@@ -500,6 +543,7 @@ struct FriendsView: View {
     struct FriendGridCard: View {
         @ObservedObject private var themeManager = ThemeManager.shared
         let friend: User
+        var isBestFriend: Bool = false
         let onTap: () -> Void
         
         var body: some View {
@@ -522,11 +566,19 @@ struct FriendsView: View {
                         }
                     }
                     
-                    // Name
-                    Text(friend.displayName.lowercased())
-                        .font(themeManager.fonts.caption)
-                        .foregroundColor(themeManager.colors.textSecondary)
-                        .lineLimit(1)
+                    // Name with BFF indicator
+                    HStack(spacing: 4) {
+                        Text(friend.displayName.lowercased())
+                            .font(themeManager.fonts.caption)
+                            .foregroundColor(themeManager.colors.textSecondary)
+                            .lineLimit(1)
+                        
+                        if isBestFriend {
+                            Text("bff")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(themeManager.colors.textTertiary)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, themeManager.spacing.lg)
