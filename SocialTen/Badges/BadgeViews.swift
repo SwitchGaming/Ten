@@ -555,6 +555,8 @@ struct UserProfileView: View {
     @State private var hasSentRequest = false
     @State private var isSending = false
     @State private var showRemoveConfirmation = false
+    @State private var showChat = false
+    @State private var chatConversation: Conversation?
     
     // Stats loaded from Supabase for friends
     @State private var loadedStreak: Int = 0
@@ -811,12 +813,18 @@ struct UserProfileView: View {
                     
                     Spacer(minLength: 40)
                     
-                    // Action Button
+                    // Action Buttons
                     if showAddButton && !isFriend {
                         addFriendButton
                             .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     } else if isFriend && !isCurrentUser {
-                        removeFriendButton
+                        VStack(spacing: ThemeManager.shared.spacing.md) {
+                            // Message button
+                            messageButton
+                            
+                            // Remove friend button
+                            removeFriendButton
+                        }
                     }
                     
                     Spacer(minLength: 40)
@@ -1013,6 +1021,51 @@ struct UserProfileView: View {
             }
         }
     }
+    
+    // MARK: - Message Button
+    
+    var messageButton: some View {
+        Button(action: {
+            Task {
+                if let conversationId = await ConversationManager.shared.getOrCreateConversation(with: user.id) {
+                    let conversation = Conversation(
+                        id: conversationId,
+                        participantIds: [viewModel.currentUserProfile?.id ?? "", user.id]
+                    )
+                    chatConversation = conversation
+                    showChat = true
+                }
+            }
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "bubble.left.fill")
+                    .font(.system(size: 14))
+                Text("message")
+                    .font(.system(size: 14, weight: .medium))
+                    .tracking(1)
+            }
+            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, ThemeManager.shared.spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                    .fill(ThemeManager.shared.colors.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
+                    .stroke(ThemeManager.shared.colors.accent1.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(PremiumButtonStyle())
+        .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+        .fullScreenCover(isPresented: $showChat) {
+            if let conversation = chatConversation {
+                ChatView(conversation: conversation, friend: user)
+                    .environmentObject(viewModel)
+            }
+        }
+    }
+    
     // MARK: - Remove Friend Button
     
     var removeFriendButton: some View {

@@ -115,6 +115,14 @@ class SupabaseAppViewModel: ObservableObject {
 
                 // Setup realtime subscriptions
                 await setupRealtimeSubscriptions()
+                
+                // Initialize ConversationManager with user ID
+                if let userId = dbUser.id?.uuidString {
+                    await MainActor.run {
+                        ConversationManager.shared.setCurrentUser(userId)
+                    }
+                    await ConversationManager.shared.loadConversations()
+                }
             }
         } catch {
             print("Error loading user: \(error)")
