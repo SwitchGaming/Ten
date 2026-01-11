@@ -133,6 +133,7 @@ class NotificationManager: ObservableObject {
                 ratingsEnabled: notificationPreferences.ratingsEnabled,
                 vibeResponsesEnabled: notificationPreferences.vibeResponsesEnabled,
                 connectionMatchEnabled: notificationPreferences.connectionMatchEnabled,
+                checkInAlertsEnabled: notificationPreferences.checkInAlertsEnabled,
                 dailyReminderEnabled: notificationPreferences.dailyReminderEnabled,
                 dailyReminderTime: notificationPreferences.dailyReminderTime,
                 quietHoursEnabled: notificationPreferences.quietHoursEnabled,
@@ -189,6 +190,7 @@ struct NotificationPreferences: Codable {
     var ratingsEnabled: Bool = false
     var vibeResponsesEnabled: Bool = true
     var connectionMatchEnabled: Bool = true
+    var checkInAlertsEnabled: Bool = true  // Allow friends to receive gentle check-in alerts
     var dailyReminderEnabled: Bool = false
     var dailyReminderTime: String = "19:00"
     var quietHoursEnabled: Bool = true
@@ -207,6 +209,7 @@ struct DBNotificationPreferences: Codable {
     let ratingsEnabled: Bool
     let vibeResponsesEnabled: Bool
     let connectionMatchEnabled: Bool
+    let checkInAlertsEnabled: Bool
     let dailyReminderEnabled: Bool
     let dailyReminderTime: String
     let quietHoursEnabled: Bool
@@ -222,6 +225,7 @@ struct DBNotificationPreferences: Codable {
         case ratingsEnabled = "ratings_enabled"
         case vibeResponsesEnabled = "vibe_responses_enabled"
         case connectionMatchEnabled = "connection_match_enabled"
+        case checkInAlertsEnabled = "check_in_alerts_enabled"
         case dailyReminderEnabled = "daily_reminder_enabled"
         case dailyReminderTime = "daily_reminder_time"
         case quietHoursEnabled = "quiet_hours_enabled"

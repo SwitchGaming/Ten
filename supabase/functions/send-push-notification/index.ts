@@ -56,6 +56,14 @@ const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number)
   daily_reminder: {
     title: () => "how's your day going?",
     body: () => "take a moment to check in"
+  },
+  check_in_alert: {
+    title: (name) => `${name} might need some support 💙`,
+    body: () => "a gentle nudge to reach out"
+  },
+  check_in_response: {
+    title: (name) => `${name} is thinking of you 💙`,
+    body: () => "you've got someone in your corner"
   }
 }
 
@@ -206,6 +214,10 @@ function checkNotificationTypeEnabled(type: string, prefs: any): boolean {
       return prefs.connection_match_enabled !== false
     case 'daily_reminder':
       return prefs.daily_reminder_enabled === true
+    case 'check_in_alert':
+      return prefs.check_in_alerts_enabled !== false
+    case 'check_in_response':
+      return true  // Always deliver support messages
     default:
       return true
   }

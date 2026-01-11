@@ -71,6 +71,13 @@ struct NotificationSettingsView: View {
                                     subtitle: "When you get a new weekly match",
                                     isOn: $notificationManager.notificationPreferences.connectionMatchEnabled
                                 )
+                                
+                                NotificationToggleRow(
+                                    icon: "heart.circle",
+                                    title: "Friend Check-In Alerts",
+                                    subtitle: "Let close friends know when you might need support",
+                                    isOn: $notificationManager.notificationPreferences.checkInAlertsEnabled
+                                )
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)

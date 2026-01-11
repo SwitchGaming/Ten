@@ -100,6 +100,23 @@ struct MessagesListView: View {
             .environmentObject(viewModel)
             .presentationDetents([.medium, .large])
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { notification in
+            guard let userInfo = notification.userInfo,
+                  let conversationId = userInfo["conversationId"] as? String,
+                  !conversationId.isEmpty else { return }
+            
+            // Find the conversation and open it
+            if let conversation = conversationManager.conversations.first(where: { $0.id == conversationId }) {
+                selectedConversation = conversation
+            } else {
+                // Conversation might not be loaded yet, create temporary one
+                let tempConversation = Conversation(
+                    id: conversationId,
+                    participantIds: []
+                )
+                selectedConversation = tempConversation
+            }
+        }
     }
     
     private func getFriend(for conversation: Conversation) -> User? {

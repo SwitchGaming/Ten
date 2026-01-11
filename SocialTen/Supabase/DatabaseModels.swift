@@ -176,6 +176,36 @@ struct DBRatingHistory: Codable, Identifiable {
         case date
         case createdAt = "created_at"
     }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id)
+        userId = try container.decode(UUID.self, forKey: .userId)
+        rating = try container.decode(Int.self, forKey: .rating)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
+        
+        // Handle date - could be ISO8601 or simple date string
+        if let dateValue = try? container.decode(Date.self, forKey: .date) {
+            date = dateValue
+        } else if let dateString = try? container.decode(String.self, forKey: .date) {
+            // Try simple date format first (2026-01-10)
+            let simpleFormatter = DateFormatter()
+            simpleFormatter.dateFormat = "yyyy-MM-dd"
+            if let parsedDate = simpleFormatter.date(from: dateString) {
+                date = parsedDate
+            } else {
+                // Try ISO8601
+                let isoFormatter = ISO8601DateFormatter()
+                if let parsedDate = isoFormatter.date(from: dateString) {
+                    date = parsedDate
+                } else {
+                    throw DecodingError.dataCorruptedError(forKey: .date, in: container, debugDescription: "Unable to parse date: \(dateString)")
+                }
+            }
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .date, in: container, debugDescription: "Date field missing or invalid")
+        }
+    }
 }
 
 // MARK: - Database Daily Prompt Model
@@ -206,5 +236,39 @@ struct DBCreatedAtOnly: Codable {
     
     enum CodingKeys: String, CodingKey {
         case createdAt = "created_at"
+    }
+}
+
+// MARK: - In-App Notification Model
+
+struct InAppNotification: Codable, Identifiable {
+    let id: UUID
+    let recipientId: UUID
+    let senderId: UUID
+    let senderName: String
+    let type: String
+    let message: String?
+    let data: [String: String]?  // Extra data like conversation_id
+    var isRead: Bool
+    let createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case recipientId = "recipient_id"
+        case senderId = "sender_id"
+        case senderName = "sender_name"
+        case type
+        case message
+        case data
+        case isRead = "is_read"
+        case createdAt = "created_at"
+    }
+    
+    var isCheckInAlert: Bool {
+        type == "check_in_alert"
+    }
+    
+    var conversationId: String? {
+        data?["conversation_id"]
     }
 }

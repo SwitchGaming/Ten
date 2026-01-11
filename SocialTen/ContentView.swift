@@ -12,7 +12,12 @@ struct ContentView: View {
     @StateObject private var appViewModel = SupabaseAppViewModel()
     @StateObject private var badgeManager = BadgeManager.shared
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var checkInManager = CheckInManager.shared
     @State private var isOnboardingComplete = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+    @State private var showCheckInWalkthrough = false
+    @State private var showCheckInAlert = false
+    @State private var showSupportReceived = false
+    @State private var navigateToConversationId: String? = nil
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
@@ -88,6 +93,9 @@ struct ContentView: View {
                 case .active:
                     // App came to foreground - refresh data and reconnect realtime
                     if authViewModel.isAuthenticated {
+                        // DEBUG: Reset cooldown for testing (remove this line in production)
+                        checkInManager.resetCooldown()
+                        
                         // Check if daily rating should be reset (new day in user's timezone)
                         appViewModel.checkAndResetDailyRating()
                         
@@ -96,6 +104,27 @@ struct ContentView: View {
                         await appViewModel.loadFriendRequests()
                         await appViewModel.loadFriends()
                         await appViewModel.loadConnectionOfTheWeek()
+                        await appViewModel.loadRatingHistory()
+                        
+                        // Load any pending support messages (responses to your check-in)
+                        await appViewModel.loadPendingSupportMessages()
+                        if appViewModel.pendingSupportMessage != nil {
+                            await MainActor.run {
+                                showSupportReceived = true
+                            }
+                            return // Show support first, don't check for other alerts
+                        }
+                        
+                        // Load any pending check-in alerts from friends
+                        await appViewModel.loadPendingCheckInAlerts()
+                        if appViewModel.pendingCheckInAlert != nil {
+                            await MainActor.run {
+                                showCheckInAlert = true
+                            }
+                        }
+                        
+                        // Check if we should trigger a check-in
+                        await checkForCheckIn()
                     }
                 case .background:
                     // App went to background - unsubscribe from realtime
@@ -125,6 +154,103 @@ struct ContentView: View {
             default:
                 break
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("EvaluateCheckIn"))) { _ in
+            print("🔍 CheckIn: Received EvaluateCheckIn notification")
+            Task {
+                await checkForCheckIn()
+            }
+        }
+        .fullScreenCover(isPresented: $showCheckInWalkthrough) {
+            CheckInWalkthroughView()
+                .environmentObject(appViewModel)
+        }
+        .fullScreenCover(isPresented: $showCheckInAlert) {
+            if let alert = appViewModel.pendingCheckInAlert {
+                CheckInAlertView(
+                    friendName: alert.senderName,
+                    friendId: alert.senderId.uuidString,
+                    onSendSupport: { message in
+                        Task {
+                            await appViewModel.sendCheckInResponse(to: alert.senderId.uuidString, message: message)
+                            await appViewModel.markCheckInAlertAsRead(alert)
+                            showCheckInAlert = false
+                        }
+                    },
+                    onDismiss: {
+                        Task {
+                            await appViewModel.markCheckInAlertAsRead(alert)
+                            showCheckInAlert = false
+                        }
+                    }
+                )
+            }
+        }
+        .fullScreenCover(isPresented: $showSupportReceived) {
+            if let support = appViewModel.pendingSupportMessage {
+                SupportReceivedView(
+                    senderName: support.senderName,
+                    message: support.message ?? "Thinking of you! 💙",
+                    conversationId: support.conversationId,
+                    onGoToChat: {
+                        Task {
+                            // Mark as read
+                            await appViewModel.markSupportMessageAsRead(support)
+                            
+                            // Also mark chat messages as read
+                            if let convId = support.conversationId {
+                                await ConversationManager.shared.markAsRead(conversationId: convId)
+                                navigateToConversationId = convId
+                            }
+                            
+                            showSupportReceived = false
+                            
+                            // Navigate to messages tab and open conversation
+                            NotificationCenter.default.post(
+                                name: NSNotification.Name("NavigateToConversation"),
+                                object: nil,
+                                userInfo: ["conversationId": support.conversationId ?? ""]
+                            )
+                        }
+                    },
+                    onDismiss: {
+                        Task {
+                            await appViewModel.markSupportMessageAsRead(support)
+                            
+                            // Also mark chat messages as read when viewing support message
+                            if let convId = support.conversationId {
+                                await ConversationManager.shared.markAsRead(conversationId: convId)
+                            }
+                            
+                            showSupportReceived = false
+                        }
+                    }
+                )
+            }
+        }
+    }
+    
+    // MARK: - Check-In Logic
+    
+    /// Checks if the user might need emotional support based on their recent ratings
+    private func checkForCheckIn() async {
+        print("🔍 CheckIn: Starting evaluation...")
+        print("🔍 CheckIn: Rating history count: \(appViewModel.ratingHistory.count)")
+        
+        // Check if we should show a check-in
+        if checkInManager.shouldTriggerCheckIn(ratings: appViewModel.ratingHistory) {
+            print("✅ CheckIn: Showing walkthrough!")
+            let bestFriendInfo = appViewModel.getBestFriendForCheckIn()
+            
+            await MainActor.run {
+                checkInManager.startCheckIn(
+                    hasBestFriend: bestFriendInfo.hasBestFriend,
+                    bestFriendName: bestFriendInfo.bestFriendName
+                )
+                showCheckInWalkthrough = true
+            }
+        } else {
+            print("🔍 CheckIn: No check-in needed")
         }
     }
 }

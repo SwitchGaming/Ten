@@ -47,6 +47,10 @@ struct FeedTab: View {
             conversationManager.setCurrentUser(viewModel.currentUserProfile?.id ?? "")
             await conversationManager.loadConversations()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { _ in
+            // Switch to messages section when navigating to a conversation
+            selectedSection = .messages
+        }
     }
     
     // MARK: - Segmented Control
