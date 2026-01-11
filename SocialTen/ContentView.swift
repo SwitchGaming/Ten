@@ -93,9 +93,6 @@ struct ContentView: View {
                 case .active:
                     // App came to foreground - refresh data and reconnect realtime
                     if authViewModel.isAuthenticated {
-                        // DEBUG: Reset cooldown for testing (remove this line in production)
-                        checkInManager.resetCooldown()
-                        
                         // Check if daily rating should be reset (new day in user's timezone)
                         appViewModel.checkAndResetDailyRating()
                         
