@@ -61,6 +61,10 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFeedTab"))) { _ in
             selectedTab = 2
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { _ in
+            // Navigate to Feed tab (which contains messages)
+            selectedTab = 2
+        }
     }
     
     // Combined badge for feed tab (posts + messages)

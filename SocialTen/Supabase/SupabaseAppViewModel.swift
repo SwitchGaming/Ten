@@ -34,6 +34,12 @@ class SupabaseAppViewModel: ObservableObject {
     @Published var hasUnreadVibes: Bool = false
     @Published var pendingRequestCount: Int = 0
     
+    // Check-in alerts (received from friends)
+    @Published var pendingCheckInAlert: InAppNotification?
+    
+    // Support messages received (responses to check-in alerts you sent)
+    @Published var pendingSupportMessage: InAppNotification?
+    
     // Connection of the week
     @Published var connectionOfTheWeek: ConnectionPairing?
     @Published var isLoadingConnection = false
@@ -1463,13 +1469,18 @@ class SupabaseAppViewModel: ObservableObject {
                 .from("rating_history")
                 .select()
                 .eq("user_id", value: userId)
-                .order("date", ascending: false)
+                .order("created_at", ascending: false)  // Use created_at for proper ordering
                 .limit(7)
                 .execute()
                 .value
             
             self.ratingHistory = history.map { dbEntry in
-                RatingEntry(id: dbEntry.id?.uuidString ?? UUID().uuidString, rating: dbEntry.rating, date: dbEntry.date)
+                RatingEntry(id: dbEntry.id?.uuidString ?? UUID().uuidString, rating: dbEntry.rating, date: dbEntry.createdAt ?? dbEntry.date)
+            }
+            
+            // Debug: Print what we got
+            for (index, entry) in ratingHistory.enumerated() {
+                print("🔍 CheckIn: Rating[\(index)]: \(entry.rating) on \(entry.date)")
             }
         } catch {
             print("Error loading rating history: \(error)")
@@ -1517,10 +1528,16 @@ class SupabaseAppViewModel: ObservableObject {
                 .execute()
             
             // Also insert into rating_history
+            let now = Date()
+            let isoFormatter = ISO8601DateFormatter()
+            let dateOnlyFormatter = DateFormatter()
+            dateOnlyFormatter.dateFormat = "yyyy-MM-dd"
+            
             let historyEntry: [String: AnyJSON] = [
                 "user_id": .string(userId.uuidString),
                 "rating": .integer(rating),
-                "date": .string(ISO8601DateFormatter().string(from: Date()))
+                "date": .string(dateOnlyFormatter.string(from: now)),  // Date only for the date column
+                "created_at": .string(isoFormatter.string(from: now))   // Full timestamp for ordering
             ]
             
             try await supabase
@@ -1544,6 +1561,13 @@ class SupabaseAppViewModel: ObservableObject {
             
             // Update widgets
             updateWidgetData()
+            
+            // Reload rating history for check-in evaluation
+            await loadRatingHistory()
+            print("🔍 Rating history reloaded, count: \(ratingHistory.count)")
+            
+            // Notify ContentView to evaluate check-in
+            NotificationCenter.default.post(name: NSNotification.Name("EvaluateCheckIn"), object: nil)
         } catch {
             print("Error updating rating: \(error)")
             // Reload user profile if update failed
@@ -1588,6 +1612,227 @@ class SupabaseAppViewModel: ObservableObject {
     func sendPushNotificationToAllFriends(type: String, senderName: String, data: [String: String]? = nil) async {
         for friend in friends {
             await sendPushNotification(type: type, to: friend.id, senderName: senderName, data: data)
+        }
+    }
+    
+    // MARK: - Check-In Alerts
+    
+    /// Sends a gentle check-in alert to the user's best friend
+    /// Only sends if the user has a best friend with score >= 10
+    func sendCheckInAlert() async {
+        guard let userName = currentUserProfile?.displayName ?? currentUser?.displayName,
+              let senderId = currentUser?.id?.uuidString else { return }
+        
+        // Find best friend (highest score, must be >= 10)
+        let sortedFriends = friends.sorted { friend1, friend2 in
+            let score1 = FriendshipScoreCache.shared.getScore(for: friend1.id)?.score ?? 0
+            let score2 = FriendshipScoreCache.shared.getScore(for: friend2.id)?.score ?? 0
+            return score1 > score2
+        }
+        
+        guard let bestFriend = sortedFriends.first,
+              let bestFriendScore = FriendshipScoreCache.shared.getScore(for: bestFriend.id)?.score,
+              bestFriendScore >= 10 else {
+            print("⚠️ No best friend found to send check-in alert")
+            return
+        }
+        
+        // Send push notification
+        await sendPushNotification(
+            type: "check_in_alert",
+            to: bestFriend.id,
+            senderName: userName,
+            data: ["message": "might need some support today"]
+        )
+        
+        // Also create an in-app notification record
+        do {
+            let notificationData: [String: AnyJSON] = [
+                "recipient_id": .string(bestFriend.id),
+                "sender_id": .string(senderId),
+                "sender_name": .string(userName),
+                "type": .string("check_in_alert"),
+                "message": .string("\(userName) might need some support"),
+                "is_read": .bool(false),
+                "created_at": .string(ISO8601DateFormatter().string(from: Date()))
+            ]
+            
+            try await supabase
+                .from("in_app_notifications")
+                .insert(notificationData)
+                .execute()
+            
+            print("✅ In-app notification created for \(bestFriend.displayName)")
+        } catch {
+            print("⚠️ Could not create in-app notification: \(error)")
+        }
+        
+        print("✅ Check-in alert sent to \(bestFriend.displayName)")
+    }
+    
+    /// Get the best friend for check-in purposes
+    func getBestFriendForCheckIn() -> (hasBestFriend: Bool, bestFriendName: String?) {
+        let sortedFriends = friends.sorted { friend1, friend2 in
+            let score1 = FriendshipScoreCache.shared.getScore(for: friend1.id)?.score ?? 0
+            let score2 = FriendshipScoreCache.shared.getScore(for: friend2.id)?.score ?? 0
+            return score1 > score2
+        }
+        
+        guard let bestFriend = sortedFriends.first,
+              let bestFriendScore = FriendshipScoreCache.shared.getScore(for: bestFriend.id)?.score,
+              bestFriendScore >= 10 else {
+            return (false, nil)
+        }
+        
+        return (true, bestFriend.displayName)
+    }
+    
+    /// Sends a supportive response to a friend who triggered a check-in alert
+    func sendCheckInResponse(to friendId: String, message: String) async {
+        guard let userName = currentUserProfile?.displayName ?? currentUser?.displayName,
+              let senderId = currentUser?.id?.uuidString else { return }
+        
+        // First, send the message as a DM
+        var conversationId: String? = nil
+        
+        // Get or create conversation with this friend
+        if let convId = await ConversationManager.shared.getOrCreateConversation(with: friendId) {
+            conversationId = convId
+            
+            // Send the support message as a regular DM
+            let dmMessage = await ConversationManager.shared.sendMessage(to: friendId, content: message)
+            if dmMessage != nil {
+                print("✅ Support message sent as DM")
+            }
+        }
+        
+        // Send push notification
+        await sendPushNotification(
+            type: "check_in_response",
+            to: friendId,
+            senderName: userName,
+            data: ["message": message]
+        )
+        
+        // Create an in-app notification record for the SupportReceivedView
+        do {
+            var notificationData: [String: AnyJSON] = [
+                "recipient_id": .string(friendId),
+                "sender_id": .string(senderId),
+                "sender_name": .string(userName),
+                "type": .string("check_in_response"),
+                "message": .string(message),
+                "is_read": .bool(false),
+                "created_at": .string(ISO8601DateFormatter().string(from: Date()))
+            ]
+            
+            // Include conversation ID so we can navigate to chat
+            if let convId = conversationId {
+                notificationData["data"] = .object(["conversation_id": .string(convId)])
+            }
+            
+            try await supabase
+                .from("in_app_notifications")
+                .insert(notificationData)
+                .execute()
+            
+            print("✅ Support notification saved with conversation_id: \(conversationId ?? "none")")
+        } catch {
+            print("⚠️ Could not save support message: \(error)")
+        }
+        
+        print("✅ Check-in response sent to \(friendId)")
+    }
+    
+    /// Load any unread check-in alerts for the current user
+    func loadPendingCheckInAlerts() async {
+        guard let userId = currentUser?.id else { return }
+        
+        do {
+            let notifications: [InAppNotification] = try await supabase
+                .from("in_app_notifications")
+                .select()
+                .eq("recipient_id", value: userId)
+                .eq("type", value: "check_in_alert")
+                .eq("is_read", value: false)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            
+            if let alert = notifications.first {
+                self.pendingCheckInAlert = alert
+                print("📬 Found pending check-in alert from \(alert.senderName)")
+            }
+        } catch {
+            print("⚠️ Error loading check-in alerts: \(error)")
+        }
+    }
+    
+    /// Load any unread support messages (responses to check-in alerts you sent)
+    func loadPendingSupportMessages() async {
+        guard let userId = currentUser?.id else { return }
+        
+        do {
+            let notifications: [InAppNotification] = try await supabase
+                .from("in_app_notifications")
+                .select()
+                .eq("recipient_id", value: userId)
+                .eq("type", value: "check_in_response")
+                .eq("is_read", value: false)
+                .order("created_at", ascending: false)
+                .limit(1)
+                .execute()
+                .value
+            
+            if let support = notifications.first {
+                self.pendingSupportMessage = support
+                print("💝 Found support message from \(support.senderName)")
+            }
+        } catch {
+            print("⚠️ Error loading support messages: \(error)")
+        }
+    }
+    
+    /// Mark a support message as read
+    func markSupportMessageAsRead(_ notification: InAppNotification) async {
+        struct UpdatePayload: Encodable {
+            let is_read: Bool
+            let read_at: String
+        }
+        
+        do {
+            try await supabase
+                .from("in_app_notifications")
+                .update(UpdatePayload(is_read: true, read_at: ISO8601DateFormatter().string(from: Date())))
+                .eq("id", value: notification.id)
+                .execute()
+            
+            self.pendingSupportMessage = nil
+            print("✅ Support message marked as read")
+        } catch {
+            print("⚠️ Error marking support as read: \(error)")
+        }
+    }
+    
+    /// Mark a check-in alert as read
+    func markCheckInAlertAsRead(_ notification: InAppNotification) async {
+        struct UpdatePayload: Encodable {
+            let is_read: Bool
+            let read_at: String
+        }
+        
+        do {
+            try await supabase
+                .from("in_app_notifications")
+                .update(UpdatePayload(is_read: true, read_at: ISO8601DateFormatter().string(from: Date())))
+                .eq("id", value: notification.id)
+                .execute()
+            
+            self.pendingCheckInAlert = nil
+            print("✅ Check-in alert marked as read")
+        } catch {
+            print("⚠️ Error marking alert as read: \(error)")
         }
     }
     

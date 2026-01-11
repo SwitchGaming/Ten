@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B800381F2F131114007CC449 /* CheckInManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B800381C2F131114007CC449 /* CheckInManager.swift */; };
+		B80038202F131114007CC449 /* CheckInAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B800381B2F131114007CC449 /* CheckInAlertView.swift */; };
+		B80038212F131114007CC449 /* CheckInWalkthroughView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B800381D2F131114007CC449 /* CheckInWalkthroughView.swift */; };
+		B80038232F131F49007CC449 /* SupportReceivedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80038222F131F49007CC449 /* SupportReceivedView.swift */; };
 		B831AD162EFBE82100E7B1E7 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD152EFBE82100E7B1E7 /* Auth */; };
 		B831AD182EFBE82100E7B1E7 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD172EFBE82100E7B1E7 /* Functions */; };
 		B831AD1A2EFBE82100E7B1E7 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B831AD192EFBE82100E7B1E7 /* PostgREST */; };
@@ -80,6 +84,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B800381B2F131114007CC449 /* CheckInAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInAlertView.swift; sourceTree = "<group>"; };
+		B800381C2F131114007CC449 /* CheckInManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInManager.swift; sourceTree = "<group>"; };
+		B800381D2F131114007CC449 /* CheckInWalkthroughView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInWalkthroughView.swift; sourceTree = "<group>"; };
+		B80038222F131F49007CC449 /* SupportReceivedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportReceivedView.swift; sourceTree = "<group>"; };
 		B831AD1F2EFBEA2800E7B1E7 /* Supabase/SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase/SupabaseManager.swift; sourceTree = "<group>"; };
 		B831AD212EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthViewModel.swift; sourceTree = "<group>"; };
 		B831AD232EFBEA6F00E7B1E7 /* Authorization/AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authorization/AuthView.swift; sourceTree = "<group>"; };
@@ -168,6 +176,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B800381E2F131114007CC449 /* CheckIn */ = {
+			isa = PBXGroup;
+			children = (
+				B80038222F131F49007CC449 /* SupportReceivedView.swift */,
+				B800381B2F131114007CC449 /* CheckInAlertView.swift */,
+				B800381C2F131114007CC449 /* CheckInManager.swift */,
+				B800381D2F131114007CC449 /* CheckInWalkthroughView.swift */,
+			);
+			path = CheckIn;
+			sourceTree = "<group>";
+		};
 		B83FBD872F12ED4C000005BF /* Widget */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,6 +229,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B800381E2F131114007CC449 /* CheckIn */,
 				B83FBD872F12ED4C000005BF /* Widget */,
 				B88E3D722F128BB2009649FE /* Messages */,
 				B88172962F02F98B00923E9C /* Info.plist */,
@@ -406,7 +426,11 @@
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
 				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
+				B800381F2F131114007CC449 /* CheckInManager.swift in Sources */,
+				B80038202F131114007CC449 /* CheckInAlertView.swift in Sources */,
+				B80038212F131114007CC449 /* CheckInWalkthroughView.swift in Sources */,
 				B8C99EB62EFE8D4C0050E1A3 /* TenPlusView.swift in Sources */,
+				B80038232F131F49007CC449 /* SupportReceivedView.swift in Sources */,
 				B8FFBA4E2EFBECD8005B073B /* Supabase/DatabaseModels.swift in Sources */,
 				B8B35A212EE2C1D3004A1258 /* Feed/CreatePostView.swift in Sources */,
 				B8F9FB082EE0F1E8004A2584 /* SocialTenApp.swift in Sources */,
