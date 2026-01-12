@@ -1465,12 +1465,22 @@ class SupabaseAppViewModel: ObservableObject {
         guard let userId = currentUser?.id else { return }
         
         do {
+            // Get ratings from the past 10 days for heatmap support
+            let calendar = Calendar.current
+            guard let tenDaysAgo = calendar.date(byAdding: .day, value: -10, to: Date()) else {
+                return
+            }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let startDateString = dateFormatter.string(from: tenDaysAgo)
+            
             let history: [DBRatingHistory] = try await supabase
                 .from("rating_history")
                 .select()
                 .eq("user_id", value: userId)
-                .order("created_at", ascending: false)  // Use created_at for proper ordering
-                .limit(7)
+                .gte("date", value: startDateString)
+                .order("created_at", ascending: true)
                 .execute()
                 .value
             
@@ -1484,6 +1494,44 @@ class SupabaseAppViewModel: ObservableObject {
             }
         } catch {
             print("Error loading rating history: \(error)")
+        }
+    }
+    
+    // Fetches rating heatmap for a specific user 
+    // Returns the past 10 days of ratings for heatmap display
+    func fetchRatingHistory(for userId: String) async -> [RatingEntry] {
+        guard let userUUID = UUID(uuidString: userId) else { return [] }
+        
+        do {
+            // Get ratings from the past 10 days
+            let calendar = Calendar.current
+            guard let tenDaysAgo = calendar.date(byAdding: .day, value: -10, to: Date()) else {
+                return []
+            }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let startDateString = dateFormatter.string(from: tenDaysAgo)
+            
+            let history: [DBRatingHistory] = try await supabase
+                .from("rating_history")
+                .select()
+                .eq("user_id", value: userUUID)
+                .gte("date", value: startDateString)
+                .order("created_at", ascending: true)
+                .execute()
+                .value
+            
+            return history.map { dbEntry in
+                RatingEntry(
+                    id: dbEntry.id?.uuidString ?? UUID().uuidString,
+                    rating: dbEntry.rating,
+                    date: dbEntry.createdAt ?? dbEntry.date
+                )
+            }
+        } catch {
+            print("Error fetching rating history for user \(userId): \(error)")
+            return []
         }
     }
     
