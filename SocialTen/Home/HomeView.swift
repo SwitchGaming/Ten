@@ -26,6 +26,7 @@ struct HomeView: View {
                 // Rating Card
                 SwipeableRatingCard(
                     rating: viewModel.currentUserProfile?.todayRating,
+                    lastRating: viewModel.currentUserProfile?.lastRating,
                     onRatingChanged: { newRating in
                         Task {
                             await viewModel.updateRating(newRating)

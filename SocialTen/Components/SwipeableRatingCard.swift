@@ -8,7 +8,13 @@ import SwiftUI
 struct SwipeableRatingCard: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     let rating: Int?
+    let lastRating: Int?  // Previous day's rating (shown when stale)
     var onRatingChanged: ((Int) -> Void)?
+    
+    /// Whether the rating is stale (expired from previous day)
+    var isStale: Bool {
+        rating == nil && lastRating != nil
+    }
     
     @State private var displayRating: Int = 5
     @State private var dragOffset: CGFloat = 0
@@ -45,14 +51,31 @@ struct SwipeableRatingCard: View {
                         .frame(height: 20)
                     
                     // Rating number with overlay for ripple + particles (so it's centered on the number)
-                    Text("\(displayRating)")
-                        .font(.system(size: 140, weight: .ultraLight))
-                        .foregroundColor(showConfirmAnimation ? themeManager.colors.accent1 : themeManager.colors.textPrimary)
-                        .contentTransition(.numericText())
-                        .animation(.spring(response: 0.3), value: displayRating)
-                        .scaleEffect(showConfirmAnimation ? 1.15 : 1.0)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.5), value: showConfirmAnimation)
-                        .overlay {
+                    ZStack {
+                        // Show blurred previous rating when stale and not yet changed
+                        if isStale && !hasChangedRating {
+                            Text("\(lastRating ?? 5)")
+                                .font(.system(size: 140, weight: .ultraLight))
+                                .foregroundColor(themeManager.colors.textPrimary.opacity(0.25))
+                                .blur(radius: 8)
+                            
+                            // "rate today" overlay on blurred rating
+                            Text("rate today")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(themeManager.colors.accent2)
+                                .tracking(2)
+                        }
+                        
+                        // Current/active rating number
+                        Text("\(displayRating)")
+                            .font(.system(size: 140, weight: .ultraLight))
+                            .foregroundColor(showConfirmAnimation ? themeManager.colors.accent1 : (isStale && !hasChangedRating ? themeManager.colors.textPrimary.opacity(0.0) : themeManager.colors.textPrimary))
+                            .contentTransition(.numericText())
+                            .animation(.spring(response: 0.3), value: displayRating)
+                            .scaleEffect(showConfirmAnimation ? 1.15 : 1.0)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.5), value: showConfirmAnimation)
+                    }
+                    .overlay {
                             // ZStack overlay positioned at the center of the number
                             ZStack {
                                 // Confirmation ripple animation (centered on number)
@@ -101,14 +124,21 @@ struct SwipeableRatingCard: View {
                     // Hint text
                     VStack(spacing: 4) {
                         if rating == nil && !hasChangedRating {
-                            Text("how's your day going?")
-                                .font(.system(size: 14, weight: .regular))
-                                .foregroundColor(themeManager.colors.textSecondary)
-                            
-                            if showHint {
-                                Text("swipe left or right to rate")
+                            if isStale {
+                                // Stale state - just show yesterday's rating info
+                                Text("yesterday was \(lastRating ?? 0)")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(themeManager.colors.textTertiary)
+                            } else {
+                                Text("how's your day going?")
+                                    .font(.system(size: 14, weight: .regular))
+                                    .foregroundColor(themeManager.colors.textSecondary)
+                                
+                                if showHint {
+                                    Text("swipe left or right to rate")
+                                        .font(.system(size: 12, weight: .regular))
+                                        .foregroundColor(themeManager.colors.textTertiary)
+                                }
                             }
                         } else if hasChangedRating && displayRating != rating {
                             // Show double-tap to confirm hint
@@ -293,6 +323,6 @@ struct ConfirmationParticle: Identifiable {
 #Preview {
     ZStack {
         ThemeManager.shared.colors.background.ignoresSafeArea()
-        SwipeableRatingCard(rating: 7) { _ in }
+        SwipeableRatingCard(rating: nil, lastRating: 7) { _ in }
     }
 }

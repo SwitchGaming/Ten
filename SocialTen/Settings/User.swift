@@ -15,6 +15,9 @@ struct User: Identifiable, Codable {
     var friendIds: [String]
     var ratingHistory: [RatingEntry]
     
+    // Last rating from previous day (for stale state display)
+    var lastRating: Int?
+    
     // Premium status (visible to others)
     var premiumExpiresAt: Date?
     var selectedThemeId: String?
@@ -51,6 +54,7 @@ struct User: Identifiable, Codable {
         ratingTimestamp: Date? = nil,
         friendIds: [String] = [],
         ratingHistory: [RatingEntry] = [],
+        lastRating: Int? = nil,
         premiumExpiresAt: Date? = nil,
         selectedThemeId: String? = nil
     ) {
@@ -62,6 +66,7 @@ struct User: Identifiable, Codable {
         self.ratingTimestamp = ratingTimestamp
         self.friendIds = friendIds
         self.ratingHistory = ratingHistory
+        self.lastRating = lastRating
         self.premiumExpiresAt = premiumExpiresAt
         self.selectedThemeId = selectedThemeId
     }
