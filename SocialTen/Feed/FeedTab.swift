@@ -31,11 +31,13 @@ struct FeedTab: View {
                 .padding(.bottom, ThemeManager.shared.spacing.sm)
             
             // Content based on selection
-            if selectedSection == .feed {
-                feedContent
-            } else {
-                MessagesListView()
-                    .environmentObject(viewModel)
+            Group {
+                if selectedSection == .feed {
+                    feedContent
+                } else {
+                    MessagesListView()
+                        .environmentObject(viewModel)
+                }
             }
         }
         .background(ThemeManager.shared.colors.background.ignoresSafeArea())
@@ -49,7 +51,9 @@ struct FeedTab: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { _ in
             // Switch to messages section when navigating to a conversation
-            selectedSection = .messages
+            withAnimation(.easeInOut(duration: 0.25)) {
+                selectedSection = .messages
+            }
         }
     }
     

@@ -802,15 +802,3 @@ struct MessageStatusIcon: View {
         }
     }
 }
-
-// MARK: - Conversation Extension for Identifiable
-
-extension Conversation: Hashable {
-    static func == (lhs: Conversation, rhs: Conversation) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}

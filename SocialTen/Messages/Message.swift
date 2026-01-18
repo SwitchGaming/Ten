@@ -135,7 +135,7 @@ struct ToggleReactionResponse: Codable {
 
 // MARK: - Local Models (for UI)
 
-struct Conversation: Identifiable {
+struct Conversation: Identifiable, Hashable {
     let id: String
     let participantIds: [String]
     var lastMessagePreview: String?
@@ -143,6 +143,15 @@ struct Conversation: Identifiable {
     var lastMessageAt: Date?
     var updatedAt: Date?
     var unreadCount: Int
+    
+    // Hashable conformance - just use id
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: Conversation, rhs: Conversation) -> Bool {
+        lhs.id == rhs.id
+    }
     
     // Computed property to get the other participant's ID
     func otherParticipantId(currentUserId: String) -> String? {

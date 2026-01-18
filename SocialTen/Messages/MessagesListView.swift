@@ -8,10 +8,61 @@ import SwiftUI
 struct MessagesListView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @StateObject private var conversationManager = ConversationManager.shared
-    @State private var selectedConversation: Conversation?
+    @State private var navigationPath = NavigationPath()
     @State private var showNewMessageSheet = false
     
     var body: some View {
+        NavigationStack(path: $navigationPath) {
+            messagesContent
+                .navigationBarHidden(true)
+                .navigationDestination(for: Conversation.self) { conversation in
+                    ChatViewWrapper(conversation: conversation, viewModel: viewModel)
+                        .navigationBarBackButtonHidden(true)
+                        .toolbar(.hidden, for: .navigationBar)
+                }
+        }
+        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
+        .sheet(isPresented: $showNewMessageSheet) {
+            NewMessageSheet(onSelectFriend: { friend in
+                showNewMessageSheet = false
+                Task {
+                    if let conversationId = await conversationManager.getOrCreateConversation(with: friend.id) {
+                        if let conversation = conversationManager.conversations.first(where: { $0.id == conversationId }) {
+                            navigationPath.append(conversation)
+                        } else {
+                            // Create a temporary conversation object to open chat
+                            let newConversation = Conversation(
+                                id: conversationId,
+                                participantIds: [viewModel.currentUserProfile?.id ?? "", friend.id]
+                            )
+                            navigationPath.append(newConversation)
+                        }
+                    }
+                }
+            })
+            .environmentObject(viewModel)
+            .presentationDetents([.medium, .large])
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { notification in
+            guard let userInfo = notification.userInfo,
+                  let conversationId = userInfo["conversationId"] as? String,
+                  !conversationId.isEmpty else { return }
+            
+            // Find the conversation and open it
+            if let conversation = conversationManager.conversations.first(where: { $0.id == conversationId }) {
+                navigationPath.append(conversation)
+            } else {
+                // Conversation might not be loaded yet, create temporary one
+                let tempConversation = Conversation(
+                    id: conversationId,
+                    participantIds: []
+                )
+                navigationPath.append(tempConversation)
+            }
+        }
+    }
+    
+    private var messagesContent: some View {
         SmartScrollView {
             VStack(spacing: ThemeManager.shared.spacing.lg) {
                 // Header with new message button
@@ -52,7 +103,7 @@ struct MessagesListView: View {
                             )
                             .environmentObject(viewModel)
                             .onTapGesture {
-                                selectedConversation = conversation
+                                navigationPath.append(conversation)
                             }
                             
                             if conversation.id != conversationManager.conversations.last?.id {
@@ -74,47 +125,6 @@ struct MessagesListView: View {
         }
         .refreshable {
             await conversationManager.loadConversations()
-        }
-        .fullScreenCover(item: $selectedConversation) { conversation in
-            ChatViewWrapper(conversation: conversation, viewModel: viewModel)
-        }
-        .sheet(isPresented: $showNewMessageSheet) {
-            NewMessageSheet(onSelectFriend: { friend in
-                showNewMessageSheet = false
-                Task {
-                    if let conversationId = await conversationManager.getOrCreateConversation(with: friend.id) {
-                        if let conversation = conversationManager.conversations.first(where: { $0.id == conversationId }) {
-                            selectedConversation = conversation
-                        } else {
-                            // Create a temporary conversation object to open chat
-                            let newConversation = Conversation(
-                                id: conversationId,
-                                participantIds: [viewModel.currentUserProfile?.id ?? "", friend.id]
-                            )
-                            selectedConversation = newConversation
-                        }
-                    }
-                }
-            })
-            .environmentObject(viewModel)
-            .presentationDetents([.medium, .large])
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { notification in
-            guard let userInfo = notification.userInfo,
-                  let conversationId = userInfo["conversationId"] as? String,
-                  !conversationId.isEmpty else { return }
-            
-            // Find the conversation and open it
-            if let conversation = conversationManager.conversations.first(where: { $0.id == conversationId }) {
-                selectedConversation = conversation
-            } else {
-                // Conversation might not be loaded yet, create temporary one
-                let tempConversation = Conversation(
-                    id: conversationId,
-                    participantIds: []
-                )
-                selectedConversation = tempConversation
-            }
         }
     }
     
@@ -333,32 +343,29 @@ struct ChatViewWrapper: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        Group {
+        ZStack {
+            // Always set the background
+            ThemeManager.shared.colors.background.ignoresSafeArea()
+            
             if isLoading {
-                ZStack {
-                    ThemeManager.shared.colors.background.ignoresSafeArea()
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textSecondary))
-                }
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textSecondary))
             } else if let user = user {
                 ChatView(conversation: conversation, friend: user)
                     .environmentObject(viewModel)
             } else {
                 // Could not load user - show error state
-                ZStack {
-                    ThemeManager.shared.colors.background.ignoresSafeArea()
-                    VStack(spacing: ThemeManager.shared.spacing.md) {
-                        Image(systemName: "person.slash")
-                            .font(.system(size: 40))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
-                        Text("could not load conversation")
-                            .font(.system(size: 15, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
-                        Button("go back") {
-                            dismiss()
-                        }
-                        .foregroundColor(ThemeManager.shared.colors.accent1)
+                VStack(spacing: ThemeManager.shared.spacing.md) {
+                    Image(systemName: "person.slash")
+                        .font(.system(size: 40))
+                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    Text("could not load conversation")
+                        .font(.system(size: 15, weight: .light))
+                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                    Button("go back") {
+                        dismiss()
                     }
+                    .foregroundColor(ThemeManager.shared.colors.accent1)
                 }
             }
         }
