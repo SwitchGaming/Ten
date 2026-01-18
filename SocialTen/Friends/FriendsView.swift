@@ -686,6 +686,10 @@ struct FriendsView: View {
         @State private var isDeleting = false
         @State private var showDeveloperStats = false
         @State private var showDeveloperFeedback = false
+        @State private var showDeveloperChangelog = false
+        @State private var showFeedback = false
+        @State private var showChangelog = false
+        @State private var unreadChangelogCount = 0
         
         var body: some View {
             ZStack {
@@ -750,11 +754,14 @@ struct FriendsView: View {
                             
                             // Support Section
                             settingsSection(title: "support") {
+                                SettingsRow(icon: "sparkles", title: "What's New", showBadge: unreadChangelogCount > 0) {
+                                    showChangelog = true
+                                }
                                 SettingsRow(icon: "questionmark.circle", title: "Help Center") {
                                     // TODO: Help
                                 }
-                                SettingsRow(icon: "envelope", title: "Contact Us") {
-                                    // TODO: Contact
+                                SettingsRow(icon: "text.bubble", title: "Send Feedback") {
+                                    showFeedback = true
                                 }
                             }
                             
@@ -766,6 +773,9 @@ struct FriendsView: View {
                                     }
                                     SettingsRow(icon: "text.bubble.fill", title: "User Feedback") {
                                         showDeveloperFeedback = true
+                                    }
+                                    SettingsRow(icon: "doc.text.fill", title: "Changelogs") {
+                                        showDeveloperChangelog = true
                                     }
                                 }
                             }
@@ -836,11 +846,23 @@ struct FriendsView: View {
             .fullScreenCover(isPresented: $showDeveloperFeedback) {
                 DeveloperFeedbackView()
             }
+            .fullScreenCover(isPresented: $showDeveloperChangelog) {
+                DeveloperChangelogView()
+            }
+            .fullScreenCover(isPresented: $showChangelog) {
+                ChangelogView()
+            }
+            .fullScreenCover(isPresented: $showFeedback) {
+                FeedbackView()
+                    .environmentObject(viewModel)
+            }
             .task {
                 // Check developer status when settings open
                 if let userId = viewModel.currentUserProfile?.id {
                     await developerManager.checkDeveloperStatus(userId: userId)
                 }
+                // Load unread changelog count
+                await loadUnreadChangelogCount()
             }
             .alert("Delete Account", isPresented: $showDeleteConfirmation) {
                 Button("Cancel", role: .cancel) { }
@@ -856,6 +878,21 @@ struct FriendsView: View {
                 }
             } message: {
                 Text("This action is permanent and cannot be undone.\n\nAll your data will be permanently deleted, including:\n• Your profile\n• All posts and replies\n• All vibes\n• Friends and friend requests\n• Badges and stats\n\nAre you sure you want to delete your account?")
+            }
+        }
+        
+        private func loadUnreadChangelogCount() async {
+            do {
+                let count: Int = try await SupabaseManager.shared.client
+                    .rpc("get_unread_changelog_count")
+                    .execute()
+                    .value
+                
+                await MainActor.run {
+                    unreadChangelogCount = count
+                }
+            } catch {
+                print("❌ Error loading unread changelog count: \(error)")
             }
         }
         

@@ -32,6 +32,9 @@
 		B88E3D742F128BB2009649FE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D6E2F128BB2009649FE /* ChatView.swift */; };
 		B88E3D752F128BB2009649FE /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D702F128BB2009649FE /* Message.swift */; };
 		B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D712F128BB2009649FE /* MessagesListView.swift */; };
+		B8A8FD032F1D6DBC0017A398 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD022F1D6DBC0017A398 /* FeedbackView.swift */; };
+		B8A8FD0A2F1D7C530017A398 /* DeveloperChangelogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */; };
+		B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD082F1D7C530017A398 /* ChangelogView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -111,6 +114,9 @@
 		B88E3D6F2F128BB2009649FE /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		B88E3D702F128BB2009649FE /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		B88E3D712F128BB2009649FE /* MessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesListView.swift; sourceTree = "<group>"; };
+		B8A8FD022F1D6DBC0017A398 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
+		B8A8FD082F1D7C530017A398 /* ChangelogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangelogView.swift; sourceTree = "<group>"; };
+		B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperChangelogView.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -215,6 +221,9 @@
 		B8D987422F1C70310048E537 /* Developer */ = {
 			isa = PBXGroup;
 			children = (
+				B8A8FD082F1D7C530017A398 /* ChangelogView.swift */,
+				B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */,
+				B8A8FD022F1D6DBC0017A398 /* FeedbackView.swift */,
 				B8D9873F2F1C70310048E537 /* DeveloperConfig.swift */,
 				B8D987402F1C70310048E537 /* DeveloperFeedbackView.swift */,
 				B8D987412F1C70310048E537 /* DeveloperStatsView.swift */,
@@ -445,6 +454,8 @@
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
+				B8A8FD0A2F1D7C530017A398 /* DeveloperChangelogView.swift in Sources */,
+				B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */,
 				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
 				B800381F2F131114007CC449 /* CheckInManager.swift in Sources */,
 				B80038202F131114007CC449 /* CheckInAlertView.swift in Sources */,
@@ -466,6 +477,7 @@
 				B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */,
 				B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */,
 				B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */,
+				B8A8FD032F1D6DBC0017A398 /* FeedbackView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
