@@ -66,6 +66,13 @@ struct NotificationSettingsView: View {
                                 )
                                 
                                 NotificationToggleRow(
+                                    icon: "message",
+                                    title: "Direct Messages",
+                                    subtitle: "When someone sends you a message",
+                                    isOn: $notificationManager.notificationPreferences.directMessagesEnabled
+                                )
+                                
+                                NotificationToggleRow(
                                     icon: "star",
                                     title: "Connection of the Week",
                                     subtitle: "When you get a new weekly match",
@@ -77,6 +84,13 @@ struct NotificationSettingsView: View {
                                     title: "Friend Check-In Alerts",
                                     subtitle: "Let close friends know when you might need support",
                                     isOn: $notificationManager.notificationPreferences.checkInAlertsEnabled
+                                )
+                                
+                                NotificationToggleRow(
+                                    icon: "chart.line.uptrend.xyaxis",
+                                    title: "Friend Ratings",
+                                    subtitle: "When friends rate their day",
+                                    isOn: $notificationManager.notificationPreferences.friendRatingsEnabled
                                 )
                             }
                             .background(
