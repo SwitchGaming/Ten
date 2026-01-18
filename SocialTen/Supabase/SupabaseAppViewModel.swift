@@ -751,10 +751,25 @@ class SupabaseAppViewModel: ObservableObject {
                 .execute()
                 .value
             
+            // Get groups I'm a member of (for filtering group-targeted vibes from friends)
+            let myGroupMemberships = await getMyGroupMemberships()
+            
             // Load responses for each vibe
             var vibesWithResponses: [Vibe] = []
             for dbVibe in dbVibes {
                 guard let vibeId = dbVibe.id else { continue }
+                
+                // Filter: Only show vibes where:
+                // 1. group_id is NULL (sent to all friends), OR
+                // 2. I created the vibe (can always see my own), OR
+                // 3. I'm a member of that group
+                if let groupId = dbVibe.groupId {
+                    let isMyVibe = dbVibe.userId.uuidString == currentUserProfile?.id
+                    let amInGroup = myGroupMemberships.contains(groupId)
+                    if !isMyVibe && !amInGroup {
+                        continue // Skip this vibe - not meant for me
+                    }
+                }
                 
                 let responses: [DBVibeResponse] = try await supabase
                     .from("vibe_responses")
@@ -774,7 +789,52 @@ class SupabaseAppViewModel: ObservableObject {
         }
     }
     
-    func createVibe(title: String, timeDescription: String, location: String, expiresAt: Date) async {
+    /// Get the group IDs where the current user is a member OR creator (for filtering group content)
+    private func getMyGroupMemberships() async -> Set<UUID> {
+        guard let myId = currentUserProfile?.id,
+              let myUUID = UUID(uuidString: myId) else { return [] }
+        
+        do {
+            struct GroupMembership: Codable {
+                let group_id: UUID
+            }
+            
+            struct GroupOwnership: Codable {
+                let id: UUID
+            }
+            
+            // Get groups where I'm a member (added by someone else)
+            async let membershipsTask: [GroupMembership] = supabase
+                .from("friend_group_members")
+                .select("group_id")
+                .eq("friend_id", value: myUUID)
+                .execute()
+                .value
+            
+            // Get groups I created (I can see content posted to my own groups)
+            async let ownedGroupsTask: [GroupOwnership] = supabase
+                .from("friend_groups")
+                .select("id")
+                .eq("creator_id", value: myUUID)
+                .execute()
+                .value
+            
+            let (memberships, ownedGroups) = try await (membershipsTask, ownedGroupsTask)
+            
+            print("DEBUG: My UUID: \(myUUID)")
+            print("DEBUG: Found \(memberships.count) group memberships, \(ownedGroups.count) owned groups")
+            
+            var allGroups = Set(memberships.map { $0.group_id })
+            allGroups.formUnion(ownedGroups.map { $0.id })
+            
+            return allGroups
+        } catch {
+            print("Error loading group memberships: \(error)")
+            return []
+        }
+    }
+    
+    func createVibe(title: String, timeDescription: String, location: String, expiresAt: Date, groupId: UUID? = nil) async {
         guard let userId = currentUser?.id,
               let userIdString = currentUserProfile?.id else { return }
         
@@ -788,7 +848,8 @@ class SupabaseAppViewModel: ObservableObject {
             location: location,
             timestamp: Date(),
             responses: [],
-            isActive: true
+            isActive: true,
+            groupId: groupId?.uuidString
         )
         vibes.insert(localVibe, at: 0)
         
@@ -800,7 +861,8 @@ class SupabaseAppViewModel: ObservableObject {
             location: location,
             timestamp: nil,
             expiresAt: expiresAt,
-            isActive: true
+            isActive: true,
+            groupId: groupId
         )
         
         do {
@@ -824,7 +886,8 @@ class SupabaseAppViewModel: ObservableObject {
                     location: location,
                     timestamp: insertedVibe.timestamp ?? Date(),
                     responses: [],
-                    isActive: true
+                    isActive: true,
+                    groupId: groupId?.uuidString
                 )
                 print("Vibe created with ID: \(actualId.uuidString)")
             }
@@ -833,13 +896,23 @@ class SupabaseAppViewModel: ObservableObject {
             await BadgeManager.shared.trackVibeCreated(userId: userIdString)
             await BadgeManager.shared.checkForNewBadges(userId: userIdString, friendCount: friends.count)
             
-            // Send push notifications to all friends
+            // Send push notifications to group members or all friends
             if let senderName = currentUserProfile?.displayName {
-                await sendPushNotificationToAllFriends(
-                    type: "vibe",
-                    senderName: senderName,
-                    data: ["vibeId": insertedVibes.first?.id?.uuidString ?? tempId]
-                )
+                if let gId = groupId {
+                    // Send only to group members
+                    await sendPushNotificationToGroupMembers(
+                        groupId: gId,
+                        type: "vibe",
+                        senderName: senderName,
+                        data: ["vibeId": insertedVibes.first?.id?.uuidString ?? tempId]
+                    )
+                } else {
+                    await sendPushNotificationToAllFriends(
+                        type: "vibe",
+                        senderName: senderName,
+                        data: ["vibeId": insertedVibes.first?.id?.uuidString ?? tempId]
+                    )
+                }
             }
             
         } catch {
@@ -940,8 +1013,24 @@ class SupabaseAppViewModel: ObservableObject {
                 .execute()
                 .value
             
+            // Get groups I'm a member of (for filtering group-targeted posts from friends)
+            let myGroupMemberships = await getMyGroupMemberships()
+            
+            // Filter posts: Only show posts where:
+            // 1. group_id is NULL (sent to all friends), OR
+            // 2. I created the post (can always see my own), OR
+            // 3. I'm a member of that group
+            let filteredPosts = dbPosts.filter { dbPost in
+                if let groupId = dbPost.groupId {
+                    let isMyPost = dbPost.userId.uuidString == currentUserProfile?.id
+                    let amInGroup = myGroupMemberships.contains(groupId)
+                    return isMyPost || amInGroup
+                }
+                return true // No group = visible to all friends
+            }
+            
             // Load all likes and replies in parallel batch queries
-            let postIds = dbPosts.compactMap { $0.id }
+            let postIds = filteredPosts.compactMap { $0.id }
             
             if postIds.isEmpty {
                 self.posts = []
@@ -974,7 +1063,7 @@ class SupabaseAppViewModel: ObservableObject {
             
             // Build posts with their likes and replies
             var postsWithDetails: [Post] = []
-            for dbPost in dbPosts {
+            for dbPost in filteredPosts {
                 guard let postId = dbPost.id else { continue }
                 let postLikes = likesByPost[postId] ?? []
                 let postReplies = repliesByPost[postId] ?? []
@@ -983,7 +1072,7 @@ class SupabaseAppViewModel: ObservableObject {
             }
             
             self.posts = postsWithDetails
-            hasMorePosts = dbPosts.count == postsPerPage
+            hasMorePosts = filteredPosts.count == postsPerPage
             updateUnreadCounts()
         } catch {
             print("Error loading posts: \(error)")
@@ -1012,7 +1101,25 @@ class SupabaseAppViewModel: ObservableObject {
                 return
             }
             
-            let postIds = dbPosts.compactMap { $0.id }
+            // Get groups I'm a member of (for filtering group-targeted posts)
+            let myGroupMemberships = await getMyGroupMemberships()
+            
+            // Filter posts by group membership
+            let filteredPosts = dbPosts.filter { dbPost in
+                if let groupId = dbPost.groupId {
+                    let isMyPost = dbPost.userId.uuidString == currentUserProfile?.id
+                    let amInGroup = myGroupMemberships.contains(groupId)
+                    return isMyPost || amInGroup
+                }
+                return true
+            }
+            
+            let postIds = filteredPosts.compactMap { $0.id }
+            
+            if postIds.isEmpty {
+                hasMorePosts = dbPosts.count == postsPerPage
+                return
+            }
             
             // Batch load likes and replies in parallel
             async let likesTask: [DBPostLike] = supabase
@@ -1035,7 +1142,7 @@ class SupabaseAppViewModel: ObservableObject {
             let repliesByPost = Dictionary(grouping: allReplies) { $0.postId }
             
             var newPosts: [Post] = []
-            for dbPost in dbPosts {
+            for dbPost in filteredPosts {
                 guard let postId = dbPost.id else { continue }
                 let postLikes = likesByPost[postId] ?? []
                 let postReplies = repliesByPost[postId] ?? []
@@ -1050,7 +1157,7 @@ class SupabaseAppViewModel: ObservableObject {
             print("Error loading more posts: \(error)")
         }
     }
-    func createPost(imageData: Data?, caption: String?, promptResponse: String? = nil) async {
+    func createPost(imageData: Data?, caption: String?, promptResponse: String? = nil, groupId: UUID? = nil) async {
         guard let userId = currentUser?.id,
               let userIdString = currentUserProfile?.id else { return }
         
@@ -1078,7 +1185,8 @@ class SupabaseAppViewModel: ObservableObject {
             promptResponse: promptResponse,
             promptId: promptResponse != nil ? todaysPrompt.id : nil,
             promptText: promptResponse != nil ? todaysPrompt.text : nil,
-            rating: postRating
+            rating: postRating,
+            groupId: groupId?.uuidString
         )
         posts.insert(localPost, at: 0)
         
@@ -1091,7 +1199,8 @@ class SupabaseAppViewModel: ObservableObject {
             promptId: promptResponse != nil ? todaysPrompt.id : nil,
             promptText: promptResponse != nil ? todaysPrompt.text : nil,
             timestamp: nil,
-            rating: postRating
+            rating: postRating,
+            groupId: groupId
         )
         
         do {
@@ -1119,9 +1228,28 @@ class SupabaseAppViewModel: ObservableObject {
                     promptResponse: insertedPost.promptResponse,
                     promptId: insertedPost.promptId,
                     promptText: insertedPost.promptText,
-                    rating: insertedPost.rating
+                    rating: insertedPost.rating,
+                    groupId: insertedPost.groupId?.uuidString
                 )
                 print("Post created with ID: \(actualId.uuidString)")
+            }
+            
+            // Send push notifications to group members or all friends
+            if let senderName = currentUserProfile?.displayName {
+                if let gId = groupId {
+                    await sendPushNotificationToGroupMembers(
+                        groupId: gId,
+                        type: "post",
+                        senderName: senderName,
+                        data: ["postId": insertedPosts.first?.id?.uuidString ?? tempId]
+                    )
+                } else {
+                    await sendPushNotificationToAllFriends(
+                        type: "post",
+                        senderName: senderName,
+                        data: ["postId": insertedPosts.first?.id?.uuidString ?? tempId]
+                    )
+                }
             }
         } catch {
             print("Error creating post: \(error)")
@@ -1633,6 +1761,20 @@ class SupabaseAppViewModel: ObservableObject {
     func sendPushNotificationToAllFriends(type: String, senderName: String, data: [String: String]? = nil) async {
         for friend in friends {
             await sendPushNotification(type: type, to: friend.id, senderName: senderName, data: data)
+        }
+    }
+    
+    /// Sends push notifications to members of a specific group
+    func sendPushNotificationToGroupMembers(groupId: UUID, type: String, senderName: String, data: [String: String]? = nil) async {
+        // Get group members from GroupsManager
+        guard let group = GroupsManager.shared.groups.first(where: { $0.id == groupId }) else {
+            print("⚠️ Group not found for notifications, falling back to all friends")
+            await sendPushNotificationToAllFriends(type: type, senderName: senderName, data: data)
+            return
+        }
+        
+        for member in group.members {
+            await sendPushNotification(type: type, to: member.id.uuidString, senderName: senderName, data: data)
         }
     }
     
@@ -2535,7 +2677,8 @@ extension DBVibe {
             location: location,
             timestamp: timestamp ?? Date(),
             responses: responses.map { $0.toVibeResponse() },
-            isActive: isActive
+            isActive: isActive,
+            groupId: groupId?.uuidString
         )
     }
 }
@@ -2565,7 +2708,8 @@ extension DBPost {
             promptResponse: promptResponse,
             promptId: promptId,
             promptText: promptText,
-            rating: rating
+            rating: rating,
+            groupId: groupId?.uuidString
         )
     }
 }

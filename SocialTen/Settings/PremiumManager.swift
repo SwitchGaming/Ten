@@ -18,9 +18,15 @@ class PremiumManager: ObservableObject {
     // Premium limits
     static let standardFriendLimit = 10
     static let premiumFriendLimit = 25
+    static let standardGroupLimit = 1
+    static let premiumGroupLimit = 3
     
     var friendLimit: Int {
         isPremium ? PremiumManager.premiumFriendLimit : PremiumManager.standardFriendLimit
+    }
+    
+    var groupLimit: Int {
+        isPremium ? PremiumManager.premiumGroupLimit : PremiumManager.standardGroupLimit
     }
     
     // Keys for UserDefaults
