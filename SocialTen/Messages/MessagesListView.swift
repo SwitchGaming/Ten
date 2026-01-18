@@ -47,8 +47,10 @@ struct MessagesListView: View {
                         ForEach(conversationManager.conversations) { conversation in
                             ConversationRow(
                                 conversation: conversation,
-                                friend: getFriend(for: conversation)
+                                friend: getFriend(for: conversation),
+                                currentUserId: viewModel.currentUserProfile?.id ?? ""
                             )
+                            .environmentObject(viewModel)
                             .onTapGesture {
                                 selectedConversation = conversation
                             }
@@ -74,10 +76,7 @@ struct MessagesListView: View {
             await conversationManager.loadConversations()
         }
         .fullScreenCover(item: $selectedConversation) { conversation in
-            if let friend = getFriend(for: conversation) {
-                ChatView(conversation: conversation, friend: friend)
-                    .environmentObject(viewModel)
-            }
+            ChatViewWrapper(conversation: conversation, viewModel: viewModel)
         }
         .sheet(isPresented: $showNewMessageSheet) {
             NewMessageSheet(onSelectFriend: { friend in
@@ -133,8 +132,15 @@ struct MessagesListView: View {
 struct ConversationRow: View {
     let conversation: Conversation
     let friend: User?
+    let currentUserId: String
     
+    @EnvironmentObject var viewModel: SupabaseAppViewModel
     @StateObject private var conversationManager = ConversationManager.shared
+    @State private var loadedUser: User?
+    
+    private var displayUser: User? {
+        friend ?? loadedUser
+    }
     
     private var isUnread: Bool {
         conversation.unreadCount > 0
@@ -152,8 +158,8 @@ struct ConversationRow: View {
             // Avatar with unread indicator
             ZStack(alignment: .topTrailing) {
                 // Friend avatar
-                if let friend = friend {
-                    FriendAvatar(user: friend, size: 52)
+                if let user = displayUser {
+                    FriendAvatar(user: user, size: 52)
                 } else {
                     Circle()
                         .fill(ThemeManager.shared.colors.surfaceLight)
@@ -180,7 +186,7 @@ struct ConversationRow: View {
             // Content
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(friend?.displayName ?? "Unknown")
+                    Text(displayUser?.displayName ?? "Loading...")
                         .font(.system(size: 16, weight: isUnread ? .semibold : .medium))
                         .foregroundColor(ThemeManager.shared.colors.textPrimary)
                     
@@ -210,6 +216,13 @@ struct ConversationRow: View {
         .padding(.horizontal, ThemeManager.shared.spacing.md)
         .padding(.vertical, ThemeManager.shared.spacing.md)
         .contentShape(Rectangle())
+        .task {
+            // Load user if not in friends list
+            if friend == nil, loadedUser == nil,
+               let friendId = conversation.otherParticipantId(currentUserId: currentUserId) {
+                loadedUser = await viewModel.getUser(byId: friendId)
+            }
+        }
     }
 }
 
@@ -309,6 +322,70 @@ struct EmptyMessagesView: View {
     }
 }
 
+// MARK: - Chat View Wrapper (handles loading non-friends)
+
+struct ChatViewWrapper: View {
+    let conversation: Conversation
+    @ObservedObject var viewModel: SupabaseAppViewModel
+    
+    @State private var user: User?
+    @State private var isLoading = true
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        Group {
+            if isLoading {
+                ZStack {
+                    ThemeManager.shared.colors.background.ignoresSafeArea()
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textSecondary))
+                }
+            } else if let user = user {
+                ChatView(conversation: conversation, friend: user)
+                    .environmentObject(viewModel)
+            } else {
+                // Could not load user - show error state
+                ZStack {
+                    ThemeManager.shared.colors.background.ignoresSafeArea()
+                    VStack(spacing: ThemeManager.shared.spacing.md) {
+                        Image(systemName: "person.slash")
+                            .font(.system(size: 40))
+                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        Text("could not load conversation")
+                            .font(.system(size: 15, weight: .light))
+                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        Button("go back") {
+                            dismiss()
+                        }
+                        .foregroundColor(ThemeManager.shared.colors.accent1)
+                    }
+                }
+            }
+        }
+        .task {
+            await loadUser()
+        }
+    }
+    
+    private func loadUser() async {
+        guard let currentUserId = viewModel.currentUserProfile?.id,
+              let friendId = conversation.otherParticipantId(currentUserId: currentUserId) else {
+            isLoading = false
+            return
+        }
+        
+        // First try friends list
+        if let friend = viewModel.friends.first(where: { $0.id == friendId }) {
+            user = friend
+            isLoading = false
+            return
+        }
+        
+        // Not in friends list - fetch from database
+        user = await viewModel.getUser(byId: friendId)
+        isLoading = false
+    }
+}
 // MARK: - Messages Loading View
 
 struct MessagesLoadingView: View {

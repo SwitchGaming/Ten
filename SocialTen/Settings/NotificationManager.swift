@@ -134,6 +134,8 @@ class NotificationManager: ObservableObject {
                 vibeResponsesEnabled: notificationPreferences.vibeResponsesEnabled,
                 connectionMatchEnabled: notificationPreferences.connectionMatchEnabled,
                 checkInAlertsEnabled: notificationPreferences.checkInAlertsEnabled,
+                directMessagesEnabled: notificationPreferences.directMessagesEnabled,
+                friendRatingsEnabled: notificationPreferences.friendRatingsEnabled,
                 dailyReminderEnabled: notificationPreferences.dailyReminderEnabled,
                 dailyReminderTime: notificationPreferences.dailyReminderTime,
                 quietHoursEnabled: notificationPreferences.quietHoursEnabled,
@@ -191,6 +193,8 @@ struct NotificationPreferences: Codable {
     var vibeResponsesEnabled: Bool = true
     var connectionMatchEnabled: Bool = true
     var checkInAlertsEnabled: Bool = true  // Allow friends to receive gentle check-in alerts
+    var directMessagesEnabled: Bool = true  // DM notifications
+    var friendRatingsEnabled: Bool = false  // When friends rate their day
     var dailyReminderEnabled: Bool = false
     var dailyReminderTime: String = "19:00"
     var quietHoursEnabled: Bool = true
@@ -210,6 +214,8 @@ struct DBNotificationPreferences: Codable {
     let vibeResponsesEnabled: Bool
     let connectionMatchEnabled: Bool
     let checkInAlertsEnabled: Bool
+    let directMessagesEnabled: Bool
+    let friendRatingsEnabled: Bool
     let dailyReminderEnabled: Bool
     let dailyReminderTime: String
     let quietHoursEnabled: Bool
@@ -226,6 +232,8 @@ struct DBNotificationPreferences: Codable {
         case vibeResponsesEnabled = "vibe_responses_enabled"
         case connectionMatchEnabled = "connection_match_enabled"
         case checkInAlertsEnabled = "check_in_alerts_enabled"
+        case directMessagesEnabled = "direct_messages_enabled"
+        case friendRatingsEnabled = "friend_ratings_enabled"
         case dailyReminderEnabled = "daily_reminder_enabled"
         case dailyReminderTime = "daily_reminder_time"
         case quietHoursEnabled = "quiet_hours_enabled"

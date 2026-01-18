@@ -1442,8 +1442,8 @@ class SupabaseAppViewModel: ObservableObject {
             )
         }
         
-        // Get latest post for premium widget
-        let latestPost: WidgetPostData? = posts.first.map { post in
+        // Get latest post for premium widget (only from friends)
+        let latestPost: WidgetPostData? = getFeedPosts().first.map { post in
             let author = getUser(by: post.userId)
             return WidgetPostData(
                 id: post.id,
