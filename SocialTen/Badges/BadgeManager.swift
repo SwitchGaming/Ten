@@ -303,6 +303,36 @@ class BadgeManager: ObservableObject {
         }
     }
     
+    /// Sends a push notification when a badge is unlocked
+    private func sendBadgeUnlockNotification(badge: BadgeDefinition) async {
+        guard let userId = currentUserId else { return }
+        
+        do {
+            let body: [String: Any] = [
+                "type": "badge_unlocked",
+                "userId": userId,
+                "senderName": badge.name,
+                "data": [
+                    "badgeId": badge.id,
+                    "badgeName": badge.name,
+                    "badgeEmoji": badge.icon,
+                    "rarity": badge.rarity.rawValue
+                ]
+            ]
+            
+            let jsonData = try JSONSerialization.data(withJSONObject: body)
+            
+            try await SupabaseManager.shared.client.functions.invoke(
+                "send-push-notification",
+                options: FunctionInvokeOptions(body: jsonData)
+            )
+            
+            print("✅ Badge unlock notification sent for \(badge.name)")
+        } catch {
+            print("❌ Error sending badge notification: \(error)")
+        }
+    }
+    
     // MARK: - Check for New Badges
     
     func checkForNewBadges(
@@ -342,6 +372,9 @@ class BadgeManager: ObservableObject {
                 
                 // Save to Supabase
                 await saveBadgeToSupabase(badge.id)
+                
+                // Send push notification for badge unlock
+                await sendBadgeUnlockNotification(badge: badge)
             }
         }
         

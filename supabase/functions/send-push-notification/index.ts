@@ -15,12 +15,15 @@ const APNS_HOST = Deno.env.get('APNS_ENVIRONMENT') === 'production'
   : 'api.sandbox.push.apple.com'
 
 // Rate limiting constants
-const MAX_NOTIFICATIONS_PER_DAY = 20
-const MIN_SAME_TYPE_INTERVAL_MINUTES = 5
+const MAX_NOTIFICATIONS_PER_DAY = 50
+const MIN_SAME_TYPE_INTERVAL_MINUTES = 1 // Short cooldown for most types
 const COLLAPSE_THRESHOLD = 3 // Collapse if 3+ similar notifications pending
 
+// Types that bypass rate limiting (users want every notification)
+const BYPASS_RATE_LIMIT_TYPES = ['direct_message', 'reply', 'friend_request', 'friend_accepted', 'check_in_response', 'badge_unlocked']
+
 // Notification copy templates - enticing and curiosity-driven
-const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number) => string, body: (name?: string) => string }> = {
+const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number) => string, body: (name?: string, data?: any) => string }> = {
   vibe: {
     title: (name) => `${name} started a vibe ✨`,
     body: () => "see what's happening"
@@ -40,6 +43,18 @@ const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number)
   friend_request: {
     title: () => "new connection request 👋",
     body: (name) => `${name} wants to be friends`
+  },
+  friend_accepted: {
+    title: () => "you're now friends! 🎉",
+    body: (name) => `${name} accepted your request`
+  },
+  direct_message: {
+    title: (name) => `${name} 💬`,
+    body: (_, data) => data?.preview || "sent you a message"
+  },
+  direct_message_collapsed: {
+    title: (_, count) => `${count} new messages`,
+    body: () => "people are waiting to hear from you"
   },
   reply: {
     title: (name) => `${name} replied 💬`,
@@ -64,6 +79,18 @@ const NOTIFICATION_COPY: Record<string, { title: (name?: string, count?: number)
   check_in_response: {
     title: (name) => `${name} is thinking of you 💙`,
     body: () => "you've got someone in your corner"
+  },
+  badge_unlocked: {
+    title: () => `new badge unlocked! 🏆`,
+    body: (_, data) => `you earned "${data?.badgeName || 'a new badge'}"`
+  },
+  friend_rated: {
+    title: (name) => `${name} rated their day`,
+    body: () => "see how your friend is doing"
+  },
+  friends_rated_collapsed: {
+    title: (_, count) => `${count} friends rated today`,
+    body: () => "see how everyone's doing"
   }
 }
 
@@ -82,7 +109,15 @@ serve(async (req) => {
   try {
     const { type, userId, senderName, data } = await req.json()
     
-    console.log(`📬 Processing ${type} notification for user ${userId}`)
+    console.log(`📬 Processing ${type} notification for user ${userId}, sender: ${senderName || 'undefined'}`)
+    
+    // Skip if this looks like a duplicate from a database trigger
+    if (!senderName && type !== 'daily_reminder' && type !== 'connection_match') {
+      console.log('⚠️ Skipping notification without senderName (likely database trigger duplicate)')
+      return new Response(JSON.stringify({ skipped: 'no_sender_name' }), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     
@@ -125,13 +160,15 @@ serve(async (req) => {
         })
       }
       
-      // Check rate limiting
-      const rateLimitCheck = await checkRateLimits(supabase, userId, type)
-      if (!rateLimitCheck.allowed) {
-        console.log(`Rate limited: ${rateLimitCheck.reason}`)
-        return new Response(JSON.stringify({ skipped: 'rate_limited', reason: rateLimitCheck.reason }), {
-          headers: { 'Content-Type': 'application/json' }
-        })
+      // Check rate limiting (skip for important interactive types)
+      if (!BYPASS_RATE_LIMIT_TYPES.includes(type)) {
+        const rateLimitCheck = await checkRateLimits(supabase, userId, type)
+        if (!rateLimitCheck.allowed) {
+          console.log(`Rate limited: ${rateLimitCheck.reason}`)
+          return new Response(JSON.stringify({ skipped: 'rate_limited', reason: rateLimitCheck.reason }), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        }
       }
       
       // Check quiet hours (only if enabled)
@@ -152,7 +189,7 @@ serve(async (req) => {
     const collapseCheck = await checkForCollapse(supabase, userId, type)
     
     // Generate notification content
-    const { title, body } = generateNotificationContent(type, senderName, collapseCheck.count)
+    const { title, body } = generateNotificationContent(type, senderName, collapseCheck.count, data)
     
     // Generate JWT for APNs
     console.log('Generating APNs JWT...')
@@ -165,6 +202,15 @@ serve(async (req) => {
     )
     
     console.log('APNs results:', results)
+    
+    // Clean up invalid tokens (410 = Unregistered)
+    const invalidTokens = tokens.filter((_, i) => results[i]?.status === 410)
+    if (invalidTokens.length > 0) {
+      console.log(`Cleaning up ${invalidTokens.length} invalid token(s)`)
+      for (const { token } of invalidTokens) {
+        await supabase.from('device_tokens').delete().eq('token', token)
+      }
+    }
     
     // Log notification
     await supabase.from('notification_logs').insert({
@@ -207,7 +253,10 @@ function checkNotificationTypeEnabled(type: string, prefs: any): boolean {
     case 'vibe_response':
       return prefs.vibe_responses_enabled !== false
     case 'friend_request':
+    case 'friend_accepted':
       return prefs.friend_requests_enabled !== false
+    case 'direct_message':
+      return prefs.direct_messages_enabled !== false
     case 'reply':
       return prefs.replies_enabled !== false
     case 'connection_match':
@@ -218,6 +267,11 @@ function checkNotificationTypeEnabled(type: string, prefs: any): boolean {
       return prefs.check_in_alerts_enabled !== false
     case 'check_in_response':
       return true  // Always deliver support messages
+    case 'badge_unlocked':
+      return true  // Always celebrate badges
+    case 'friend_rated':
+    case 'friends_rated_collapsed':
+      return prefs.friend_ratings_enabled !== false
     default:
       return true
   }
@@ -301,7 +355,7 @@ function isInQuietHours(current: string, start: string, end: string): boolean {
 
 // Queue notification for later delivery
 async function queueNotification(supabase: any, userId: string, type: string, senderName: string, data: any, deliverAfter: string) {
-  const { title, body } = generateNotificationContent(type, senderName, 1)
+  const { title, body } = generateNotificationContent(type, senderName, 1, data)
   
   await supabase.from('notification_queue').insert({
     user_id: userId,
@@ -340,7 +394,7 @@ async function checkForCollapse(supabase: any, userId: string, type: string): Pr
 }
 
 // Generate notification content based on type
-function generateNotificationContent(type: string, senderName?: string, count: number = 1): { title: string, body: string } {
+function generateNotificationContent(type: string, senderName?: string, count: number = 1, data?: any): { title: string, body: string } {
   // Check if we should use collapsed version
   const useCollapsed = count >= COLLAPSE_THRESHOLD
   const copyType = useCollapsed && NOTIFICATION_COPY[`${type}_collapsed`] ? `${type}_collapsed` : type
@@ -352,7 +406,7 @@ function generateNotificationContent(type: string, senderName?: string, count: n
   
   return {
     title: template.title(senderName, count),
-    body: template.body(senderName)
+    body: template.body(senderName, data)
   }
 }
 

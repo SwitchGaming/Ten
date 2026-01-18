@@ -628,6 +628,15 @@ class SupabaseAppViewModel: ObservableObject {
             
             print("Friend request accepted, friendships created, and request deleted")
             
+            // Notify the original requester that their request was accepted
+            if let myName = currentUserProfile?.displayName {
+                await sendPushNotification(
+                    type: "friend_accepted",
+                    to: request.fromUserId,
+                    senderName: myName
+                )
+            }
+            
             // Reload friends list and requests
             await loadFriends()
             await loadFriendRequests()

@@ -32,6 +32,11 @@ class ConversationManager: ObservableObject {
     private var activeConversationId: String?
     private var currentUserId: String?
     
+    /// Public read-only access to the currently active conversation
+    var currentActiveConversationId: String? {
+        return activeConversationId
+    }
+    
     // Cache keys
     private let conversationsCacheKey = "cachedConversations"
     private let unreadCountCacheKey = "cachedUnreadCount"
@@ -182,6 +187,9 @@ class ConversationManager: ObservableObject {
                 senderId: senderId,
                 timestamp: message.createdAt
             )
+            
+            // Send push notification for DM
+            await sendDMNotification(to: recipientId, conversationId: convId, messagePreview: String(content.prefix(50)))
             
             return message
         } catch {
@@ -602,6 +610,65 @@ class ConversationManager: ObservableObject {
         currentUserId = nil
         UserDefaults.standard.removeObject(forKey: conversationsCacheKey)
         UserDefaults.standard.removeObject(forKey: unreadCountCacheKey)
+    }
+    
+    // MARK: - Push Notifications
+    
+    /// Sends a DM push notification to the recipient
+    private func sendDMNotification(to recipientId: String, conversationId: String, messagePreview: String) async {
+        guard let senderId = currentUserId else {
+            print("❌ DM notification skipped: no currentUserId")
+            return
+        }
+        
+        print("📤 Attempting to send DM notification to \(recipientId)")
+        
+        // Get sender's display name - use raw query to avoid DBUser decoding issues
+        do {
+            struct DisplayNameResult: Codable {
+                let displayName: String
+                enum CodingKeys: String, CodingKey {
+                    case displayName = "display_name"
+                }
+            }
+            
+            let response: [DisplayNameResult] = try await SupabaseManager.shared.client
+                .from("users")
+                .select("display_name")
+                .eq("id", value: UUID(uuidString: senderId)!)
+                .limit(1)
+                .execute()
+                .value
+            
+            guard let senderName = response.first?.displayName else {
+                print("❌ DM notification skipped: could not get sender display name")
+                return
+            }
+            
+            print("📤 Sending DM notification from \(senderName) to \(recipientId)")
+            
+            // Call the edge function
+            var body: [String: Any] = [
+                "type": "direct_message",
+                "userId": recipientId,
+                "senderName": senderName,
+                "data": [
+                    "conversationId": conversationId,
+                    "preview": messagePreview
+                ]
+            ]
+            
+            let jsonData = try JSONSerialization.data(withJSONObject: body)
+            
+            try await SupabaseManager.shared.client.functions.invoke(
+                "send-push-notification",
+                options: FunctionInvokeOptions(body: jsonData)
+            )
+            
+            print("✅ DM notification sent to \(recipientId)")
+        } catch {
+            print("❌ Error sending DM notification: \(error)")
+        }
     }
 }
 

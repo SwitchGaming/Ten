@@ -59,6 +59,18 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     // Handle notification when app is in foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        let userInfo = notification.request.content.userInfo
+        
+        // Suppress DM notification if user is currently viewing that conversation
+        if let type = userInfo["type"] as? String,
+           type == "direct_message",
+           let conversationId = userInfo["conversationId"] as? String,
+           ConversationManager.shared.currentActiveConversationId == conversationId {
+            print("📵 Suppressing DM notification - user is in this conversation")
+            completionHandler([])
+            return
+        }
+        
         completionHandler([.banner, .sound, .badge])
     }
     
