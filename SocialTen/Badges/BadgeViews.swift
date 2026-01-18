@@ -570,6 +570,10 @@ struct UserProfileView: View {
     @State private var friendshipScore: FriendshipScore?
     @State private var isLoadingFriendshipScore = false
     
+    // Rating history for heatmap
+    @State private var loadedRatingHistory: [RatingEntry] = []
+    @State private var isLoadingRatingHistory = true
+    
     var isCurrentUser: Bool {
         user.id == viewModel.currentUserProfile?.id
     }
@@ -794,6 +798,16 @@ struct UserProfileView: View {
                     .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     .padding(.top, 8)
                     
+                    // Rating Heatmap (only for friends and current user)
+                    if isFriend {
+                        RatingHeatmapView(
+                            ratingHistory: isCurrentUser ? viewModel.ratingHistory : loadedRatingHistory,
+                            isLoading: isCurrentUser ? false : isLoadingRatingHistory
+                        )
+                        .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                        .padding(.top, 16)
+                    }
+                    
                     // Non-friend hint
                     if !isFriend {
                         Text("become friends to see more")
@@ -833,12 +847,14 @@ struct UserProfileView: View {
         }
         .task {
             if isFriend && !isCurrentUser {
-                // Load stats and friendship score in parallel
+                // Load stats, friendship score, and rating history in parallel
                 async let statsTask: () = loadUserStats()
                 async let scoreTask: () = loadFriendshipScore()
-                _ = await (statsTask, scoreTask)
+                async let historyTask: () = loadRatingHistory()
+                _ = await (statsTask, scoreTask, historyTask)
             } else {
                 isLoadingStats = false
+                isLoadingRatingHistory = false
             }
         }
         .alert("Remove Friend", isPresented: $showRemoveConfirmation) {
@@ -850,6 +866,14 @@ struct UserProfileView: View {
         } message: {
             Text("Are you sure you want to remove \(user.displayName) from your friends?")
         }
+    }
+    
+    // MARK: - Load Rating History
+    
+    func loadRatingHistory() async {
+        isLoadingRatingHistory = true
+        loadedRatingHistory = await viewModel.fetchRatingHistory(for: user.id)
+        isLoadingRatingHistory = false
     }
     
     // MARK: - Load User Stats from Supabase
