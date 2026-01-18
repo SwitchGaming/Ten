@@ -45,6 +45,8 @@ struct ContentView: View {
                             .environmentObject(badgeManager)
                             .task {
                                 await appViewModel.loadCurrentUser()
+                                // Check if daily rating should be reset (new day in user's timezone)
+                                appViewModel.checkAndResetDailyRating()
                                 // Explicitly load posts and vibes after user loads
                                 await appViewModel.loadPosts()
                                 await appViewModel.loadVibes()
