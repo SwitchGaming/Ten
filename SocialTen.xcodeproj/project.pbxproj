@@ -42,6 +42,9 @@
 		B8C99EB62EFE8D4C0050E1A3 /* TenPlusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB52EFE8D4C0050E1A3 /* TenPlusView.swift */; };
 		B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C99EB72EFE90A40050E1A3 /* Settings/EditProfileView.swift */; };
 		B8CD47712EEBC31600F2CC27 /* Vibe/Vibe.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CD47702EEBC31600F2CC27 /* Vibe/Vibe.swift */; };
+		B8D987432F1C70310048E537 /* DeveloperStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D987412F1C70310048E537 /* DeveloperStatsView.swift */; };
+		B8D987442F1C70310048E537 /* DeveloperConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D9873F2F1C70310048E537 /* DeveloperConfig.swift */; };
+		B8D987452F1C70310048E537 /* DeveloperFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8D987402F1C70310048E537 /* DeveloperFeedbackView.swift */; };
 		B8F08B4D2F004BA600F1CDE5 /* Badges/Badge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4C2F004BA600F1CDE5 /* Badges/Badge.swift */; };
 		B8F08B4F2F004C4200F1CDE5 /* Badges/BadgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B4E2F004C4200F1CDE5 /* Badges/BadgeManager.swift */; };
 		B8F08B512F004C6800F1CDE5 /* Badges/BadgeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F08B502F004C6800F1CDE5 /* Badges/BadgeViews.swift */; };
@@ -118,6 +121,9 @@
 		B8C99EB52EFE8D4C0050E1A3 /* TenPlusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TenPlusView.swift; sourceTree = "<group>"; };
 		B8C99EB72EFE90A40050E1A3 /* Settings/EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/EditProfileView.swift; sourceTree = "<group>"; };
 		B8CD47702EEBC31600F2CC27 /* Vibe/Vibe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibe/Vibe.swift; sourceTree = "<group>"; };
+		B8D9873F2F1C70310048E537 /* DeveloperConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperConfig.swift; sourceTree = "<group>"; };
+		B8D987402F1C70310048E537 /* DeveloperFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperFeedbackView.swift; sourceTree = "<group>"; };
+		B8D987412F1C70310048E537 /* DeveloperStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperStatsView.swift; sourceTree = "<group>"; };
 		B8F08B4C2F004BA600F1CDE5 /* Badges/Badge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/Badge.swift; sourceTree = "<group>"; };
 		B8F08B4E2F004C4200F1CDE5 /* Badges/BadgeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/BadgeManager.swift; sourceTree = "<group>"; };
 		B8F08B502F004C6800F1CDE5 /* Badges/BadgeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Badges/BadgeViews.swift; sourceTree = "<group>"; };
@@ -206,6 +212,16 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
+		B8D987422F1C70310048E537 /* Developer */ = {
+			isa = PBXGroup;
+			children = (
+				B8D9873F2F1C70310048E537 /* DeveloperConfig.swift */,
+				B8D987402F1C70310048E537 /* DeveloperFeedbackView.swift */,
+				B8D987412F1C70310048E537 /* DeveloperStatsView.swift */,
+			);
+			path = Developer;
+			sourceTree = "<group>";
+		};
 		B8F9FAFB2EE0F1E8004A2584 = {
 			isa = PBXGroup;
 			children = (
@@ -229,6 +245,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8D987422F1C70310048E537 /* Developer */,
 				B800381E2F131114007CC449 /* CheckIn */,
 				B83FBD872F12ED4C000005BF /* Widget */,
 				B88E3D722F128BB2009649FE /* Messages */,
@@ -418,6 +435,9 @@
 				B831AD262EFBEA8D00E7B1E7 /* Supabase/SupabaseAppViewModel.swift in Sources */,
 				B831AD242EFBEA6F00E7B1E7 /* Authorization/AuthView.swift in Sources */,
 				B8F08B512F004C6800F1CDE5 /* Badges/BadgeViews.swift in Sources */,
+				B8D987432F1C70310048E537 /* DeveloperStatsView.swift in Sources */,
+				B8D987442F1C70310048E537 /* DeveloperConfig.swift in Sources */,
+				B8D987452F1C70310048E537 /* DeveloperFeedbackView.swift in Sources */,
 				B831AD222EFBEA4E00E7B1E7 /* Authorization/AuthViewModel.swift in Sources */,
 				B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */,
 				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,

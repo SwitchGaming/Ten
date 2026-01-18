@@ -676,6 +676,7 @@ struct FriendsView: View {
         @EnvironmentObject var viewModel: SupabaseAppViewModel
         @EnvironmentObject var authViewModel: AuthViewModel
         @ObservedObject private var themeManager = ThemeManager.shared
+        @ObservedObject private var developerManager = DeveloperManager.shared
         @Environment(\.dismiss) private var dismiss
         @State private var showTenPlus = false
         @State private var showEditProfile = false
@@ -683,6 +684,8 @@ struct FriendsView: View {
         @State private var showNotificationSettings = false
         @State private var showDeleteConfirmation = false
         @State private var isDeleting = false
+        @State private var showDeveloperStats = false
+        @State private var showDeveloperFeedback = false
         
         var body: some View {
             ZStack {
@@ -755,6 +758,18 @@ struct FriendsView: View {
                                 }
                             }
                             
+                            // Developer Section (only visible to developers)
+                            if developerManager.isDeveloper {
+                                settingsSection(title: "developer") {
+                                    SettingsRow(icon: "chart.bar.fill", title: "App Stats") {
+                                        showDeveloperStats = true
+                                    }
+                                    SettingsRow(icon: "text.bubble.fill", title: "User Feedback") {
+                                        showDeveloperFeedback = true
+                                    }
+                                }
+                            }
+                            
                             // Sign Out
                             Button(action: {
                                 Task {
@@ -814,6 +829,18 @@ struct FriendsView: View {
             }
             .sheet(isPresented: $showNotificationSettings) {
                 NotificationSettingsView()
+            }
+            .fullScreenCover(isPresented: $showDeveloperStats) {
+                DeveloperStatsView()
+            }
+            .fullScreenCover(isPresented: $showDeveloperFeedback) {
+                DeveloperFeedbackView()
+            }
+            .task {
+                // Check developer status when settings open
+                if let userId = viewModel.currentUserProfile?.id {
+                    await developerManager.checkDeveloperStatus(userId: userId)
+                }
             }
             .alert("Delete Account", isPresented: $showDeleteConfirmation) {
                 Button("Cancel", role: .cancel) { }
