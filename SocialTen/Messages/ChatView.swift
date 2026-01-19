@@ -74,7 +74,7 @@ struct ChatView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, ThemeManager.shared.spacing.sm)
                 }
                 .onAppear {
@@ -495,6 +495,8 @@ struct SwipeableMessageBubble: View {
     @State private var offset: CGFloat = 0
     @State private var showReplyIcon = false
     @State private var showEmojiPicker = false
+    @State private var showReactionGlow = false
+    @State private var reactionBounce = false
     
     private let swipeThreshold: CGFloat = 60
     private let quickReactionEmojis = ["❤️", "😂", "😮", "😢", "😡", "👍"]
@@ -525,15 +527,47 @@ struct SwipeableMessageBubble: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .background(
-                            RoundedRectangle(cornerRadius: 18)
-                                .fill(isFromCurrentUser
-                                    ? ThemeManager.shared.colors.accent1
-                                    : ThemeManager.shared.colors.cardBackground)
+                            ZStack {
+                                // Glow layer (behind the bubble)
+                                if showReactionGlow {
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(ThemeManager.shared.colors.accent1)
+                                        .blur(radius: 12)
+                                        .opacity(0.6)
+                                }
+                                
+                                // Main bubble
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(isFromCurrentUser
+                                        ? ThemeManager.shared.colors.accent1
+                                        : ThemeManager.shared.colors.cardBackground)
+                            }
                         )
+                        .scaleEffect(showReactionGlow ? 1.05 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showReactionGlow)
                         .onTapGesture(count: 2) {
-                            // Double tap for heart
+                            // Double tap for heart with glow animation
                             let impact = UIImpactFeedbackGenerator(style: .light)
                             impact.impactOccurred()
+                            
+                            // Trigger glow animation
+                            withAnimation(.easeOut(duration: 0.15)) {
+                                showReactionGlow = true
+                            }
+                            
+                            // Trigger reaction bounce
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                                reactionBounce = true
+                            }
+                            
+                            // Reset animations
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    showReactionGlow = false
+                                }
+                                reactionBounce = false
+                            }
+                            
                             onReact("❤️")
                         }
                         .onLongPressGesture(minimumDuration: 0.4) {
@@ -558,14 +592,28 @@ struct SwipeableMessageBubble: View {
                                 chipTextColor: ThemeManager.shared.colors.textTertiary,
                                 tint: ThemeManager.shared.colors.cardBackground
                             ) { emoji in
+                                // Trigger bounce animation when tapping reaction
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.5)) {
+                                    reactionBounce = true
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    reactionBounce = false
+                                }
                                 onReact(emoji)
                             }
+                            .scaleEffect(reactionBounce ? 1.15 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.5), value: reactionBounce)
                             .padding(.leading, isFromCurrentUser ? 0 : 12)
                             .padding(.trailing, isFromCurrentUser ? 12 : 0)
                             if !isFromCurrentUser { Spacer() }
                         }
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.5).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                     }
                 }
+                .animation(.spring(response: 0.35, dampingFraction: 0.7), value: reactions.isEmpty)
                 
                 // Timestamp and status (only show for last message in group)
                 if showTimestamp {
@@ -688,19 +736,22 @@ struct SwipeableMessageBubble: View {
     }
     
     private func replyQuote(for replyMsg: Message) -> some View {
-        HStack(spacing: 6) {
+        // Determine the label for who sent the original message being replied to
+        let replyAuthorLabel = replyMsg.senderId == currentUserId ? "you" : friendName.lowercased()
+        
+        return HStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 1)
-                .fill(isFromCurrentUser ? ThemeManager.shared.colors.background.opacity(0.5) : ThemeManager.shared.colors.accent1)
-                .frame(width: 2)
+                .fill(isFromCurrentUser ? Color.white.opacity(0.6) : ThemeManager.shared.colors.accent1)
+                .frame(width: 2) 
             
             VStack(alignment: .leading, spacing: 1) {
-                Text((replyMsg.senderId == (isFromCurrentUser ? message.senderId : "") ? "you" : friendName.lowercased()))
-                    .font(.system(size: 10))
-                    .foregroundColor(isFromCurrentUser ? ThemeManager.shared.colors.background.opacity(0.8) : ThemeManager.shared.colors.textSecondary)
+                Text(replyAuthorLabel)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(isFromCurrentUser ? Color.white.opacity(0.9) : ThemeManager.shared.colors.textSecondary)
                 
                 Text(replyMsg.content)
                     .font(.system(size: 11))
-                    .foregroundColor(isFromCurrentUser ? ThemeManager.shared.colors.background.opacity(0.7) : ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(isFromCurrentUser ? Color.white.opacity(0.8) : ThemeManager.shared.colors.textTertiary)
                     .lineLimit(1)
             }
         }
@@ -709,7 +760,7 @@ struct SwipeableMessageBubble: View {
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(isFromCurrentUser
-                    ? ThemeManager.shared.colors.background.opacity(0.2)
+                    ? Color.black.opacity(0.15)
                     : ThemeManager.shared.colors.surfaceLight)
         )
     }
