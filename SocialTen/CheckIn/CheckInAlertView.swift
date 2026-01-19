@@ -37,7 +37,7 @@ struct CheckInAlertView: View {
     // MARK: - Main Content
     
     private var mainContent: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 // Header
                 headerView

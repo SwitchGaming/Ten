@@ -12,7 +12,7 @@ import SwiftUI
 struct SmartScrollView<Content: View>: View {
     @ObservedObject private var themeManager = ThemeManager.shared
 
-    var showsIndicators: Bool = true
+    var showsIndicators: Bool = false
     var topButtonThreshold: CGFloat = 40
     var scrollPromptInset: CGFloat = 18
     var contentPaddingBottom: CGFloat = 0

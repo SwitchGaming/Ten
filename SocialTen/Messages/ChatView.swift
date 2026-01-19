@@ -44,7 +44,7 @@ struct ChatView: View {
             
             // Messages
             ScrollViewReader { proxy in
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     LazyVStack(spacing: 4) {
                         if isLoading {
                             ProgressView()
