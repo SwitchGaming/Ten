@@ -524,6 +524,7 @@ struct SwipeableMessageBubble: View {
                     Text(message.content)
                         .font(.system(size: 15))
                         .foregroundColor(isFromCurrentUser ? ThemeManager.shared.colors.background : ThemeManager.shared.colors.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .background(
@@ -546,6 +547,9 @@ struct SwipeableMessageBubble: View {
                         .scaleEffect(showReactionGlow ? 1.05 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: showReactionGlow)
                         .onTapGesture(count: 2) {
+                            // Only allow reactions on received messages
+                            guard !isFromCurrentUser else { return }
+                            
                             // Double tap for heart with glow animation
                             let impact = UIImpactFeedbackGenerator(style: .light)
                             impact.impactOccurred()
@@ -571,6 +575,9 @@ struct SwipeableMessageBubble: View {
                             onReact("❤️")
                         }
                         .onLongPressGesture(minimumDuration: 0.4) {
+                            // Only allow reactions on received messages
+                            guard !isFromCurrentUser else { return }
+                            
                             // Long press for emoji picker
                             let impact = UIImpactFeedbackGenerator(style: .medium)
                             impact.impactOccurred()
@@ -629,6 +636,7 @@ struct SwipeableMessageBubble: View {
                     .padding(.top, 0)
                 }
             }
+            .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: isFromCurrentUser ? .trailing : .leading)
             .offset(x: offset)
             
             // Reply icon for current user messages
