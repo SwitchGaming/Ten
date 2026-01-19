@@ -958,9 +958,9 @@ class SupabaseAppViewModel: ObservableObject {
                 .value
             
             // Batch load all replies for these posts at once
-            async let repliesTask: [DBPostReply] = supabase
+            async let repliesTask: [DBPostReplyWithAuthor] = supabase
                 .from("post_replies")
-                .select()
+                .select("*, users!user_id(display_name, username)")
                 .in("post_id", values: postIds.map { $0.uuidString })
                 .execute()
                 .value
@@ -970,7 +970,7 @@ class SupabaseAppViewModel: ObservableObject {
             
             // Group likes and replies by post ID
             let likesByPost = Dictionary(grouping: allLikes) { $0.postId }
-            let repliesByPost = Dictionary(grouping: allReplies) { $0.postId }
+            let repliesByPost = Dictionary(grouping: allReplies.map { $0.toDBPostReply() }) { $0.postId }
             
             // Build posts with their likes and replies
             var postsWithDetails: [Post] = []
@@ -1022,9 +1022,9 @@ class SupabaseAppViewModel: ObservableObject {
                 .execute()
                 .value
             
-            async let repliesTask: [DBPostReply] = supabase
+            async let repliesTask: [DBPostReplyWithAuthor] = supabase
                 .from("post_replies")
-                .select()
+                .select("*, users!user_id(display_name, username)")
                 .in("post_id", values: postIds.map { $0.uuidString })
                 .execute()
                 .value
@@ -1032,7 +1032,7 @@ class SupabaseAppViewModel: ObservableObject {
             let (allLikes, allReplies) = try await (likesTask, repliesTask)
             
             let likesByPost = Dictionary(grouping: allLikes) { $0.postId }
-            let repliesByPost = Dictionary(grouping: allReplies) { $0.postId }
+            let repliesByPost = Dictionary(grouping: allReplies.map { $0.toDBPostReply() }) { $0.postId }
             
             var newPosts: [Post] = []
             for dbPost in dbPosts {
@@ -2560,7 +2560,7 @@ extension DBPost {
             imageUrl: imageUrl,
             caption: caption,
             plusOnes: likes.map { PlusOne(id: $0.id?.uuidString ?? UUID().uuidString, userId: $0.userId.uuidString, timestamp: $0.timestamp ?? Date()) },
-            replies: replies.map { Reply(id: $0.id?.uuidString ?? UUID().uuidString, userId: $0.userId.uuidString, text: $0.text, timestamp: $0.timestamp ?? Date()) },
+            replies: replies.map { Reply(id: $0.id?.uuidString ?? UUID().uuidString, userId: $0.userId.uuidString, text: $0.text, timestamp: $0.timestamp ?? Date(), authorName: $0.authorName, authorUsername: $0.authorUsername) },
             timestamp: timestamp ?? Date(),
             promptResponse: promptResponse,
             promptId: promptId,

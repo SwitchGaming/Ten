@@ -119,6 +119,8 @@ struct DBPostReply: Codable, Identifiable {
     let userId: UUID
     let text: String
     let timestamp: Date?
+    var authorName: String?
+    var authorUsername: String?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -126,6 +128,50 @@ struct DBPostReply: Codable, Identifiable {
         case userId = "user_id"
         case text
         case timestamp
+        case authorName = "author_name"
+        case authorUsername = "author_username"
+    }
+}
+
+// MARK: - Database Post Reply With Author (for joined queries)
+struct DBPostReplyWithAuthor: Codable, Identifiable {
+    let id: UUID?
+    let postId: UUID
+    let userId: UUID
+    let text: String
+    let timestamp: Date?
+    let users: ReplyAuthor?
+    
+    struct ReplyAuthor: Codable {
+        let displayName: String
+        let username: String
+        
+        enum CodingKeys: String, CodingKey {
+            case displayName = "display_name"
+            case username
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case postId = "post_id"
+        case userId = "user_id"
+        case text
+        case timestamp
+        case users
+    }
+    
+    func toDBPostReply() -> DBPostReply {
+        var reply = DBPostReply(
+            id: id,
+            postId: postId,
+            userId: userId,
+            text: text,
+            timestamp: timestamp,
+            authorName: users?.displayName,
+            authorUsername: users?.username
+        )
+        return reply
     }
 }
 
