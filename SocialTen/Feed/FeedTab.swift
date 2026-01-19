@@ -510,9 +510,16 @@ struct FeedPostCard: View {
                 // Replies Section
                 if showReplies {
                     VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
-                        ForEach(Array(post.replies.enumerated()), id: \.element.id) { index, reply in
-                            FeedReplyRow(reply: reply, postId: post.id)
-                                .staggeredAnimation(index: index, baseDelay: 0)
+                        // Scrollable replies list
+                        if !post.replies.isEmpty {
+                            ScrollView(.vertical, showsIndicators: false) {
+                                VStack(alignment: .leading, spacing: ThemeManager.shared.spacing.sm) {
+                                    ForEach(post.replies) { reply in
+                                        FeedReplyRow(reply: reply, postId: post.id)
+                                    }
+                                }
+                            }
+                            .frame(maxHeight: 200) // Limit height for many replies
                         }
                         
                         // Reply input
@@ -554,10 +561,9 @@ struct FeedPostCard: View {
                             }
                         }
                         .animation(.spring(response: 0.3), value: replyText.isEmpty)
-                        .animation(.spring(response: 0.3), value: replyText.isEmpty)
                     }
                     .padding(.top, ThemeManager.shared.spacing.sm)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(.opacity)
                 }
                 }
                 .padding(ThemeManager.shared.spacing.md)
@@ -657,6 +663,8 @@ struct FeedReplyRow: View {
     let reply: Reply
     let postId: String
     
+    @State private var showUserProfile = false
+    
     var user: User? {
         viewModel.getUser(by: reply.userId)
     }
@@ -665,21 +673,41 @@ struct FeedReplyRow: View {
         reply.userId == viewModel.currentUserProfile?.id
     }
     
+    // Display name: use user if available (friend), otherwise use stored authorName
+    var displayName: String {
+        if let user = user {
+            return user.displayName.lowercased()
+        }
+        return reply.authorName?.lowercased() ?? reply.authorUsername?.lowercased() ?? "user"
+    }
+    
+    var displayInitial: String {
+        String(displayName.prefix(1))
+    }
+    
     var body: some View {
         HStack(alignment: .top, spacing: ThemeManager.shared.spacing.sm) {
-            Circle()
-                .fill(ThemeManager.shared.colors.background)
-                .frame(width: 28, height: 28)
-                .overlay(
-                    Text(String(user?.displayName.prefix(1) ?? "?").lowercased())
-                        .font(.system(size: 10, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
-                )
+            // Tappable avatar
+            Button(action: { showUserProfile = true }) {
+                Circle()
+                    .fill(ThemeManager.shared.colors.background)
+                    .frame(width: 28, height: 28)
+                    .overlay(
+                        Text(displayInitial)
+                            .font(.system(size: 10, weight: .light))
+                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                    )
+            }
+            .buttonStyle(.plain)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(user?.displayName.lowercased() ?? "unknown")
-                    .font(ThemeManager.shared.fonts.caption)
-                    .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                // Tappable name
+                Button(action: { showUserProfile = true }) {
+                    Text(displayName)
+                        .font(ThemeManager.shared.fonts.caption)
+                        .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                }
+                .buttonStyle(.plain)
                 
                 Text(reply.text)
                     .font(ThemeManager.shared.fonts.caption)
@@ -702,6 +730,70 @@ struct FeedReplyRow: View {
                 }
                 .buttonStyle(PremiumButtonStyle(hapticStyle: .medium))
             }
+        }
+        .fullScreenCover(isPresented: $showUserProfile) {
+            if let user = user {
+                // Friend - show full profile
+                UserProfileView(
+                    user: user,
+                    isFriend: true,
+                    showAddButton: false,
+                    onAddFriend: nil,
+                    onRemoveFriend: nil
+                )
+            } else {
+                // Non-friend - try to load their profile
+                NonFriendProfileLoader(userId: reply.userId)
+            }
+        }
+    }
+}
+
+// Helper view to load non-friend profiles
+struct NonFriendProfileLoader: View {
+    @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @Environment(\.dismiss) private var dismiss
+    let userId: String
+    
+    @State private var loadedUser: User?
+    @State private var isLoading = true
+    
+    var body: some View {
+        Group {
+            if isLoading {
+                ZStack {
+                    ThemeManager.shared.colors.background.ignoresSafeArea()
+                    ProgressView()
+                        .tint(ThemeManager.shared.colors.textSecondary)
+                }
+            } else if let user = loadedUser {
+                UserProfileView(
+                    user: user,
+                    isFriend: false,
+                    showAddButton: !viewModel.sentFriendRequests.contains(userId),
+                    onAddFriend: {
+                        Task {
+                            await viewModel.sendFriendRequest(toUserId: user.id)
+                        }
+                    },
+                    onRemoveFriend: nil
+                )
+            } else {
+                ZStack {
+                    ThemeManager.shared.colors.background.ignoresSafeArea()
+                    VStack(spacing: 16) {
+                        Text("couldn't load profile")
+                            .font(ThemeManager.shared.fonts.body)
+                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                        Button("close") { dismiss() }
+                            .foregroundColor(ThemeManager.shared.colors.accent1)
+                    }
+                }
+            }
+        }
+        .task {
+            loadedUser = await viewModel.getUser(byId: userId)
+            isLoading = false
         }
     }
 }

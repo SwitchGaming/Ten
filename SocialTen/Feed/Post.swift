@@ -76,11 +76,15 @@ struct Reply: Identifiable, Codable {
     let userId: String
     let text: String
     let timestamp: Date
+    var authorName: String?
+    var authorUsername: String?
     
-    init(id: String = UUID().uuidString, userId: String, text: String, timestamp: Date = Date()) {
+    init(id: String = UUID().uuidString, userId: String, text: String, timestamp: Date = Date(), authorName: String? = nil, authorUsername: String? = nil) {
         self.id = id
         self.userId = userId
         self.text = text
         self.timestamp = timestamp
+        self.authorName = authorName
+        self.authorUsername = authorUsername
     }
 }
