@@ -11,6 +11,8 @@ struct MainTabView: View {
     @ObservedObject private var conversationManager = ConversationManager.shared
     @State private var selectedTab = 0
     @State private var vibeTabExpandedId: String? = nil
+    @State private var showWhatsNew = false
+    @State private var latestChangelog: ChangelogEntry? = nil
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -64,6 +66,49 @@ struct MainTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { _ in
             // Navigate to Feed tab (which contains messages)
             selectedTab = 2
+        }
+        .task {
+            await checkForUnreadChangelog()
+        }
+        .fullScreenCover(isPresented: $showWhatsNew) {
+            if let changelog = latestChangelog {
+                WhatsNewSheet(changelog: changelog) {
+                    showWhatsNew = false
+                    Task { await markChangelogRead(changelog.version) }
+                }
+            }
+        }
+    }
+    
+    // Check for unread changelog on app launch
+    private func checkForUnreadChangelog() async {
+        do {
+            let response = try await SupabaseManager.shared.client
+                .rpc("get_changelogs")
+                .execute()
+            
+            let decoder = JSONDecoder()
+            let changelogs = try decoder.decode([ChangelogEntry].self, from: response.data)
+            
+            // Find the latest unread changelog
+            if let unread = changelogs.first(where: { $0.is_read == false }) {
+                await MainActor.run {
+                    latestChangelog = unread
+                    showWhatsNew = true
+                }
+            }
+        } catch {
+            print("❌ Error checking changelog: \(error)")
+        }
+    }
+    
+    private func markChangelogRead(_ version: String) async {
+        do {
+            try await SupabaseManager.shared.client
+                .rpc("mark_changelog_read", params: ["p_version": version])
+                .execute()
+        } catch {
+            print("❌ Error marking changelog read: \(error)")
         }
     }
     

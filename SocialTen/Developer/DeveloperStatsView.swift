@@ -53,6 +53,13 @@ struct AppStats: Codable {
     // Timezone distribution for map
     let timezoneDistribution: [TimezoneData]
     
+    // Changelog stats
+    let totalChangelogs: Int
+    let totalChangelogViews: Int
+    let uniqueChangelogViewers: Int
+    let changelogViewRate: Double
+    let changelogStats: [ChangelogStatItem]
+    
     enum CodingKeys: String, CodingKey {
         case totalUsers = "total_users"
         case usersRatedToday = "users_rated_today"
@@ -78,7 +85,21 @@ struct AppStats: Codable {
         case totalFriendships = "total_friendships"
         case friendRequestsPending = "friend_requests_pending"
         case timezoneDistribution = "timezone_distribution"
+        case totalChangelogs = "total_changelogs"
+        case totalChangelogViews = "total_changelog_views"
+        case uniqueChangelogViewers = "unique_changelog_viewers"
+        case changelogViewRate = "changelog_view_rate"
+        case changelogStats = "changelog_stats"
     }
+}
+
+struct ChangelogStatItem: Codable, Identifiable {
+    let version: String
+    let title: String
+    let views: Int
+    let published_at: String?
+    
+    var id: String { version }
 }
 
 struct TimezoneData: Codable, Identifiable {
@@ -345,6 +366,9 @@ struct DeveloperStatsView: View {
                 
                 // Rating Insights
                 ratingSection(stats)
+                
+                // Changelog Analytics
+                changelogSection(stats)
                 
                 // World Map
                 worldMapSection(stats)
@@ -877,6 +901,87 @@ struct DeveloperStatsView: View {
             }
             .frame(maxWidth: .infinity)
         }
+    }
+    
+    // MARK: - Changelog Section
+    
+    private func changelogSection(_ stats: AppStats) -> some View {
+        VStack(alignment: .leading, spacing: themeManager.spacing.md) {
+            sectionHeader("changelog analytics", icon: "doc.text.fill")
+            
+            // Overview stats
+            HStack(spacing: themeManager.spacing.md) {
+                StatCard(
+                    title: "total views",
+                    value: "\(stats.totalChangelogViews)",
+                    icon: "eye.fill",
+                    color: Color(hex: "8B5CF6"),
+                    subtitle: "\(stats.uniqueChangelogViewers) unique users"
+                )
+                
+                StatCard(
+                    title: "view rate",
+                    value: "\(Int(stats.changelogViewRate))%",
+                    icon: "chart.pie.fill",
+                    color: Color(hex: "60A5FA"),
+                    subtitle: "of all users"
+                )
+            }
+            
+            // Per-version breakdown
+            if !stats.changelogStats.isEmpty {
+                VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
+                    Text("views by version")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(themeManager.colors.textSecondary)
+                        .padding(.top, themeManager.spacing.sm)
+                    
+                    ForEach(stats.changelogStats) { item in
+                        changelogStatRow(item, totalUsers: stats.totalUsers)
+                    }
+                }
+                .padding(themeManager.spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: themeManager.radius.md)
+                        .fill(themeManager.colors.cardBackground)
+                )
+            }
+        }
+    }
+    
+    private func changelogStatRow(_ item: ChangelogStatItem, totalUsers: Int) -> some View {
+        HStack(spacing: 12) {
+            // Version badge
+            Text("v\(item.version)")
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(Color(hex: "8B5CF6"))
+                )
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(themeManager.colors.textPrimary)
+                    .lineLimit(1)
+                
+                Text("\(item.views) views")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(themeManager.colors.textSecondary)
+            }
+            
+            Spacer()
+            
+            // View percentage
+            let percentage = totalUsers > 0 ? Int(Double(item.views) / Double(totalUsers) * 100) : 0
+            Text("\(percentage)%")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(hex: "8B5CF6"))
+        }
+        .padding(.vertical, 8)
     }
     
     // MARK: - Badge Section

@@ -18,6 +18,5 @@ struct TenWidgetBundle: WidgetBundle {
         
         // Premium widgets
         LatestPostWidget()
-        OverviewWidget()
     }
 }
