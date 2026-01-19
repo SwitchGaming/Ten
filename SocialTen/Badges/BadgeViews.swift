@@ -642,7 +642,6 @@ struct UserProfileView: View {
     @State private var hasSentRequest = false
     @State private var isSending = false
     @State private var showRemoveConfirmation = false
-    @State private var showChat = false
     @State private var chatConversation: Conversation?
     
     // Stats loaded from Supabase for friends
@@ -1150,7 +1149,6 @@ struct UserProfileView: View {
                         participantIds: [viewModel.currentUserProfile?.id ?? "", user.id]
                     )
                     chatConversation = conversation
-                    showChat = true
                 }
             }
         }) {
@@ -1175,11 +1173,9 @@ struct UserProfileView: View {
         }
         .buttonStyle(PremiumButtonStyle())
         .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-        .fullScreenCover(isPresented: $showChat) {
-            if let conversation = chatConversation {
-                ChatView(conversation: conversation, friend: user)
-                    .environmentObject(viewModel)
-            }
+        .fullScreenCover(item: $chatConversation) { conversation in
+            ChatView(conversation: conversation, friend: user)
+                .environmentObject(viewModel)
         }
     }
     
