@@ -14,6 +14,7 @@ struct Vibe: Identifiable, Codable {
     let timestamp: Date
     var responses: [VibeResponse]
     var isActive: Bool
+    var groupId: String?
     
     init(   
         id: String = UUID().uuidString,
@@ -23,7 +24,8 @@ struct Vibe: Identifiable, Codable {
         location: String,
         timestamp: Date = Date(),
         responses: [VibeResponse] = [],
-        isActive: Bool = true
+        isActive: Bool = true,
+        groupId: String? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -33,6 +35,7 @@ struct Vibe: Identifiable, Codable {
         self.timestamp = timestamp
         self.responses = responses
         self.isActive = isActive
+        self.groupId = groupId
     }
     
     // Computed expiration date based on timeDescription

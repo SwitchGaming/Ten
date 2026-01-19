@@ -18,6 +18,7 @@ struct Post: Identifiable, Codable {
     var promptId: String?
     var promptText: String?  // The actual prompt text at time of post
     var rating: Int?  // Rating at time of post creation
+    var groupId: String?  // Target group (nil = all friends)
     
     init(
         id: String = UUID().uuidString,
@@ -31,7 +32,8 @@ struct Post: Identifiable, Codable {
         promptResponse: String? = nil,
         promptId: String? = nil,
         promptText: String? = nil,
-        rating: Int? = nil
+        rating: Int? = nil,
+        groupId: String? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -45,6 +47,7 @@ struct Post: Identifiable, Codable {
         self.promptId = promptId
         self.promptText = promptText
         self.rating = rating
+        self.groupId = groupId
     }
     
     var plusOneCount: Int {

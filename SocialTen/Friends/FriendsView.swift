@@ -10,6 +10,7 @@ struct FriendsView: View {
     @EnvironmentObject var badgeManager: BadgeManager
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var scoreCache = FriendshipScoreCache.shared
+    @ObservedObject private var groupsManager = GroupsManager.shared
     @State private var searchText = ""
     @State private var selectedFriend: User?
     @State private var showAddFriend = false
@@ -54,7 +55,12 @@ struct FriendsView: View {
     }
     
     var filteredFriends: [User] {
-        let base = sortedFriends
+        var base = sortedFriends
+        
+        // Filter by selected group first
+        base = groupsManager.filterFriends(base)
+        
+        // Then filter by search text
         if searchText.isEmpty {
             return base
         }
@@ -94,7 +100,7 @@ struct FriendsView: View {
                     // Search
                     searchBar
                     
-                    // Friends Grid
+                    // Friends Section (includes groups row)
                     friendsSection
                     
                     // Add Friend Button
@@ -130,6 +136,8 @@ struct FriendsView: View {
         .task {
             // Preload all friendship scores in background
             await viewModel.preloadAllFriendshipScores()
+            // Load user's groups
+            await groupsManager.loadGroups()
         }
         .fullScreenCover(item: $selectedFriend) { friend in
             FriendDetailView(friend: friend)
@@ -342,10 +350,13 @@ struct FriendsView: View {
                 .tracking(themeManager.letterSpacing.wide)
                 .textCase(.uppercase)
             
+            // Groups row (under the title)
+            GroupChipsRow(friendCount: viewModel.friends.count)
+            
             if filteredFriends.isEmpty {
                 emptyState
             } else {
-                friendsGrid
+                friendsScrollRow
             }
         }
     }
@@ -364,17 +375,16 @@ struct FriendsView: View {
         .padding(.vertical, themeManager.spacing.xxl)
     }
     
-    var friendsGrid: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: themeManager.spacing.md),
-            GridItem(.flexible(), spacing: themeManager.spacing.md)
-        ], spacing: themeManager.spacing.md) {
-            ForEach(filteredFriends) { friend in
-                FriendGridCard(
-                    friend: friend,
-                    isBestFriend: friend.id == bestFriendId
-                ) {
-                    selectedFriend = friend
+    var friendsScrollRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: themeManager.spacing.md) {
+                ForEach(filteredFriends) { friend in
+                    FriendScrollCard(
+                        friend: friend,
+                        isBestFriend: friend.id == bestFriendId
+                    ) {
+                        selectedFriend = friend
+                    }
                 }
             }
         }
@@ -586,6 +596,54 @@ struct FriendsView: View {
                     RoundedRectangle(cornerRadius: themeManager.radius.lg)
                         .fill(themeManager.colors.cardBackground)
                 )
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+    }
+    
+    // MARK: - Friend Scroll Card (Horizontal)
+    
+    struct FriendScrollCard: View {
+        @ObservedObject private var themeManager = ThemeManager.shared
+        let friend: User
+        var isBestFriend: Bool = false
+        let onTap: () -> Void
+        
+        var body: some View {
+            Button(action: onTap) {
+                VStack(spacing: themeManager.spacing.sm) {
+                    // Avatar with rating
+                    ZStack {
+                        Circle()
+                            .fill(themeManager.colors.cardBackground)
+                            .frame(width: 56, height: 56)
+                        
+                        if let rating = friend.todayRating {
+                            Text("\(rating)")
+                                .font(.system(size: 24, weight: .light))
+                                .foregroundColor(themeManager.colors.textPrimary)
+                        } else {
+                            Text(String(friend.displayName.prefix(1)).lowercased())
+                                .font(.system(size: 20, weight: .light))
+                                .foregroundColor(themeManager.colors.textTertiary)
+                        }
+                    }
+                    
+                    // Name with BFF indicator
+                    VStack(spacing: 2) {
+                        Text(friend.displayName.components(separatedBy: " ").first?.lowercased() ?? friend.displayName.lowercased())
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(themeManager.colors.textSecondary)
+                            .lineLimit(1)
+                        
+                        if isBestFriend {
+                            Text("bff")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(themeManager.colors.accent1)
+                        }
+                    }
+                }
+                .frame(width: 70)
             }
             .buttonStyle(ScaleButtonStyle())
         }

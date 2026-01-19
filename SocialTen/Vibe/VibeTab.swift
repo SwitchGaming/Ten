@@ -75,6 +75,10 @@ struct VibeTab: View {
                 initialExpandedVibeId = nil
             }
         }
+        .task {
+            // Load groups for the group picker
+            await GroupsManager.shared.loadGroups()
+        }
     }
     
     // MARK: - Create Vibe Card
@@ -189,6 +193,7 @@ struct VibeTab: View {
 struct VibeCard: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var groupsManager = GroupsManager.shared
     @State private var selectedUser: User?
     @State private var glowAnimation = false
     let vibe: Vibe
@@ -205,6 +210,13 @@ struct VibeCard: View {
     
     var userResponse: VibeResponseType? {
         viewModel.getUserVibeResponse(for: vibe.id)
+    }
+    
+    // Get the group this vibe is targeted to (if any)
+    var targetGroup: FriendGroup? {
+        guard let groupIdString = vibe.groupId,
+              let groupId = UUID(uuidString: groupIdString) else { return nil }
+        return groupsManager.groups.first { $0.id == groupId }
     }
     
     // Check if this vibe's creator is premium (visible to everyone)
@@ -299,6 +311,16 @@ struct VibeCard: View {
                                     Text(creatorName.lowercased())
                                         .font(themeManager.fonts.caption)
                                         .foregroundColor(creatorIsPremium ? creatorGlowColor.opacity(0.8) : themeManager.colors.textSecondary)
+                                    
+                                    Text("·")
+                                        .foregroundColor(themeManager.colors.textTertiary)
+                                }
+                                
+                                // Group indicator (only show on own vibes)
+                                if isOwnVibe, let group = targetGroup {
+                                    Text(group.displayName)
+                                        .font(themeManager.fonts.caption)
+                                        .foregroundColor(themeManager.colors.accent1)
                                     
                                     Text("·")
                                         .foregroundColor(themeManager.colors.textTertiary)
@@ -551,6 +573,7 @@ struct VibeResponseButton: View {
 struct CreateVibeSheet: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var groupsManager = GroupsManager.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var title = ""
@@ -559,6 +582,7 @@ struct CreateVibeSheet: View {
     @State private var showTimePicker = false
     @State private var location = ""
     @State private var showMaxVibesAlert = false
+    @State private var selectedGroupId: UUID? = nil
     
     @FocusState private var titleFocused: Bool
     @FocusState private var locationFocused: Bool
@@ -718,6 +742,12 @@ struct CreateVibeSheet: View {
                                     }
                                 }
                         }
+                        
+                        // Group Picker
+                        if !groupsManager.groups.isEmpty {
+                            GroupPicker(selectedGroupId: $selectedGroupId)
+                        }
+                        
                         // Preview
                         if canCreate {
                             VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
@@ -856,6 +886,7 @@ struct CreateVibeSheet: View {
         let vibeTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let vibeTimeDescription = timeDescription
         let vibeLocation = location.trimmingCharacters(in: .whitespacesAndNewlines)
+        let vibeGroupId = selectedGroupId
         
         // Dismiss immediately for instant feedback
         dismiss()
@@ -866,7 +897,8 @@ struct CreateVibeSheet: View {
                 title: vibeTitle,
                 timeDescription: vibeTimeDescription,
                 location: vibeLocation,
-                expiresAt: expiresAt
+                expiresAt: expiresAt,
+                groupId: vibeGroupId
             )
         }
     }

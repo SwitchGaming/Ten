@@ -42,6 +42,7 @@ struct DBVibe: Codable, Identifiable {
     let timestamp: Date?
     let expiresAt: Date
     let isActive: Bool
+    let groupId: UUID?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -52,6 +53,7 @@ struct DBVibe: Codable, Identifiable {
         case timestamp
         case expiresAt = "expires_at"
         case isActive = "is_active"
+        case groupId = "group_id"
     }
 }
 
@@ -83,6 +85,7 @@ struct DBPost: Codable, Identifiable {
     let promptText: String?
     let timestamp: Date?
     let rating: Int?
+    let groupId: UUID?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -94,6 +97,7 @@ struct DBPost: Codable, Identifiable {
         case promptText = "prompt_text"
         case timestamp
         case rating
+        case groupId = "group_id"
     }
 }
 

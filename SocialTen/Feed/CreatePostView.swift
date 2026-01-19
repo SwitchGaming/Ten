@@ -7,12 +7,14 @@ import SwiftUI
 
 struct CreatePostView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @ObservedObject private var groupsManager = GroupsManager.shared
     var startOnPromptTab: Bool = false
     @Environment(\.dismiss) private var dismiss
     
     @State private var caption: String = ""
     @State private var promptResponse: String = ""
     @State private var postType: PostType = .post
+    @State private var selectedGroupId: UUID? = nil
     
     // Character limits
     private let captionLimit = 280
@@ -107,6 +109,11 @@ struct CreatePostView: View {
                         case .prompt:
                             PromptInput(prompt: viewModel.todaysPrompt, response: $promptResponse, limit: promptResponseLimit)
                         }
+                        
+                        // Group Picker (only show if user has groups)
+                        if !groupsManager.groups.isEmpty {
+                            GroupPicker(selectedGroupId: $selectedGroupId)
+                        }
                     }
                     .padding(.horizontal, 20)
                 }
@@ -117,6 +124,9 @@ struct CreatePostView: View {
                 postType = .prompt
             }
         }
+        .task {
+            await groupsManager.loadGroups()
+        }
     }
     
     func createPost() {
@@ -124,6 +134,7 @@ struct CreatePostView: View {
         let currentPostType = postType
         let trimmedCaption = caption.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPromptResponse = promptResponse.trimmingCharacters(in: .whitespacesAndNewlines)
+        let postGroupId = selectedGroupId
         
         // Dismiss immediately for instant feedback
         dismiss()
@@ -134,10 +145,16 @@ struct CreatePostView: View {
             case .post:
                 await viewModel.createPost(
                     imageData: nil,
-                    caption: trimmedCaption.isEmpty ? nil : trimmedCaption
+                    caption: trimmedCaption.isEmpty ? nil : trimmedCaption,
+                    groupId: postGroupId
                 )
             case .prompt:
-                await viewModel.createPost(imageData: nil, caption: nil, promptResponse: trimmedPromptResponse)
+                await viewModel.createPost(
+                    imageData: nil,
+                    caption: nil,
+                    promptResponse: trimmedPromptResponse,
+                    groupId: postGroupId
+                )
             }
         }
     }
