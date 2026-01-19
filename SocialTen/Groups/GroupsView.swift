@@ -191,17 +191,15 @@ struct GroupChipsRow: View {
                     )
                 }
                 
-                // Add new group button
-                AddGroupChip(
-                    isLocked: groupsManager.groups.count >= premiumManager.groupLimit,
-                    onTap: {
-                        if groupsManager.groups.count >= premiumManager.groupLimit {
-                            showPremiumUpsell = true
-                        } else {
+                // Add new group button - only show if under limit
+                if groupsManager.groups.count < premiumManager.groupLimit {
+                    AddGroupChip(
+                        isLocked: false,
+                        onTap: {
                             showCreateGroup = true
                         }
-                    }
-                )
+                    )
+                }
             }
         }
         .sheet(isPresented: $showCreateGroup) {
@@ -209,9 +207,6 @@ struct GroupChipsRow: View {
         }
         .sheet(item: $editingGroup) { group in
             EditGroupSheet(group: group)
-        }
-        .fullScreenCover(isPresented: $showPremiumUpsell) {
-            TenPlusView()
         }
     }
 }

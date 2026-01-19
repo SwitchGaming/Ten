@@ -32,6 +32,8 @@
 		B88E3D742F128BB2009649FE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D6E2F128BB2009649FE /* ChatView.swift */; };
 		B88E3D752F128BB2009649FE /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D702F128BB2009649FE /* Message.swift */; };
 		B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D712F128BB2009649FE /* MessagesListView.swift */; };
+		B8A8FD4A2F1DFD290017A398 /* GroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD482F1DFD290017A398 /* GroupsView.swift */; };
+		B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD472F1DFD290017A398 /* FriendGroup.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -111,6 +113,8 @@
 		B88E3D6F2F128BB2009649FE /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		B88E3D702F128BB2009649FE /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		B88E3D712F128BB2009649FE /* MessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesListView.swift; sourceTree = "<group>"; };
+		B8A8FD472F1DFD290017A398 /* FriendGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendGroup.swift; sourceTree = "<group>"; };
+		B8A8FD482F1DFD290017A398 /* GroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsView.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -212,6 +216,14 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
+		B8A8FD492F1DFD290017A398 /* Groups */ = {
+			isa = PBXGroup;
+			children = (
+				B8A8FD482F1DFD290017A398 /* GroupsView.swift */,
+			);
+			path = Groups;
+			sourceTree = "<group>";
+		};
 		B8D987422F1C70310048E537 /* Developer */ = {
 			isa = PBXGroup;
 			children = (
@@ -245,6 +257,8 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8A8FD472F1DFD290017A398 /* FriendGroup.swift */,
+				B8A8FD492F1DFD290017A398 /* Groups */,
 				B8D987422F1C70310048E537 /* Developer */,
 				B800381E2F131114007CC449 /* CheckIn */,
 				B83FBD872F12ED4C000005BF /* Widget */,
@@ -442,6 +456,8 @@
 				B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */,
 				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,
 				B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */,
+				B8A8FD4A2F1DFD290017A398 /* GroupsView.swift in Sources */,
+				B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */,
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
