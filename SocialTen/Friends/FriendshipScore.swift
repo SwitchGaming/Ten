@@ -260,6 +260,7 @@ struct FriendshipScoreCard: View {
     let friendshipScore: FriendshipScore?
     let isLoading: Bool
     let friendName: String
+    var colors: ThemeColors = ThemeManager.shared.colors
     
     @State private var showBreakdown = false
     @State private var animateProgress = false
@@ -271,7 +272,7 @@ struct FriendshipScoreCard: View {
                 Text("connection")
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(2)
-                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                    .foregroundColor(colors.textTertiary)
                     .textCase(.uppercase)
                 
                 Spacer()
@@ -280,7 +281,7 @@ struct FriendshipScoreCard: View {
                     Button(action: { showBreakdown.toggle() }) {
                         Image(systemName: showBreakdown ? "chevron.up" : "info.circle")
                             .font(.system(size: 12))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(colors.textTertiary)
                     }
                 }
             }
@@ -296,7 +297,7 @@ struct FriendshipScoreCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(ThemeManager.shared.colors.cardBackground.opacity(0.5))
+                .fill(colors.cardBackground.opacity(0.5))
         )
         .animation(.spring(response: 0.3), value: showBreakdown)
     }
@@ -321,11 +322,11 @@ struct FriendshipScoreCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(score.level.rawValue)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        .foregroundColor(colors.textPrimary)
                     
                     Text(score.level.description)
                         .font(.system(size: 12, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(colors.textTertiary)
                 }
                 
                 Spacer()
@@ -343,7 +344,7 @@ struct FriendshipScoreCard: View {
                         ZStack(alignment: .leading) {
                             // Background track
                             Capsule()
-                                .fill(ThemeManager.shared.colors.cardBackground)
+                                .fill(colors.cardBackground)
                                 .frame(height: 4)
                             
                             // Progress fill
@@ -357,7 +358,7 @@ struct FriendshipScoreCard: View {
                     HStack {
                         Text("\(progress.pointsToNext) points to \(progress.nextLevel)")
                             .font(.system(size: 10, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(colors.textTertiary)
                         
                         Spacer()
                     }
@@ -382,7 +383,7 @@ struct FriendshipScoreCard: View {
     private func breakdownView(_ breakdown: FriendshipScore.ScoreBreakdown) -> some View {
         VStack(spacing: 8) {
             Rectangle()
-                .fill(ThemeManager.shared.colors.textTertiary.opacity(0.1))
+                .fill(colors.textTertiary.opacity(0.1))
                 .frame(height: 1)
                 .padding(.vertical, 4)
             
@@ -431,13 +432,13 @@ struct FriendshipScoreCard: View {
             
             Text(label)
                 .font(.system(size: 11, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                .foregroundColor(colors.textSecondary)
             
             Spacer()
             
             Text("\(value)")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                .foregroundColor(colors.textPrimary)
         }
     }
     
@@ -446,12 +447,12 @@ struct FriendshipScoreCard: View {
     private var loadingView: some View {
         HStack(spacing: 12) {
             ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                .progressViewStyle(CircularProgressViewStyle(tint: colors.textTertiary))
                 .scaleEffect(0.8)
             
             Text("calculating connection...")
                 .font(.system(size: 12, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
@@ -463,11 +464,11 @@ struct FriendshipScoreCard: View {
         VStack(spacing: 8) {
             Image(systemName: "heart.slash")
                 .font(.system(size: 20))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary.opacity(0.5))
+                .foregroundColor(colors.textTertiary.opacity(0.5))
             
             Text("no interactions yet")
                 .font(.system(size: 12, weight: .light))
-                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                .foregroundColor(colors.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
