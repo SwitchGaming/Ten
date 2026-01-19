@@ -17,6 +17,7 @@ struct SwipeableRatingCard: View {
     }
     
     @State private var displayRating: Int = 5
+    @State private var swipeBaseRating: Int = 5  // Base rating for multi-swipe gestures
     @State private var dragOffset: CGFloat = 0
     @State private var isPressed = false
     @State private var showHint = true
@@ -176,8 +177,8 @@ struct SwipeableRatingCard: View {
                     dragOffset = translation
                     
                     let ratingChange = Int(translation / dragThreshold)
-                    let baseRating = rating ?? 5
-                    let newRating = max(1, min(10, baseRating + ratingChange))
+                    // Use swipeBaseRating which persists between swipes
+                    let newRating = max(1, min(10, swipeBaseRating + ratingChange))
                     
                     if newRating != displayRating {
                         feedbackGenerator.impactOccurred()
@@ -185,8 +186,10 @@ struct SwipeableRatingCard: View {
                         hasChangedRating = true
                     }
                 }
-                .onEnded { _ in
+                .onEnded { value in
                     dragOffset = 0
+                    // Update the base for next swipe to current displayRating
+                    swipeBaseRating = displayRating
                     if showHint {
                         withAnimation {
                             showHint = false
@@ -214,11 +217,13 @@ struct SwipeableRatingCard: View {
         .onAppear {
             if let rating = rating {
                 displayRating = rating
+                swipeBaseRating = rating
             }
         }
         .onChange(of: rating) { _, newValue in
             if let newValue = newValue {
                 displayRating = newValue
+                swipeBaseRating = newValue
                 hasChangedRating = false
             }
         }
