@@ -518,6 +518,68 @@ struct StatRow: View {
     }
 }
 
+// MARK: - Profile Stat Row (with custom colors for themed profiles)
+
+struct ProfileStatRow: View {
+    let icon: String
+    let value: String
+    let label: String
+    let iconColor: Color
+    let colors: ThemeColors
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(iconColor)
+                .frame(width: 20)
+            
+            Text(value)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(colors.textPrimary)
+            
+            Text(label)
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(colors.textSecondary)
+            
+            Spacer()
+        }
+    }
+}
+
+struct ProfileMysteryStatRow: View {
+    let icon: String
+    let label: String
+    let iconColor: Color
+    let colors: ThemeColors
+    
+    @State private var isPulsing = false
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(iconColor.opacity(0.6))
+                .frame(width: 20)
+            
+            Text("?")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(colors.textPrimary.opacity(isPulsing ? 0.4 : 0.2))
+            
+            Text(label)
+                .font(.system(size: 14, weight: .light))
+                .foregroundColor(colors.textPrimary.opacity(0.4))
+            
+            Spacer()
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
+    }
+}
+
 // MARK: - Mystery Rating View
 
 struct MysteryRatingView: View {
@@ -532,6 +594,31 @@ struct MysteryRatingView: View {
             Text("friends only")
                 .font(.system(size: 12, weight: .light))
                 .foregroundColor(ThemeManager.shared.colors.textTertiary.opacity(0.5))
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
+    }
+}
+
+// MARK: - Profile Mystery Rating View (with custom colors for themed profiles)
+
+struct ProfileMysteryRatingView: View {
+    let colors: ThemeColors
+    
+    @State private var isPulsing = false
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("?")
+                .font(.system(size: 64, weight: .ultraLight))
+                .foregroundColor(colors.textTertiary.opacity(isPulsing ? 0.5 : 0.25))
+            
+            Text("friends only")
+                .font(.system(size: 12, weight: .light))
+                .foregroundColor(colors.textTertiary.opacity(0.5))
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
@@ -574,6 +661,15 @@ struct UserProfileView: View {
         user.id == viewModel.currentUserProfile?.id
     }
     
+    // Theme colors - use user's theme if premium, otherwise default
+    private var profileColors: ThemeColors {
+        user.isPremium ? user.selectedTheme.colors : ThemeManager.shared.colors
+    }
+    
+    private var accentColor: Color {
+        user.isPremium ? user.selectedTheme.glowColor : ThemeManager.shared.colors.accent1
+    }
+    
     // Get user's top badges
     var topBadges: [BadgeDefinition] {
         if isCurrentUser {
@@ -604,7 +700,7 @@ struct UserProfileView: View {
     
     var body: some View {
         ZStack {
-            ThemeManager.shared.colors.background.ignoresSafeArea()
+            profileColors.background.ignoresSafeArea()
             
             SmartScrollView {
                 VStack(spacing: ThemeManager.shared.spacing.xl) {
@@ -614,11 +710,11 @@ struct UserProfileView: View {
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                                .foregroundColor(profileColors.textSecondary)
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(ThemeManager.shared.colors.cardBackground)
+                                        .fill(profileColors.cardBackground)
                                 )
                         }
                     }
@@ -630,24 +726,24 @@ struct UserProfileView: View {
                         // Premium glow ring
                         if user.isPremium {
                             Circle()
-                                .fill(user.selectedTheme.glowColor)
+                                .fill(accentColor)
                                 .frame(width: 120, height: 120)
                                 .blur(radius: 20)
                                 .opacity(0.4)
                             
                             Circle()
-                                .stroke(user.selectedTheme.glowColor, lineWidth: 2)
+                                .stroke(accentColor, lineWidth: 2)
                                 .frame(width: 108, height: 108)
                                 .opacity(0.6)
                         }
                         
                         Circle()
-                            .fill(user.isPremium ? user.selectedTheme.colors.cardBackground : ThemeManager.shared.colors.cardBackground)
+                            .fill(profileColors.cardBackground)
                             .frame(width: 100, height: 100)
                             .overlay(
                                 Text(String(user.displayName.prefix(1)).lowercased())
                                     .font(.system(size: 40, weight: .ultraLight))
-                                    .foregroundColor(user.isPremium ? user.selectedTheme.glowColor : ThemeManager.shared.colors.textSecondary)
+                                    .foregroundColor(user.isPremium ? accentColor : profileColors.textSecondary)
                             )
                     }
                     
@@ -656,7 +752,7 @@ struct UserProfileView: View {
                         HStack(spacing: 8) {
                             Text(user.displayName.lowercased())
                                 .font(.system(size: 28, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                                .foregroundColor(profileColors.textPrimary)
                             
                             // Premium badge
                             if user.isPremium {
@@ -667,22 +763,22 @@ struct UserProfileView: View {
                                         .font(.system(size: 12, weight: .medium))
                                         .tracking(1)
                                 }
-                                .foregroundColor(user.selectedTheme.glowColor)
+                                .foregroundColor(accentColor)
                             }
                         }
                         
                         HStack(spacing: 8) {
                             Text("@\(user.username)")
                                 .font(.system(size: 14, weight: .light))
-                                .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                .foregroundColor(profileColors.textTertiary)
                             
                             // Show their theme name if premium
                             if user.isPremium {
                                 Text("·")
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(profileColors.textTertiary)
                                 Text(user.selectedTheme.name.lowercased())
                                     .font(.system(size: 14, weight: .light))
-                                    .foregroundColor(user.selectedTheme.glowColor.opacity(0.8))
+                                    .foregroundColor(accentColor.opacity(0.8))
                             }
                         }
                     }
@@ -692,18 +788,18 @@ struct UserProfileView: View {
                         Text("badges")
                             .font(.system(size: 10, weight: .semibold))
                             .tracking(2)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(profileColors.textTertiary)
                             .textCase(.uppercase)
                         
                         if isFriend {
                             if isLoadingStats && !isCurrentUser {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: profileColors.textTertiary))
                                     .scaleEffect(0.8)
                             } else if topBadges.isEmpty {
                                 Text("no badges yet")
                                     .font(.system(size: 12, weight: .light))
-                                    .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                                    .foregroundColor(profileColors.textTertiary)
                             } else {
                                 HStack(spacing: -8) {
                                     ForEach(topBadges) { badge in
@@ -730,7 +826,7 @@ struct UserProfileView: View {
                         Text("today")
                             .font(.system(size: 10, weight: .semibold))
                             .tracking(2)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(profileColors.textTertiary)
                             .textCase(.uppercase)
                         
                         ratingCard
@@ -747,7 +843,8 @@ struct UserProfileView: View {
                         FriendshipScoreCard(
                             friendshipScore: friendshipScore,
                             isLoading: isLoadingFriendshipScore,
-                            friendName: user.displayName
+                            friendName: user.displayName,
+                            colors: profileColors
                         )
                         .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     }
@@ -757,7 +854,7 @@ struct UserProfileView: View {
                         Text("stats")
                             .font(.system(size: 10, weight: .semibold))
                             .tracking(2)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(profileColors.textTertiary)
                             .textCase(.uppercase)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -767,28 +864,28 @@ struct UserProfileView: View {
                                     HStack {
                                         Spacer()
                                         ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textTertiary))
+                                            .progressViewStyle(CircularProgressViewStyle(tint: profileColors.textTertiary))
                                             .scaleEffect(0.8)
                                         Spacer()
                                     }
                                     .padding(.vertical, 20)
                                 } else {
-                                    StatRow(icon: "flame.fill", value: "\(userStreak)", label: "day streak", iconColor: .orange)
-                                    StatRow(icon: "trophy.fill", value: "\(userBadgeCount)", label: "badges earned", iconColor: .yellow)
-                                    StatRow(icon: "calendar", value: "\(userDaysActive)", label: "days active", iconColor: .blue)
-                                    StatRow(icon: "sparkles", value: "\(userVibesCreated)", label: "vibes created", iconColor: .purple)
+                                    ProfileStatRow(icon: "flame.fill", value: "\(userStreak)", label: "day streak", iconColor: .orange, colors: profileColors)
+                                    ProfileStatRow(icon: "trophy.fill", value: "\(userBadgeCount)", label: "badges earned", iconColor: .yellow, colors: profileColors)
+                                    ProfileStatRow(icon: "calendar", value: "\(userDaysActive)", label: "days active", iconColor: .blue, colors: profileColors)
+                                    ProfileStatRow(icon: "sparkles", value: "\(userVibesCreated)", label: "vibes created", iconColor: .purple, colors: profileColors)
                                 }
                             } else {
-                                MysteryStatRow(icon: "flame.fill", label: "day streak", iconColor: .orange)
-                                MysteryStatRow(icon: "trophy.fill", label: "badges earned", iconColor: .yellow)
-                                MysteryStatRow(icon: "calendar", label: "days active", iconColor: .blue)
-                                MysteryStatRow(icon: "sparkles", label: "vibes created", iconColor: .purple)
+                                ProfileMysteryStatRow(icon: "flame.fill", label: "day streak", iconColor: .orange, colors: profileColors)
+                                ProfileMysteryStatRow(icon: "trophy.fill", label: "badges earned", iconColor: .yellow, colors: profileColors)
+                                ProfileMysteryStatRow(icon: "calendar", label: "days active", iconColor: .blue, colors: profileColors)
+                                ProfileMysteryStatRow(icon: "sparkles", label: "vibes created", iconColor: .purple, colors: profileColors)
                             }
                         }
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(ThemeManager.shared.colors.cardBackground.opacity(0.5))
+                                .fill(profileColors.cardBackground.opacity(0.5))
                         )
                     }
                     .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
@@ -798,7 +895,7 @@ struct UserProfileView: View {
                     if !isFriend {
                         Text("become friends to see more")
                             .font(.system(size: 12, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary.opacity(0.6))
+                            .foregroundColor(profileColors.textTertiary.opacity(0.6))
                             .padding(.top, 4)
                     }
                     
@@ -807,12 +904,12 @@ struct UserProfileView: View {
                         Text("member since")
                             .font(.system(size: 10, weight: .semibold))
                             .tracking(2)
-                            .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                            .foregroundColor(profileColors.textTertiary)
                             .textCase(.uppercase)
                         
                         Text("december 2025")
                             .font(.system(size: 14, weight: .light))
-                            .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                            .foregroundColor(profileColors.textSecondary)
                     }
                     .padding(.top, 16)
                     
@@ -915,23 +1012,23 @@ struct UserProfileView: View {
                 if let rating = user.todayRating {
                     Text("\(rating)")
                         .font(.system(size: 64, weight: .ultraLight))
-                        .foregroundColor(ThemeManager.shared.colors.textPrimary)
+                        .foregroundColor(profileColors.textPrimary)
                     
                     Text(ratingMoodText(for: rating))
                         .font(.system(size: 12, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(profileColors.textTertiary)
                 } else {
                     Text("-")
                         .font(.system(size: 64, weight: .ultraLight))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(profileColors.textTertiary)
                     
                     Text("not rated yet")
                         .font(.system(size: 12, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(profileColors.textTertiary)
                 }
             } else {
                 // Mystery rating for non-friends
-                MysteryRatingView()
+                ProfileMysteryRatingView(colors: profileColors)
             }
         }
         .frame(maxWidth: .infinity)
@@ -939,7 +1036,7 @@ struct UserProfileView: View {
         .padding(.horizontal, 40)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(ThemeManager.shared.colors.cardBackground.opacity(0.5))
+                .fill(profileColors.cardBackground.opacity(0.5))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(Color.white.opacity(0.05), lineWidth: 1)
@@ -966,17 +1063,17 @@ struct UserProfileView: View {
                     }
                     .font(.system(size: 14, weight: .medium))
                     .tracking(1)
-                    .foregroundColor(ThemeManager.shared.colors.textSecondary)
+                    .foregroundColor(profileColors.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(ThemeManager.shared.colors.cardBackground)
+                            .fill(profileColors.cardBackground)
                     )
                     
                     Text(PremiumManager.shared.isPremium ? "you've reached \(PremiumManager.shared.friendLimit) friends." : "you've reached 10 friends. upgrade to ten+ for more.")
                         .font(.system(size: 11, weight: .light))
-                        .foregroundColor(ThemeManager.shared.colors.textTertiary)
+                        .foregroundColor(profileColors.textTertiary)
                         .multilineTextAlignment(.center)
                 }
             } else {
@@ -991,7 +1088,7 @@ struct UserProfileView: View {
                     HStack(spacing: 8) {
                         if isSending {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: ThemeManager.shared.colors.textPrimary))
+                                .progressViewStyle(CircularProgressViewStyle(tint: profileColors.textPrimary))
                                 .scaleEffect(0.8)
                         } else if hasSentRequest || viewModel.sentFriendRequests.contains(user.id) {
                             Image(systemName: "checkmark")
@@ -1005,15 +1102,15 @@ struct UserProfileView: View {
                     }
                     .font(.system(size: 14, weight: .medium))
                     .tracking(1)
-                    .foregroundColor(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? .green : ThemeManager.shared.colors.textPrimary)
+                    .foregroundColor(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? .green : profileColors.textPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? Color.green.opacity(0.15) : ThemeManager.shared.colors.cardBackground)
+                            .fill(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? Color.green.opacity(0.15) : profileColors.cardBackground)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .stroke(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? Color.green.opacity(0.3) : ThemeManager.shared.colors.textPrimary.opacity(0.2), lineWidth: 1)
+                                    .stroke(hasSentRequest || viewModel.sentFriendRequests.contains(user.id) ? Color.green.opacity(0.3) : profileColors.textPrimary.opacity(0.2), lineWidth: 1)
                             )
                     )
                 }
@@ -1064,16 +1161,16 @@ struct UserProfileView: View {
                     .font(.system(size: 14, weight: .medium))
                     .tracking(1)
             }
-            .foregroundColor(ThemeManager.shared.colors.textPrimary)
+            .foregroundColor(profileColors.textPrimary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, ThemeManager.shared.spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                    .fill(ThemeManager.shared.colors.cardBackground)
+                    .fill(profileColors.cardBackground)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.shared.radius.md)
-                    .stroke(ThemeManager.shared.colors.accent1.opacity(0.3), lineWidth: 1)
+                    .stroke(accentColor.opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(PremiumButtonStyle())
