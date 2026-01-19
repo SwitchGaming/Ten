@@ -164,7 +164,7 @@ struct FriendsScrollView: View {
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            ScrollView(.horizontal, showsIndicators: true) {
+            ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: themeManager.spacing.md) {
                     ForEach(sortedFriends) { friend in
                         Button(action: {
@@ -189,7 +189,6 @@ struct FriendsScrollView: View {
                 )
             }
             .coordinateSpace(name: "friendsScroll")
-            .scrollIndicators(.visible)
             .scrollClipDisabled()
             
             // Swipe indicator arrow
