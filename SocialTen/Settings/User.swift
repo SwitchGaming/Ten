@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-struct User: Identifiable, Codable {
+struct User: Identifiable, Codable, Equatable {
     let id: String
     let username: String
     var displayName: String
@@ -76,7 +76,7 @@ struct User: Identifiable, Codable {
     }
 }
 
-struct RatingEntry: Identifiable, Codable {
+struct RatingEntry: Identifiable, Codable, Equatable {
     let id: String
     let rating: Int
     let date: Date
