@@ -7,10 +7,17 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
+    @EnvironmentObject var badgeManager: BadgeManager
     @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showCreatePost = false
     @State private var navigateToVibeTab = false
     @State private var expandedVibeId: String? = nil
+    @State private var dailyInsights: [DailyInsight] = []
+    @State private var selectedInsightFriend: User? = nil
+    
+    private var isPremiumUser: Bool {
+        viewModel.currentUserProfile?.isPremium ?? false
+    }
     
     var body: some View {
         SmartScrollView {
@@ -52,13 +59,36 @@ struct HomeView: View {
                     .appearAnimation(delay: 0.4)
                 }
                 
+                // Daily Insights Section (at bottom)
+                if !dailyInsights.isEmpty {
+                    DailyInsightsSection(
+                        insights: dailyInsights,
+                        isPremiumUser: isPremiumUser,
+                        onFriendTap: { friend in
+                            selectedInsightFriend = friend
+                        }
+                    )
+                    .appearAnimation(delay: 0.45)
+                }
+                
                 Spacer(minLength: 100)
             }
             .padding(.horizontal, themeManager.spacing.screenHorizontal)
         }
         .background(themeManager.colors.background.ignoresSafeArea())
+        .onAppear {
+            regenerateInsights()
+        }
         .refreshable {
             await viewModel.loadCurrentUser()
+            await viewModel.loadRatingHistory()
+            regenerateInsights()
+        }
+        .onChange(of: viewModel.ratingHistory) { _, _ in
+            regenerateInsights()
+        }
+        .onChange(of: viewModel.friends) { _, _ in
+            regenerateInsights()
         }
         .onChange(of: navigateToVibeTab) { _, shouldNavigate in
             if shouldNavigate {
@@ -70,6 +100,32 @@ struct HomeView: View {
                 navigateToVibeTab = false
             }
         }
+        .fullScreenCover(item: $selectedInsightFriend) { friend in
+            UserProfileView(
+                user: friend,
+                isFriend: true,
+                showAddButton: false,
+                onAddFriend: nil,
+                onRemoveFriend: {
+                    Task {
+                        await viewModel.removeFriend(friend.id)
+                    }
+                }
+            )
+            .environmentObject(viewModel)
+            .environmentObject(BadgeManager.shared)
+        }
+    }
+    
+    // MARK: - Generate Insights
+    
+    private func regenerateInsights() {
+        dailyInsights = InsightGenerator.generateInsights(
+            ratingHistory: viewModel.ratingHistory,
+            friends: viewModel.friends,
+            badgeManager: badgeManager,
+            isPremiumUser: isPremiumUser
+        )
     }
 }
 
@@ -222,4 +278,5 @@ struct FriendsScrollView: View {
 #Preview {
     HomeView()
         .environmentObject(SupabaseAppViewModel())
+        .environmentObject(BadgeManager.shared)
 }
