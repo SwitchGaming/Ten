@@ -326,7 +326,7 @@ struct VibeCard: View {
                                         .foregroundColor(themeManager.colors.textTertiary)
                                 }
                                 
-                                Text(vibe.timeDescription)
+                                Text(vibe.localTimeDisplay)
                                     .font(themeManager.fonts.caption)
                                     .foregroundColor(themeManager.colors.textTertiary)
                                 
