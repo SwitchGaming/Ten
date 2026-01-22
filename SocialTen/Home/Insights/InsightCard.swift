@@ -17,6 +17,7 @@ struct InsightCard: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @State private var hasAnimated = false
     @State private var showCelebration = false
+    @State private var selectedHeatmapDay: Int? = nil // For tappable heatmap days
     
     private var isLocked: Bool {
         insight.isPremium && !isPremiumUser
@@ -181,31 +182,51 @@ struct InsightCard: View {
     private var weekTrendCard: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                // Left - Bar chart
-                weeklyBarChart
-                    .padding(.leading, 20)
+                // Left - Bar chart with label
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("this week")
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundColor(themeManager.colors.textTertiary)
+                        .opacity(hasAnimated ? 1 : 0)
+                        .animation(.easeOut(duration: 0.3).delay(0.1), value: hasAnimated)
+                    
+                    weeklyBarChart
+                }
+                .padding(.leading, 20)
                 
                 Spacer()
                 
-                // Right - Key stat
+                // Right - Key stat with clear context
                 VStack(alignment: .trailing, spacing: 4) {
+                    Text("avg rating")
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundColor(themeManager.colors.textTertiary)
+                    
                     HStack(spacing: 4) {
-                        Image(systemName: insight.highlightedValue.contains("+") ? "arrow.up.right" : "arrow.down.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(insight.highlightedValue.contains("+") ? themeManager.colors.accent1 : themeManager.colors.textTertiary)
+                        if insight.highlightedValue.contains("+") || insight.highlightedValue.contains("-") {
+                            Image(systemName: insight.highlightedValue.contains("+") ? "arrow.up.right" : "arrow.down.right")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(insight.highlightedValue.contains("+") ? themeManager.colors.accent1 : themeManager.colors.textTertiary)
+                        }
                         
                         Text(insight.highlightedValue)
                             .font(.system(size: 28, weight: .medium, design: .rounded))
                             .foregroundColor(themeManager.colors.textPrimary)
                     }
                     
-                    Text("vs last week")
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundColor(themeManager.colors.textTertiary)
+                    if insight.highlightedValue.contains("+") || insight.highlightedValue.contains("-") {
+                        Text("vs last week")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(themeManager.colors.textTertiary)
+                    } else {
+                        Text("out of 10")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(themeManager.colors.textTertiary)
+                    }
                 }
                 .padding(.trailing, 20)
             }
-            .padding(.top, 20)
+            .padding(.top, 16)
             
             Spacer()
             
@@ -219,17 +240,19 @@ struct InsightCard: View {
         .frame(height: 160)
     }
     
-    // Animated weekly bar chart
+    // Animated weekly bar chart - shows last 7 days ending on today
     private var weeklyBarChart: some View {
         HStack(alignment: .bottom, spacing: 6) {
             if let visualData = insight.visualData,
                case .comparison(let current, let previous, _, _) = visualData {
                 let weekValues = generateWeeklyValues(current: current, previous: previous)
+                let dayLabels = getLast7DayLabels()
                 
                 ForEach(0..<7, id: \.self) { index in
+                    let isToday = index == 6
                     VStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 3)
-                            .fill(index == 6 ? themeManager.colors.accent1 : themeManager.colors.surfaceLight.opacity(0.5))
+                            .fill(isToday ? themeManager.colors.accent1 : themeManager.colors.surfaceLight.opacity(0.5))
                             .frame(width: 12, height: hasAnimated ? CGFloat(weekValues[index] / 10) * 70 + 8 : 8)
                             .animation(
                                 .spring(response: 0.5, dampingFraction: 0.7)
@@ -237,13 +260,29 @@ struct InsightCard: View {
                                 value: hasAnimated
                             )
                         
-                        Text(["M", "T", "W", "T", "F", "S", "S"][index])
+                        Text(dayLabels[index])
                             .font(.system(size: 9, weight: .regular))
-                            .foregroundColor(index == 6 ? themeManager.colors.textSecondary : themeManager.colors.textTertiary.opacity(0.6))
+                            .foregroundColor(isToday ? themeManager.colors.textSecondary : themeManager.colors.textTertiary.opacity(0.6))
                     }
                 }
             }
         }
+    }
+    
+    // Get day labels for last 7 days ending today
+    private func getLast7DayLabels() -> [String] {
+        let dayAbbreviations = ["S", "M", "T", "W", "T", "F", "S"] // Sunday = 0
+        let calendar = Calendar.current
+        let today = Date()
+        
+        var labels: [String] = []
+        for daysAgo in (0..<7).reversed() {
+            if let date = calendar.date(byAdding: .day, value: -daysAgo, to: today) {
+                let weekday = calendar.component(.weekday, from: date) - 1 // 0-indexed (Sunday = 0)
+                labels.append(dayAbbreviations[weekday])
+            }
+        }
+        return labels
     }
     
     private func generateWeeklyValues(current: Double, previous: Double) -> [Double] {
@@ -551,28 +590,57 @@ struct InsightCard: View {
                 
                 Spacer()
                 
-                // Right - Best day highlight
+                // Right - Selected day detail or best day highlight
                 VStack(alignment: .trailing, spacing: 8) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("best day")
-                            .font(.system(size: 10, weight: .regular))
-                            .foregroundColor(themeManager.colors.textTertiary)
+                    if let visualData = insight.visualData,
+                       case .weekdayHeatmap(let data, let counts) = visualData {
+                        // Determine which day to show - selected or best day
+                        let dayToShow = selectedHeatmapDay ?? getBestDay(from: data)
+                        let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                        let avg = data[dayToShow]
+                        let count = counts[dayToShow] ?? 0
+                        let isSelected = selectedHeatmapDay != nil
                         
-                        Text(insight.highlightedValue)
-                            .font(.system(size: 26, weight: .light, design: .rounded))
-                            .foregroundColor(themeManager.colors.textPrimary)
-                    }
-                    .opacity(hasAnimated ? 1 : 0)
-                    .offset(x: hasAnimated ? 0 : 10)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.3), value: hasAnimated)
-                    
-                    Image(systemName: "calendar")
-                        .font(.system(size: 20, weight: .light))
-                        .foregroundColor(themeManager.colors.accent1)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(isSelected ? dayNames[dayToShow] : "best day")
+                                .font(.system(size: 10, weight: .regular))
+                                .foregroundColor(themeManager.colors.textTertiary)
+                            
+                            if !isSelected {
+                                // Show day name as the big value when showing "best day"
+                                Text(insight.highlightedValue)
+                                    .font(.system(size: 26, weight: .light, design: .rounded))
+                                    .foregroundColor(themeManager.colors.textPrimary)
+                            } else if let avg = avg {
+                                Text(String(format: "%.1f", avg))
+                                    .font(.system(size: 26, weight: .light, design: .rounded))
+                                    .foregroundColor(themeManager.colors.textPrimary)
+                            } else {
+                                Text("—")
+                                    .font(.system(size: 26, weight: .light, design: .rounded))
+                                    .foregroundColor(themeManager.colors.textTertiary)
+                            }
+                        }
                         .opacity(hasAnimated ? 1 : 0)
-                        .animation(.easeOut(duration: 0.3).delay(0.4), value: hasAnimated)
+                        .offset(x: hasAnimated ? 0 : 10)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.3), value: hasAnimated)
+                        
+                        if !isSelected, let bestAvg = avg {
+                            // Show best day's average and count
+                            Text("avg \(String(format: "%.1f", bestAvg)) · \(count) ratings")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundColor(themeManager.colors.accent1)
+                                .opacity(hasAnimated ? 1 : 0)
+                                .animation(.easeOut(duration: 0.3).delay(0.4), value: hasAnimated)
+                        } else if isSelected {
+                            Text("\(count) rating\(count == 1 ? "" : "s")")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundColor(themeManager.colors.accent1)
+                        }
+                    }
                 }
                 .padding(.trailing, 20)
+                .animation(.easeInOut(duration: 0.2), value: selectedHeatmapDay)
             }
             .padding(.top, 20)
             
@@ -588,13 +656,13 @@ struct InsightCard: View {
         .frame(height: 160)
     }
     
-    // Weekday heatmap grid - 7 squares in a row with varying opacity
+    // Weekday heatmap grid - 7 squares in a row with varying opacity, tappable
     private var weekdayHeatmapGrid: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Week grid
-            HStack(spacing: 6) {
+            HStack(spacing: 3) {
                 if let visualData = insight.visualData,
-                   case .weekdayHeatmap(let data) = visualData {
+                   case .weekdayHeatmap(let data, _) = visualData {
                     // Days: Sun(1), Mon(2), Tue(3), Wed(4), Thu(5), Fri(6), Sat(7)
                     let dayLabels = ["S", "M", "T", "W", "T", "F", "S"]
                     let minRating = data.values.min() ?? 1
@@ -605,35 +673,49 @@ struct InsightCard: View {
                         let avg = data[day]
                         let opacity = avg != nil ? (avg! - minRating) / range * 0.7 + 0.3 : 0.15
                         let isHighest = avg == maxRating && avg != nil
+                        let isSelected = selectedHeatmapDay == day
                         
-                        VStack(spacing: 4) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(themeManager.colors.accent1.opacity(opacity))
-                                .frame(width: 28, height: 28)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(isHighest ? themeManager.colors.accent1 : Color.clear, lineWidth: 1.5)
-                                )
-                                .scaleEffect(hasAnimated ? 1 : 0)
-                                .animation(
-                                    .spring(response: 0.4, dampingFraction: 0.6)
-                                        .delay(Double(day) * 0.05 + 0.2),
-                                    value: hasAnimated
-                                )
-                            
-                            Text(dayLabels[day - 1])
-                                .font(.system(size: 9, weight: .regular))
-                                .foregroundColor(isHighest ? themeManager.colors.accent1 : themeManager.colors.textTertiary)
-                                .opacity(hasAnimated ? 1 : 0)
-                                .animation(.easeOut(duration: 0.3).delay(0.5), value: hasAnimated)
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                if selectedHeatmapDay == day {
+                                    selectedHeatmapDay = nil
+                                } else {
+                                    selectedHeatmapDay = day
+                                }
+                            }
+                        } label: {
+                            VStack(spacing: 4) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(themeManager.colors.accent1.opacity(opacity))
+                                    .frame(width: 22, height: 22)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(isSelected ? themeManager.colors.accent1 : (isHighest ? themeManager.colors.accent1.opacity(0.5) : Color.clear), lineWidth: isSelected ? 2 : 1.5)
+                                    )
+                                    .scaleEffect(isSelected ? 1.1 : (hasAnimated ? 1 : 0))
+                                    .animation(
+                                        .spring(response: 0.4, dampingFraction: 0.6)
+                                            .delay(hasAnimated ? 0 : Double(day) * 0.05 + 0.2),
+                                        value: hasAnimated
+                                    )
+                                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                                
+                                Text(dayLabels[day - 1])
+                                    .font(.system(size: 9, weight: isSelected ? .medium : .regular))
+                                    .foregroundColor(isSelected ? themeManager.colors.accent1 : (isHighest ? themeManager.colors.accent1 : themeManager.colors.textTertiary))
+                                    .opacity(hasAnimated ? 1 : 0)
+                                    .animation(.easeOut(duration: 0.3).delay(0.5), value: hasAnimated)
+                            }
+                            .frame(width: 22)
                         }
+                        .buttonStyle(.plain)
                     }
                 } else {
                     // Placeholder when no data
                     ForEach(0..<7, id: \.self) { index in
                         RoundedRectangle(cornerRadius: 4)
                             .fill(themeManager.colors.surfaceLight.opacity(0.3))
-                            .frame(width: 28, height: 28)
+                            .frame(width: 22, height: 22)
                             .scaleEffect(hasAnimated ? 1 : 0)
                             .animation(
                                 .spring(response: 0.4, dampingFraction: 0.6)
@@ -643,7 +725,21 @@ struct InsightCard: View {
                     }
                 }
             }
+            .fixedSize()
         }
+    }
+    
+    // Helper to find the best day from heatmap data
+    private func getBestDay(from data: [Int: Double]) -> Int {
+        var bestDay = 1
+        var bestAvg = 0.0
+        for (day, avg) in data {
+            if avg > bestAvg {
+                bestAvg = avg
+                bestDay = day
+            }
+        }
+        return bestDay
     }
     
     // MARK: - Friendship Momentum Card
@@ -1115,6 +1211,8 @@ struct BigHeartView: View {
                 5: 6.8,  // Thu
                 6: 7.5,  // Fri
                 7: 8.2   // Sat
+            ], counts: [
+                1: 12, 2: 15, 3: 14, 4: 13, 5: 11, 6: 10, 7: 8
             ]),
             isPremium: true,
             aiInsight: "Saturdays are your best days",

@@ -32,6 +32,9 @@
 		B88E3D742F128BB2009649FE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D6E2F128BB2009649FE /* ChatView.swift */; };
 		B88E3D752F128BB2009649FE /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D702F128BB2009649FE /* Message.swift */; };
 		B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88E3D712F128BB2009649FE /* MessagesListView.swift */; };
+		B89F57952F22842B0059148C /* InsightCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89F57932F22842B0059148C /* InsightCard.swift */; };
+		B89F57962F22842B0059148C /* DailyInsightsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89F57922F22842B0059148C /* DailyInsightsSection.swift */; };
+		B89F57972F22842B0059148C /* DailyInsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = B89F57912F22842B0059148C /* DailyInsight.swift */; };
 		B8A8FD032F1D6DBC0017A398 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD022F1D6DBC0017A398 /* FeedbackView.swift */; };
 		B8A8FD0A2F1D7C530017A398 /* DeveloperChangelogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */; };
 		B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD082F1D7C530017A398 /* ChangelogView.swift */; };
@@ -112,13 +115,13 @@
 		B88172962F02F98B00923E9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B88172972F02F9BD00923E9C /* Settings/NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationManager.swift; sourceTree = "<group>"; };
 		B88172992F030A8800923E9C /* Settings/NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/NotificationSettingsView.swift; sourceTree = "<group>"; };
-		B883E3642F209A72004410A1 /* DailyInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyInsight.swift; sourceTree = "<group>"; };
-		B883E3652F209A72004410A1 /* DailyInsightsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyInsightsSection.swift; sourceTree = "<group>"; };
-		B883E3662F209A72004410A1 /* InsightCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightCard.swift; sourceTree = "<group>"; };
 		B88E3D6E2F128BB2009649FE /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		B88E3D6F2F128BB2009649FE /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		B88E3D702F128BB2009649FE /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		B88E3D712F128BB2009649FE /* MessagesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesListView.swift; sourceTree = "<group>"; };
+		B89F57912F22842B0059148C /* DailyInsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyInsight.swift; sourceTree = "<group>"; };
+		B89F57922F22842B0059148C /* DailyInsightsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyInsightsSection.swift; sourceTree = "<group>"; };
+		B89F57932F22842B0059148C /* InsightCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightCard.swift; sourceTree = "<group>"; };
 		B8A8FD022F1D6DBC0017A398 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
 		B8A8FD082F1D7C530017A398 /* ChangelogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangelogView.swift; sourceTree = "<group>"; };
 		B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperChangelogView.swift; sourceTree = "<group>"; };
@@ -214,16 +217,6 @@
 			path = Widget;
 			sourceTree = "<group>";
 		};
-		B883E3672F209A72004410A1 /* Insights */ = {
-			isa = PBXGroup;
-			children = (
-				B883E3642F209A72004410A1 /* DailyInsight.swift */,
-				B883E3652F209A72004410A1 /* DailyInsightsSection.swift */,
-				B883E3662F209A72004410A1 /* InsightCard.swift */,
-			);
-			path = Insights;
-			sourceTree = "<group>";
-		};
 		B88E3D722F128BB2009649FE /* Messages */ = {
 			isa = PBXGroup;
 			children = (
@@ -233,6 +226,17 @@
 				B88E3D712F128BB2009649FE /* MessagesListView.swift */,
 			);
 			path = Messages;
+			sourceTree = "<group>";
+		};
+		B89F57942F22842B0059148C /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				B89F57912F22842B0059148C /* DailyInsight.swift */,
+				B89F57922F22842B0059148C /* DailyInsightsSection.swift */,
+				B89F57932F22842B0059148C /* InsightCard.swift */,
+			);
+			name = Insights;
+			path = Home/Insights;
 			sourceTree = "<group>";
 		};
 		B8A8FD492F1DFD290017A398 /* Groups */ = {
@@ -279,7 +283,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
-				B883E3672F209A72004410A1 /* Insights */,
+				B89F57942F22842B0059148C /* Insights */,
 				B8A8FD472F1DFD290017A398 /* FriendGroup.swift */,
 				B8A8FD492F1DFD290017A398 /* Groups */,
 				B8D987422F1C70310048E537 /* Developer */,
@@ -480,14 +484,14 @@
 				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,
 				B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */,
 				B8A8FD4A2F1DFD290017A398 /* GroupsView.swift in Sources */,
+				B89F57952F22842B0059148C /* InsightCard.swift in Sources */,
+				B89F57962F22842B0059148C /* DailyInsightsSection.swift in Sources */,
+				B89F57972F22842B0059148C /* DailyInsight.swift in Sources */,
 				B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */,
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
 				B8A8FD0A2F1D7C530017A398 /* DeveloperChangelogView.swift in Sources */,
-				B883E3682F209A72004410A1 /* DailyInsight.swift in Sources */,
-				B883E3692F209A72004410A1 /* DailyInsightsSection.swift in Sources */,
-				B883E36A2F209A72004410A1 /* InsightCard.swift in Sources */,
 				B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */,
 				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
 				B800381F2F131114007CC449 /* CheckInManager.swift in Sources */,

@@ -28,7 +28,7 @@ struct DailyInsightsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             // Header with fade-in
-            Text("daily insights")
+            Text("insights")
                 .font(themeManager.fonts.caption)
                 .foregroundColor(themeManager.colors.textTertiary)
                 .tracking(themeManager.letterSpacing.wide)
