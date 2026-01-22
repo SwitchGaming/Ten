@@ -1607,7 +1607,7 @@ class SupabaseAppViewModel: ObservableObject {
                 .select()
                 .eq("user_id", value: userId)
                 .order("created_at", ascending: false)  // Use created_at for proper ordering
-                .limit(7)
+                .limit(100)  // Fetch more ratings for insights and heatmap analysis
                 .execute()
                 .value
             
@@ -1616,8 +1616,11 @@ class SupabaseAppViewModel: ObservableObject {
             }
             
             // Debug: Print what we got
-            for (index, entry) in ratingHistory.enumerated() {
-                print("🔍 CheckIn: Rating[\(index)]: \(entry.rating) on \(entry.date)")
+            print("🔍 Rating history loaded: \(ratingHistory.count) entries")
+            for (index, entry) in ratingHistory.prefix(10).enumerated() {
+                let weekday = Calendar.current.component(.weekday, from: entry.date)
+                let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                print("🔍 Rating[\(index)]: \(entry.rating) on \(dayNames[weekday]) \(entry.date)")
             }
         } catch {
             print("Error loading rating history: \(error)")

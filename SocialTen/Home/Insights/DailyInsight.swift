@@ -83,7 +83,7 @@ enum InsightVisualData {
     case progress(value: Double, max: Double)
     case bars(values: [(label: String, value: Double, color: Color)])
     case aiMessage // For AI coach card
-    case weekdayHeatmap(data: [Int: Double]) // Day of week (1-7) -> average rating
+    case weekdayHeatmap(data: [Int: Double], counts: [Int: Int]) // Day of week (1-7) -> average rating, counts
     case momentum(previousScore: Int, currentScore: Int, level: String) // Friendship growth
     case unlock(progress: Int, goal: Int) // For "keep rating to unlock" placeholder
 }
@@ -153,9 +153,13 @@ class InsightGenerator {
             ))
         }
         
-        // 4. Pattern or Momentum Insight (Premium) - always shows, with fallback for new users
-        let patternInsight = generatePatternOrMomentumInsight(ratingHistory: ratingHistory, friends: friends, friendshipScores: friendshipScores)
+        // 4. Rating Pattern / Weekday Heatmap Insight (Premium) - always shows with fallback
+        let patternInsight = generateRatingPatternInsightWithFallback(ratingHistory: ratingHistory)
         insights.append(patternInsight)
+        
+        // 5. Friendship Momentum Insight (Premium) - always shows with fallback
+        let momentumInsight = generateFriendshipMomentumInsightWithFallback(friends: friends, friendshipScores: friendshipScores)
+        insights.append(momentumInsight)
         
         return insights
     }
@@ -240,7 +244,7 @@ class InsightGenerator {
             highlightedValue: String(format: "%.1f", currentAvg),
             subtitle: "staying consistent",
             accentColor: Color(hex: "38BDF8"),
-            visualData: .comparison(current: currentAvg, previous: currentAvg * 0.95, currentLabel: "This week", previousLabel: "Last week"),
+            visualData: .comparison(current: currentAvg, previous: currentAvg, currentLabel: "This week", previousLabel: "Last week"),
             aiInsight: "Steady vibes — consistency is underrated"
         )
     }
@@ -460,52 +464,83 @@ class InsightGenerator {
     
     // MARK: - Pattern or Momentum Insight (Premium)
     
-    private static func generatePatternOrMomentumInsight(
-        ratingHistory: [RatingEntry],
-        friends: [User],
-        friendshipScores: [String: FriendshipScore]
-    ) -> DailyInsight {
-        // Try to generate both and pick the more interesting one
-        let patternInsight = generateRatingPatternInsight(ratingHistory: ratingHistory)
-        let momentumInsight = generateFriendshipMomentumInsight(friends: friends, friendshipScores: friendshipScores)
-        
-        // Alternate based on day of week, or pick whichever is available
-        let dayOfWeek = Calendar.current.component(.weekday, from: Date())
-        let preferPattern = dayOfWeek % 2 == 0 // Even days show patterns, odd days show momentum
-        
-        if preferPattern {
-            if let insight = patternInsight ?? momentumInsight {
-                return insight
-            }
-        } else {
-            if let insight = momentumInsight ?? patternInsight {
-                return insight
-            }
+    // MARK: - Rating Pattern Insight with Fallback
+    
+    private static func generateRatingPatternInsightWithFallback(ratingHistory: [RatingEntry]) -> DailyInsight {
+        // Try to generate the real insight first
+        if let insight = generateRatingPatternInsight(ratingHistory: ratingHistory) {
+            return insight
         }
         
-        // Fallback: Show a "coming soon" teaser when neither has enough data
+        // Fallback: Show "unlock" state when not enough data
         let currentRatings = ratingHistory.count
         let goalRatings = 10
+        let remaining = max(0, goalRatings - currentRatings)
         
         return DailyInsight(
             type: .ratingPattern,
             emoji: "🔮",
-            title: "Personal patterns",
+            title: "Weekly patterns",
             highlightedValue: "unlock soon",
             subtitle: "",
             accentColor: Color(hex: "8B5CF6"),
             visualData: .unlock(progress: currentRatings, goal: goalRatings),
             isPremium: true,
-            aiInsight: "\(goalRatings - currentRatings) more ratings to unlock your weekly patterns"
+            aiInsight: remaining > 0 ? "\(remaining) more ratings to unlock your weekly patterns" : "Keep rating to see patterns",
+            isEmptyState: true
         )
     }
     
+    // MARK: - Friendship Momentum Insight with Fallback
+    
+    private static func generateFriendshipMomentumInsightWithFallback(
+        friends: [User],
+        friendshipScores: [String: FriendshipScore]
+    ) -> DailyInsight {
+        // Try to generate the real insight first
+        if let insight = generateFriendshipMomentumInsight(friends: friends, friendshipScores: friendshipScores) {
+            return insight
+        }
+        
+        // Fallback based on reason
+        if friends.isEmpty {
+            // No friends yet
+            return DailyInsight(
+                type: .friendshipMomentum,
+                emoji: "👥",
+                title: "Add friends",
+                highlightedValue: "to connect",
+                subtitle: "",
+                accentColor: Color(hex: "EC4899"),
+                visualData: .unlock(progress: 0, goal: 1),
+                isPremium: true,
+                aiInsight: "Your friendship insights will appear here",
+                isEmptyState: true
+            )
+        } else {
+            // Have friends but no scores yet
+            return DailyInsight(
+                type: .friendshipMomentum,
+                emoji: "💬",
+                title: "Start interacting",
+                highlightedValue: "with friends",
+                subtitle: "",
+                accentColor: Color(hex: "EC4899"),
+                visualData: .unlock(progress: 0, goal: 10),
+                isPremium: true,
+                aiInsight: "React to vibes & chat to build friendship scores",
+                isEmptyState: true
+            )
+        }
+    }
+
     // MARK: - Rating Pattern Insight
     
     private static func generateRatingPatternInsight(ratingHistory: [RatingEntry]) -> DailyInsight? {
-        // Need at least 10 days of data to show meaningful patterns - otherwise hide card
+        // Need at least 10 days of data to show meaningful patterns
         guard ratingHistory.count >= 10 else {
-            return nil  // Hide card entirely when not enough data
+            print("📊 Heatmap: Not enough ratings (\(ratingHistory.count)/10)")
+            return nil
         }
         
         // Group ratings by day of week (1 = Sunday, 7 = Saturday)
@@ -519,12 +554,22 @@ class InsightGenerator {
             weekdayRatings[weekday]?.append(entry.rating)
         }
         
-        // Calculate averages
+        // Debug: Print weekday distribution
+        let debugDayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        print("📊 Heatmap: Processing \(ratingHistory.count) ratings")
+        for day in 1...7 {
+            let count = weekdayRatings[day]?.count ?? 0
+            print("📊 Heatmap: \(debugDayNames[day]) has \(count) ratings")
+        }
+        
+        // Calculate averages and counts
         var weekdayAverages: [Int: Double] = [:]
+        var weekdayCounts: [Int: Int] = [:]
         var bestDay: (day: Int, avg: Double) = (1, 0)
         var worstDay: (day: Int, avg: Double) = (1, 10)
         
         for (day, ratings) in weekdayRatings {
+            weekdayCounts[day] = ratings.count
             if ratings.count >= 2 {
                 let avg = Double(ratings.reduce(0, +)) / Double(ratings.count)
                 weekdayAverages[day] = avg
@@ -535,10 +580,13 @@ class InsightGenerator {
                 if avg < worstDay.avg {
                     worstDay = (day, avg)
                 }
+            } else if ratings.count == 1 {
+                // Still show single ratings but don't include in best/worst
+                weekdayAverages[day] = Double(ratings[0])
             }
         }
         
-        // Need at least 3 days with enough data
+        // Need at least 3 days with enough data for meaningful comparison
         guard weekdayAverages.count >= 3 else {
             return nil
         }
@@ -547,19 +595,22 @@ class InsightGenerator {
         let dayNames = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         let fullDayNames = ["", "Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"]
         
+        // Total ratings used for insight
+        let totalRatings = ratingHistory.count
+        
         // Generate AI insight
         let difference = bestDay.avg - worstDay.avg
         let aiInsight: String
         let celebration: CelebrationType
         
         if difference >= 2.0 {
-            aiInsight = "\(fullDayNames[bestDay.day]) are your best days"
+            aiInsight = "\(fullDayNames[bestDay.day]) are your best days · last \(totalRatings) ratings"
             celebration = .sparkle
         } else if difference >= 1.0 {
-            aiInsight = "You tend to feel best on \(fullDayNames[bestDay.day])"
+            aiInsight = "You tend to feel best on \(fullDayNames[bestDay.day]) · last \(totalRatings) ratings"
             celebration = .none
         } else {
-            aiInsight = "Your week is pretty balanced"
+            aiInsight = "Your week is pretty balanced · last \(totalRatings) ratings"
             celebration = .none
         }
         
@@ -570,7 +621,7 @@ class InsightGenerator {
             highlightedValue: dayNames[bestDay.day],
             subtitle: "",
             accentColor: Color(hex: "8B5CF6"),
-            visualData: .weekdayHeatmap(data: weekdayAverages),
+            visualData: .weekdayHeatmap(data: weekdayAverages, counts: weekdayCounts),
             isPremium: true,
             aiInsight: aiInsight,
             celebration: celebration
