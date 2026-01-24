@@ -390,8 +390,15 @@ class SupabaseAppViewModel: ObservableObject {
                     .execute()
                     .value
                 
-                self.friends = friendUsers.map { $0.toUser() }
-                print("Loaded \(self.friends.count) friends")
+                // Filter out blocked users
+                let blockedIds = BlockManager.shared.blockedUserIds
+                let filteredFriends = friendUsers.filter { user in
+                    guard let userId = user.id else { return false }
+                    return !blockedIds.contains(userId.uuidString)
+                }
+                
+                self.friends = filteredFriends.map { $0.toUser() }
+                print("Loaded \(self.friends.count) friends (filtered \(friendUsers.count - filteredFriends.count) blocked)")
             }
             
             // Update widgets with latest friend data
@@ -754,10 +761,18 @@ class SupabaseAppViewModel: ObservableObject {
             // Get groups I'm a member of (for filtering group-targeted vibes from friends)
             let myGroupMemberships = await getMyGroupMemberships()
             
+            // Get blocked user IDs
+            let blockedIds = BlockManager.shared.blockedUserIds
+            
             // Load responses for each vibe
             var vibesWithResponses: [Vibe] = []
             for dbVibe in dbVibes {
                 guard let vibeId = dbVibe.id else { continue }
+                
+                // Filter out vibes from blocked users
+                if blockedIds.contains(dbVibe.userId.uuidString) {
+                    continue
+                }
                 
                 // Filter: Only show vibes where:
                 // 1. group_id is NULL (sent to all friends), OR
@@ -1016,11 +1031,20 @@ class SupabaseAppViewModel: ObservableObject {
             // Get groups I'm a member of (for filtering group-targeted posts from friends)
             let myGroupMemberships = await getMyGroupMemberships()
             
+            // Get blocked user IDs
+            let blockedIds = BlockManager.shared.blockedUserIds
+            
             // Filter posts: Only show posts where:
             // 1. group_id is NULL (sent to all friends), OR
             // 2. I created the post (can always see my own), OR
             // 3. I'm a member of that group
+            // AND: The post author is not blocked
             let filteredPosts = dbPosts.filter { dbPost in
+                // Filter out posts from blocked users
+                if blockedIds.contains(dbPost.userId.uuidString) {
+                    return false
+                }
+                
                 if let groupId = dbPost.groupId {
                     let isMyPost = dbPost.userId.uuidString == currentUserProfile?.id
                     let amInGroup = myGroupMemberships.contains(groupId)
@@ -1104,8 +1128,16 @@ class SupabaseAppViewModel: ObservableObject {
             // Get groups I'm a member of (for filtering group-targeted posts)
             let myGroupMemberships = await getMyGroupMemberships()
             
-            // Filter posts by group membership
+            // Get blocked user IDs
+            let blockedIds = BlockManager.shared.blockedUserIds
+            
+            // Filter posts by group membership and blocked users
             let filteredPosts = dbPosts.filter { dbPost in
+                // Filter out posts from blocked users
+                if blockedIds.contains(dbPost.userId.uuidString) {
+                    return false
+                }
+                
                 if let groupId = dbPost.groupId {
                     let isMyPost = dbPost.userId.uuidString == currentUserProfile?.id
                     let amInGroup = myGroupMemberships.contains(groupId)

@@ -637,12 +637,21 @@ struct UserProfileView: View {
     
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @EnvironmentObject var badgeManager: BadgeManager
+    @ObservedObject private var blockManager = BlockManager.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var hasSentRequest = false
     @State private var isSending = false
     @State private var showRemoveConfirmation = false
     @State private var chatConversation: Conversation?
+    
+    // Report/Block state
+    @State private var showReportSheet = false
+    @State private var reportReason = ""
+    @State private var isReporting = false
+    @State private var showBlockConfirmation = false
+    @State private var showBlockAfterReport = false
+    @State private var isBlocking = false
     
     // Stats loaded from Supabase for friends
     @State private var loadedStreak: Int = 0
@@ -703,9 +712,24 @@ struct UserProfileView: View {
             
             SmartScrollView {
                 VStack(spacing: ThemeManager.shared.spacing.xl) {
-                    // Header with close button
+                    // Header with report flag and close button
                     HStack {
+                        // Report flag (for any user except self)
+                        if !isCurrentUser {
+                            Button(action: { showReportSheet = true }) {
+                                Image(systemName: "flag")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(profileColors.textTertiary)
+                                    .frame(width: 40, height: 40)
+                                    .background(
+                                        Circle()
+                                            .fill(profileColors.cardBackground)
+                                    )
+                            }
+                        }
+                        
                         Spacer()
+                        
                         Button(action: { dismiss() }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .medium))
@@ -919,8 +943,11 @@ struct UserProfileView: View {
                         addFriendButton
                             .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
                     } else if isFriend && !isCurrentUser {
-                        // Remove friend button only
-                        removeFriendButton
+                        // Block and remove friend buttons
+                        VStack(spacing: 12) {
+                            blockFriendButton
+                            removeFriendButton
+                        }
                     }
                     
                     Spacer(minLength: 40)
@@ -946,6 +973,87 @@ struct UserProfileView: View {
         } message: {
             Text("Are you sure you want to remove \(user.displayName) from your friends?")
         }
+        .alert("Block \(user.displayName)?", isPresented: $showBlockConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Block", role: .destructive) {
+                Task {
+                    isBlocking = true
+                    let result = await blockManager.blockUser(userId: user.id)
+                    isBlocking = false
+                    if result.success {
+                        // Refresh friends list and dismiss
+                        await viewModel.loadFriends()
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text("They will be removed from your friends and won't be able to send you friend requests.")
+        }
+        .alert("Report Sent", isPresented: $showBlockAfterReport) {
+            Button("No Thanks") { }
+            Button("Block", role: .destructive) {
+                showBlockConfirmation = true
+            }
+        } message: {
+            Text("Would you like to block \(user.displayName)?")
+        }
+        .sheet(isPresented: $showReportSheet) {
+            ReportUserSheet(
+                user: user,
+                reportReason: $reportReason,
+                isReporting: $isReporting,
+                onSubmit: {
+                    Task {
+                        isReporting = true
+                        let result = await blockManager.reportUser(userId: user.id, reason: reportReason)
+                        isReporting = false
+                        if result.success {
+                            reportReason = ""
+                            showReportSheet = false
+                            // Only offer to block if they're friends
+                            if isFriend {
+                                showBlockAfterReport = true
+                            }
+                        }
+                    }
+                },
+                colors: profileColors
+            )
+        }
+    }
+    
+    // MARK: - Block Friend Button
+    
+    var blockFriendButton: some View {
+        Button(action: { showBlockConfirmation = true }) {
+            HStack(spacing: 8) {
+                if isBlocking {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .red))
+                        .scaleEffect(0.8)
+                } else {
+                    Image(systemName: "nosign")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("block \(user.displayName.components(separatedBy: " ").first ?? user.displayName)")
+                }
+            }
+            .font(.system(size: 13, weight: .medium))
+            .tracking(1)
+            .foregroundColor(.red.opacity(0.8))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.red.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                    )
+            )
+        }
+        .disabled(isBlocking)
+        .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
     }
     
     // MARK: - Load User Stats from Supabase
@@ -1654,6 +1762,127 @@ struct FloatingParticle: Identifiable {
     var position: CGPoint
     var size: CGFloat
     var opacity: Double
+}
+
+// MARK: - Report User Sheet
+
+struct ReportUserSheet: View {
+    let user: User
+    @Binding var reportReason: String
+    @Binding var isReporting: Bool
+    let onSubmit: () -> Void
+    let colors: ThemeColors
+    
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isTextFieldFocused: Bool
+    
+    private let maxCharacters = 200
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                colors.background.ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    // Icon
+                    Image(systemName: "flag.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(.orange)
+                        .padding(.top, 24)
+                    
+                    // Title
+                    VStack(spacing: 8) {
+                        Text("Report @\(user.username)")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(colors.textPrimary)
+                        
+                        Text("help us keep ten safe")
+                            .font(.system(size: 13, weight: .light))
+                            .foregroundColor(colors.textTertiary)
+                    }
+                    
+                    // Reason input
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("reason")
+                            .font(.system(size: 10, weight: .semibold))
+                            .tracking(2)
+                            .foregroundColor(colors.textTertiary)
+                            .textCase(.uppercase)
+                        
+                        TextEditor(text: $reportReason)
+                            .font(.system(size: 15, weight: .light))
+                            .foregroundColor(colors.textPrimary)
+                            .scrollContentBackground(.hidden)
+                            .frame(height: 100)
+                            .padding(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(colors.cardBackground)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(colors.textTertiary.opacity(0.2), lineWidth: 1)
+                            )
+                            .focused($isTextFieldFocused)
+                            .onChange(of: reportReason) { _, newValue in
+                                if newValue.count > maxCharacters {
+                                    reportReason = String(newValue.prefix(maxCharacters))
+                                }
+                            }
+                        
+                        HStack {
+                            Spacer()
+                            Text("\(reportReason.count)/\(maxCharacters)")
+                                .font(.system(size: 11, weight: .light))
+                                .foregroundColor(colors.textTertiary)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    
+                    Spacer()
+                    
+                    // Submit button
+                    Button(action: onSubmit) {
+                        HStack(spacing: 8) {
+                            if isReporting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            } else {
+                                Text("submit report")
+                            }
+                        }
+                        .font(.system(size: 14, weight: .medium))
+                        .tracking(1)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(reportReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray : Color.orange)
+                        )
+                    }
+                    .disabled(reportReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isReporting)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(colors.textSecondary)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+        .onAppear {
+            isTextFieldFocused = true
+        }
+    }
 }
 
 #Preview {

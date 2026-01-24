@@ -735,11 +735,13 @@ struct FriendsView: View {
         @EnvironmentObject var authViewModel: AuthViewModel
         @ObservedObject private var themeManager = ThemeManager.shared
         @ObservedObject private var developerManager = DeveloperManager.shared
+        @ObservedObject private var blockManager = BlockManager.shared
         @Environment(\.dismiss) private var dismiss
         @State private var showTenPlus = false
         @State private var showEditProfile = false
         @State private var showBadges = false
         @State private var showNotificationSettings = false
+        @State private var showBlockedUsers = false
         @State private var showDeleteConfirmation = false
         @State private var isDeleting = false
         @State private var showDeveloperStats = false
@@ -794,6 +796,9 @@ struct FriendsView: View {
                                 }
                                 SettingsRow(icon: "bell", title: "Notifications") {
                                     showNotificationSettings = true
+                                }
+                                SettingsRow(icon: "nosign", title: "Blocked Users", subtitle: blockManager.blockedUserIds.isEmpty ? nil : "\(blockManager.blockedUserIds.count)") {
+                                    showBlockedUsers = true
                                 }
                             }
                             
@@ -897,6 +902,10 @@ struct FriendsView: View {
             }
             .sheet(isPresented: $showNotificationSettings) {
                 NotificationSettingsView()
+            }
+            .sheet(isPresented: $showBlockedUsers) {
+                BlockedUsersView()
+                    .environmentObject(viewModel)
             }
             .fullScreenCover(isPresented: $showDeveloperStats) {
                 DeveloperStatsView()
