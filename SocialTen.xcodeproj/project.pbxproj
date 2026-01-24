@@ -44,6 +44,8 @@
 		B8AC5A452F24351C003EF955 /* AmbassadorDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A3F2F24351C003EF955 /* AmbassadorDashboardView.swift */; };
 		B8AC5A462F24351C003EF955 /* DowngradeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A402F24351C003EF955 /* DowngradeFlowView.swift */; };
 		B8AC5A472F24351C003EF955 /* PremiumActivatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */; };
+		B8AC5A492F248CAA003EF955 /* BlockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A482F248CAA003EF955 /* BlockManager.swift */; };
+		B8AC5A4B2F248FED003EF955 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -135,6 +137,8 @@
 		B8AC5A402F24351C003EF955 /* DowngradeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DowngradeFlowView.swift; sourceTree = "<group>"; };
 		B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumActivatedView.swift; sourceTree = "<group>"; };
 		B8AC5A422F24351C003EF955 /* PremiumModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumModels.swift; sourceTree = "<group>"; };
+		B8AC5A482F248CAA003EF955 /* BlockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlockManager.swift; path = Settings/BlockManager.swift; sourceTree = "<group>"; };
+		B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlockedUsersView.swift; path = Settings/BlockedUsersView.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -302,6 +306,8 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */,
+				B8AC5A482F248CAA003EF955 /* BlockManager.swift */,
 				B8AC5A432F24351C003EF955 /* Premium */,
 				B89F57942F22842B0059148C /* Insights */,
 				B8A8FD472F1DFD290017A398 /* FriendGroup.swift */,
@@ -503,11 +509,13 @@
 				B8F9FB202EE0F35F004A2584 /* Friends/FriendsView.swift in Sources */,
 				B8C99EA12EFE5BD80050E1A3 /* Settings/ThemeManager.swift in Sources */,
 				B8C99EB82EFE90A40050E1A3 /* Settings/EditProfileView.swift in Sources */,
+				B8AC5A4B2F248FED003EF955 /* BlockedUsersView.swift in Sources */,
 				B8A8FD4A2F1DFD290017A398 /* GroupsView.swift in Sources */,
 				B89F57952F22842B0059148C /* InsightCard.swift in Sources */,
 				B89F57962F22842B0059148C /* DailyInsightsSection.swift in Sources */,
 				B89F57972F22842B0059148C /* DailyInsight.swift in Sources */,
 				B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */,
+				B8AC5A492F248CAA003EF955 /* BlockManager.swift in Sources */,
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
 				B8AC5A442F24351C003EF955 /* PremiumModels.swift in Sources */,

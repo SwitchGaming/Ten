@@ -59,6 +59,9 @@ struct ContentView: View {
                                 // Validate premium status from server
                                 await premiumManager.validatePremiumStatus()
                                 
+                                // Load blocked users
+                                await BlockManager.shared.loadBlockedUsers()
+                                
                                 // Check if user needs to go through downgrade flow
                                 if !premiumManager.isPremium {
                                     let friendCount = appViewModel.friends.count
