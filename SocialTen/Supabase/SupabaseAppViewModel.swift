@@ -1746,6 +1746,15 @@ class SupabaseAppViewModel: ObservableObject {
             // Update widgets
             updateWidgetData()
             
+            // Notify friends who have friend ratings enabled
+            if let senderName = currentUserProfile?.displayName {
+                await sendPushNotificationToAllFriends(
+                    type: "friend_rated",
+                    senderName: senderName,
+                    data: ["rating": String(rating)]
+                )
+            }
+            
             // Reload rating history for check-in evaluation
             await loadRatingHistory()
             print("🔍 Rating history reloaded, count: \(ratingHistory.count)")
