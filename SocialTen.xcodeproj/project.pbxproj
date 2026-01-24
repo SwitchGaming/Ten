@@ -40,6 +40,10 @@
 		B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD082F1D7C530017A398 /* ChangelogView.swift */; };
 		B8A8FD4A2F1DFD290017A398 /* GroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD482F1DFD290017A398 /* GroupsView.swift */; };
 		B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8A8FD472F1DFD290017A398 /* FriendGroup.swift */; };
+		B8AC5A442F24351C003EF955 /* PremiumModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A422F24351C003EF955 /* PremiumModels.swift */; };
+		B8AC5A452F24351C003EF955 /* AmbassadorDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A3F2F24351C003EF955 /* AmbassadorDashboardView.swift */; };
+		B8AC5A462F24351C003EF955 /* DowngradeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A402F24351C003EF955 /* DowngradeFlowView.swift */; };
+		B8AC5A472F24351C003EF955 /* PremiumActivatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -127,6 +131,10 @@
 		B8A8FD092F1D7C530017A398 /* DeveloperChangelogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperChangelogView.swift; sourceTree = "<group>"; };
 		B8A8FD472F1DFD290017A398 /* FriendGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendGroup.swift; sourceTree = "<group>"; };
 		B8A8FD482F1DFD290017A398 /* GroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupsView.swift; sourceTree = "<group>"; };
+		B8AC5A3F2F24351C003EF955 /* AmbassadorDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbassadorDashboardView.swift; sourceTree = "<group>"; };
+		B8AC5A402F24351C003EF955 /* DowngradeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DowngradeFlowView.swift; sourceTree = "<group>"; };
+		B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumActivatedView.swift; sourceTree = "<group>"; };
+		B8AC5A422F24351C003EF955 /* PremiumModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumModels.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -247,6 +255,17 @@
 			path = Groups;
 			sourceTree = "<group>";
 		};
+		B8AC5A432F24351C003EF955 /* Premium */ = {
+			isa = PBXGroup;
+			children = (
+				B8AC5A3F2F24351C003EF955 /* AmbassadorDashboardView.swift */,
+				B8AC5A402F24351C003EF955 /* DowngradeFlowView.swift */,
+				B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */,
+				B8AC5A422F24351C003EF955 /* PremiumModels.swift */,
+			);
+			path = Premium;
+			sourceTree = "<group>";
+		};
 		B8D987422F1C70310048E537 /* Developer */ = {
 			isa = PBXGroup;
 			children = (
@@ -283,6 +302,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8AC5A432F24351C003EF955 /* Premium */,
 				B89F57942F22842B0059148C /* Insights */,
 				B8A8FD472F1DFD290017A398 /* FriendGroup.swift */,
 				B8A8FD492F1DFD290017A398 /* Groups */,
@@ -490,6 +510,10 @@
 				B8A8FD4B2F1DFD290017A398 /* FriendGroup.swift in Sources */,
 				B88172982F02F9BD00923E9C /* Settings/NotificationManager.swift in Sources */,
 				B8C99EB42EFE5CCC0050E1A3 /* Feed/FeedTab.swift in Sources */,
+				B8AC5A442F24351C003EF955 /* PremiumModels.swift in Sources */,
+				B8AC5A452F24351C003EF955 /* AmbassadorDashboardView.swift in Sources */,
+				B8AC5A462F24351C003EF955 /* DowngradeFlowView.swift in Sources */,
+				B8AC5A472F24351C003EF955 /* PremiumActivatedView.swift in Sources */,
 				B8F9FB182EE0F31B004A2584 /* Home/Rating.swift in Sources */,
 				B8A8FD0A2F1D7C530017A398 /* DeveloperChangelogView.swift in Sources */,
 				B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */,

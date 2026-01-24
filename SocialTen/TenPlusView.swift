@@ -7,22 +7,26 @@ import SwiftUI
 
 struct TenPlusView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var viewModel: SupabaseAppViewModel
     @ObservedObject private var premiumManager = PremiumManager.shared
     @State private var selectedThemeIndex = 0
     @State private var isAnimating = false
     @State private var showContent = false
     @State private var gradientRotation: Double = 0
-    @State private var promoCode = ""
-    @State private var promoCodeResult: PromoCodeResultState = .none
     @State private var particleSystem = ParticleSystem()
     @State private var showThemeSelector = false
     
-    enum PromoCodeResultState: Equatable {
+    // Referral code state
+    @State private var referralCode = ""
+    @State private var referralCodeResult: ReferralCodeResultState = .none
+    @State private var isRedeemingReferral = false
+    @State private var showPremiumActivated = false
+    @State private var referredByName: String? = nil
+    
+    enum ReferralCodeResultState: Equatable {
         case none
-        case success(expiryDate: Date)
-        case expired
-        case alreadyRedeemed
-        case invalid
+        case success
+        case error(String)
     }
     
     private let hapticLight = UIImpactFeedbackGenerator(style: .light)
@@ -90,6 +94,20 @@ struct TenPlusView: View {
             } else {
                 upsellView
             }
+        }
+        .fullScreenCover(isPresented: $showPremiumActivated) {
+            PremiumActivatedView(
+                username: viewModel.currentUserProfile?.displayName ?? viewModel.currentUserProfile?.username ?? "friend",
+                referredByName: referredByName,
+                onDismiss: {
+                    showPremiumActivated = false
+                    // Refresh premium status to ensure all premium features are unlocked
+                    Task {
+                        await premiumManager.validatePremiumStatus()
+                    }
+                    dismiss()
+                }
+            )
         }
     }
     
@@ -374,8 +392,8 @@ struct TenPlusView: View {
                 // Premium active state
                 premiumActiveView
             } else {
-                // Promo code entry
-                promoCodeEntryView
+                // Referral code entry (from ambassadors)
+                referralCodeEntryView
             }
         }
         .padding(.vertical, 40)
@@ -469,7 +487,9 @@ struct TenPlusView: View {
         }
     }
     
-    var promoCodeEntryView: some View {
+    // MARK: - Referral Code Entry
+    
+    var referralCodeEntryView: some View {
         VStack(spacing: 24) {
             // Animated icon
             ZStack {
@@ -484,7 +504,7 @@ struct TenPlusView: View {
                     .fill(currentTheme.accent.opacity(0.2))
                     .frame(width: 60, height: 60)
                 
-                Image(systemName: "ticket.fill")
+                Image(systemName: "gift.fill")
                     .font(.system(size: 28, weight: .light))
                     .foregroundStyle(
                         LinearGradient(
@@ -496,68 +516,62 @@ struct TenPlusView: View {
             }
             
             VStack(spacing: 8) {
-                Text("have a promo code?")
+                Text("have a referral code?")
                     .font(.system(size: 28, weight: .light))
                     .foregroundColor(.white)
                 
-                Text("enter your 6-character code to unlock ten+")
+                Text("enter your 8-character code from a friend")
                     .font(.system(size: 14, weight: .light))
                     .foregroundColor(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
             }
             
-            // Result message
-            if case .success(let expiryDate) = promoCodeResult {
+            // Already used referral warning
+            if premiumManager.hasUsedReferral {
                 HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    Text("premium activated until \(formatDate(expiryDate))!")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.orange)
+                    Text("You've already used a referral code")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.orange)
                 }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
                 .background(
                     Capsule()
-                        .fill(Color.green.opacity(0.2))
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.green.opacity(0.3), lineWidth: 1)
-                        )
+                        .fill(Color.orange.opacity(0.2))
                 )
-                .transition(.scale.combined(with: .opacity))
             } else {
                 VStack(spacing: 12) {
-                    // Promo code input
+                    // Referral code input
                     HStack {
-                        Image(systemName: "ticket")
+                        Image(systemName: "gift")
                             .font(.system(size: 14))
                             .foregroundColor(.white.opacity(0.5))
                         
-                        TextField("", text: $promoCode)
-                            .placeholder(when: promoCode.isEmpty) {
-                                Text("enter code")
+                        TextField("", text: $referralCode)
+                            .placeholder(when: referralCode.isEmpty) {
+                                Text("enter referral code")
                                     .foregroundColor(.white.opacity(0.4))
                             }
                             .font(.system(size: 18, weight: .medium, design: .monospaced))
                             .foregroundColor(.white)
                             .autocapitalization(.allCharacters)
                             .autocorrectionDisabled()
-                            .onChange(of: promoCode) { _, newValue in
-                                // Limit to 6 characters and uppercase
+                            .onChange(of: referralCode) { _, newValue in
                                 let filtered = newValue.uppercased().filter { $0.isLetter || $0.isNumber }
-                                if filtered.count <= 6 {
-                                    promoCode = filtered
+                                if filtered.count <= 8 {
+                                    referralCode = filtered
                                 } else {
-                                    promoCode = String(filtered.prefix(6))
+                                    referralCode = String(filtered.prefix(8))
                                 }
                                 // Reset error state when typing
-                                if promoCodeResult != .none && promoCodeResult != .success(expiryDate: Date()) {
-                                    promoCodeResult = .none
+                                if case .error = referralCodeResult {
+                                    referralCodeResult = .none
                                 }
                             }
                         
-                        Text("\(promoCode.count)/6")
+                        Text("\(referralCode.count)/8")
                             .font(.system(size: 12))
                             .foregroundColor(.white.opacity(0.4))
                     }
@@ -569,41 +583,43 @@ struct TenPlusView: View {
                             .environment(\.colorScheme, .dark)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(promoCodeErrorBorderColor, lineWidth: 1)
+                                    .stroke(referralCodeErrorBorderColor, lineWidth: 1)
                             )
                     )
                     
                     // Error message
-                    if promoCodeResult == .invalid {
-                        Text("invalid promo code")
+                    if case .error(let message) = referralCodeResult {
+                        Text(message)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.red)
-                    } else if promoCodeResult == .expired {
-                        Text("this code has expired")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.orange)
-                    } else if promoCodeResult == .alreadyRedeemed {
-                        Text("this code has already been redeemed")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.orange)
+                            .multilineTextAlignment(.center)
                     }
                     
                     // Submit button
-                    Button(action: redeemCode) {
-                        HStack(spacing: 8) {
-                            Text("redeem")
-                                .font(.system(size: 15, weight: .semibold))
-                                .tracking(1)
-                            
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 12, weight: .semibold))
+                    Button {
+                        Task {
+                            await redeemReferralCode()
                         }
-                        .foregroundColor(promoCode.count == 6 ? currentTheme.background : .white.opacity(0.5))
+                    } label: {
+                        HStack(spacing: 8) {
+                            if isRedeemingReferral {
+                                ProgressView()
+                                    .tint(referralCode.count == 8 ? currentTheme.background : .white.opacity(0.5))
+                            } else {
+                                Text("redeem")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .tracking(1)
+                                
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                            }
+                        }
+                        .foregroundColor(referralCode.count == 8 ? currentTheme.background : .white.opacity(0.5))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
                             Group {
-                                if promoCode.count == 6 {
+                                if referralCode.count == 8 {
                                     LinearGradient(
                                         colors: [currentTheme.accent, currentTheme.secondary],
                                         startPoint: .leading,
@@ -615,27 +631,57 @@ struct TenPlusView: View {
                             }
                         )
                         .clipShape(Capsule())
-                        .shadow(color: promoCode.count == 6 ? currentTheme.accent.opacity(0.4) : .clear, radius: 20, y: 10)
+                        .shadow(color: referralCode.count == 8 ? currentTheme.accent.opacity(0.4) : .clear, radius: 20, y: 10)
                     }
-                    .disabled(promoCode.count != 6)
+                    .disabled(referralCode.count != 8 || isRedeemingReferral)
                 }
                 .padding(.horizontal, 20)
             }
             
             // Fine print
-            Text("codes are case-insensitive and expire on a set date")
+            Text("each user can only use one referral code ever")
                 .font(.system(size: 11, weight: .light))
                 .foregroundColor(.white.opacity(0.4))
                 .padding(.top, 8)
         }
     }
     
-    var promoCodeErrorBorderColor: Color {
-        switch promoCodeResult {
-        case .invalid, .expired, .alreadyRedeemed:
+    var referralCodeErrorBorderColor: Color {
+        if case .error = referralCodeResult {
             return Color.red.opacity(0.5)
-        default:
-            return Color.white.opacity(0.1)
+        }
+        return Color.white.opacity(0.1)
+    }
+    
+    func redeemReferralCode() async {
+        print("🔵 redeemReferralCode called with code: \(referralCode)")
+        guard referralCode.count == 8 else {
+            print("❌ Code length is \(referralCode.count), not 8")
+            return
+        }
+        hapticMedium.impactOccurred()
+        isRedeemingReferral = true
+        
+        let result = await premiumManager.redeemReferralCode(referralCode)
+        
+        print("🔵 Got result: success=\(result.success), error=\(result.error ?? "none")")
+        
+        await MainActor.run {
+            isRedeemingReferral = false
+            
+            if result.success {
+                print("🎉 Success! Showing celebration sheet. referredBy=\(result.referredByName ?? "nil")")
+                referredByName = result.referredByName
+                haptic(.success)
+                showPremiumActivated = true
+            } else {
+                let errorMessage = result.errorMessage ?? "Failed to redeem code"
+                print("❌ Failed: \(errorMessage)")
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    referralCodeResult = .error(errorMessage)
+                }
+                haptic(.error)
+            }
         }
     }
     
@@ -643,30 +689,6 @@ struct TenPlusView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
-    }
-    
-    func redeemCode() {
-        guard promoCode.count == 6 else { return }
-        hapticMedium.impactOccurred()
-        
-        let result = premiumManager.redeemPromoCode(promoCode)
-        
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-            switch result {
-            case .success(let expiryDate):
-                promoCodeResult = .success(expiryDate: expiryDate)
-                haptic(.success)
-            case .expired:
-                promoCodeResult = .expired
-                haptic(.error)
-            case .alreadyRedeemed:
-                promoCodeResult = .alreadyRedeemed
-                haptic(.error)
-            case .invalid:
-                promoCodeResult = .invalid
-                haptic(.error)
-            }
-        }
     }
 }
 
@@ -1199,6 +1221,7 @@ struct PremiumManagementView: View {
     @ObservedObject private var premiumManager = PremiumManager.shared
     @ObservedObject private var themeManager = ThemeManager.shared
     @State private var glowAnimation = false
+    @State private var showAmbassadorDashboard = false
     
     var body: some View {
         ZStack {
@@ -1236,6 +1259,11 @@ struct PremiumManagementView: View {
                     // Premium Status Card
                     premiumStatusCard
                     
+                    // Ambassador Section (if ambassador)
+                    if premiumManager.isAmbassador {
+                        ambassadorSection
+                    }
+                    
                     // Theme Selection
                     themeSelectionSection
                     
@@ -1246,10 +1274,79 @@ struct PremiumManagementView: View {
                 }
             }
         }
+        .sheet(isPresented: $showAmbassadorDashboard) {
+            AmbassadorDashboardView()
+        }
         .onAppear {
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
                 glowAnimation = true
             }
+        }
+    }
+    
+    // MARK: - Ambassador Section
+    
+    var ambassadorSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("ambassador")
+                .font(.system(size: 12, weight: .medium))
+                .tracking(2)
+                .foregroundColor(themeManager.colors.textTertiary)
+                .textCase(.uppercase)
+                .padding(.horizontal, 20)
+            
+            Button(action: { showAmbassadorDashboard = true }) {
+                HStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 44, height: 44)
+                        
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Ambassador Dashboard")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(themeManager.colors.textPrimary)
+                        
+                        Text("Generate & manage referral codes")
+                            .font(.system(size: 13, weight: .light))
+                            .foregroundColor(themeManager.colors.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(themeManager.colors.textTertiary)
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(themeManager.colors.cardBackground)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FFD700").opacity(0.4), Color(hex: "FFA500").opacity(0.2)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                )
+            }
+            .padding(.horizontal, 20)
         }
     }
     

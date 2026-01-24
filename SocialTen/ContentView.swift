@@ -13,11 +13,13 @@ struct ContentView: View {
     @StateObject private var badgeManager = BadgeManager.shared
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var checkInManager = CheckInManager.shared
+    @StateObject private var premiumManager = PremiumManager.shared
     @State private var isOnboardingComplete = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     @State private var showCheckInWalkthrough = false
     @State private var showCheckInAlert = false
     @State private var showSupportReceived = false
     @State private var navigateToConversationId: String? = nil
+    @State private var showDowngradeFlow = false
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
@@ -53,6 +55,23 @@ struct ContentView: View {
                                 await appViewModel.loadFriendRequests()
                                 await appViewModel.loadFriends()
                                 await appViewModel.loadConnectionOfTheWeek()
+                                
+                                // Validate premium status from server
+                                await premiumManager.validatePremiumStatus()
+                                
+                                // Check if user needs to go through downgrade flow
+                                if !premiumManager.isPremium {
+                                    let friendCount = appViewModel.friends.count
+                                    let groupCount = 0 // TODO: Get actual group count
+                                    
+                                    if friendCount > PremiumManager.standardFriendLimit || groupCount > PremiumManager.standardGroupLimit {
+                                        await MainActor.run {
+                                            premiumManager.initializeDowngradeFlow(friendCount: friendCount, groupCount: groupCount)
+                                            showDowngradeFlow = true
+                                        }
+                                    }
+                                }
+                                
                                 // Load badges from Supabase and check for new ones
                                 if let userId = appViewModel.currentUserProfile?.id {
                                     await badgeManager.loadFromSupabase(userId: userId)
@@ -226,6 +245,11 @@ struct ContentView: View {
                     }
                 )
             }
+        }
+        .fullScreenCover(isPresented: $showDowngradeFlow) {
+            DowngradeFlowView()
+                .environmentObject(appViewModel)
+                .interactiveDismissDisabled()
         }
     }
     

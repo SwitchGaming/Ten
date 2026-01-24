@@ -18,6 +18,7 @@ struct InsightCard: View {
     @State private var hasAnimated = false
     @State private var showCelebration = false
     @State private var selectedHeatmapDay: Int? = nil // For tappable heatmap days
+    @State private var showTenPlus = false // For premium upsell
     
     private var isLocked: Bool {
         insight.isPremium && !isPremiumUser
@@ -39,11 +40,17 @@ struct InsightCard: View {
             // Premium lock overlay
             if isLocked {
                 premiumLockOverlay
+                    .onTapGesture {
+                        showTenPlus = true
+                    }
             }
         }
         .padding(.horizontal, 4)
         .opacity(hasAnimated ? 1 : 0)
         .offset(y: hasAnimated ? 0 : 20)
+        .sheet(isPresented: $showTenPlus) {
+            TenPlusView()
+        }
         .task {
             // Only animate once per card instance
             guard !hasAnimated else { return }
@@ -95,9 +102,7 @@ struct InsightCard: View {
     // MARK: - Empty State Card
     
     private var emptyStateCard: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            
+        VStack(spacing: 10) {
             // Animated icon based on card type
             emptyStateIcon
                 .scaleEffect(hasAnimated ? 1 : 0.5)
@@ -105,28 +110,27 @@ struct InsightCard: View {
                 .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2), value: hasAnimated)
             
             // Title and value
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Text(insight.title)
-                    .font(.system(size: 14, weight: .light))
+                    .font(.system(size: 13, weight: .light))
                     .foregroundColor(themeManager.colors.textSecondary)
                 
                 Text(insight.highlightedValue)
-                    .font(.system(size: 20, weight: .light, design: .rounded))
+                    .font(.system(size: 18, weight: .light, design: .rounded))
                     .foregroundColor(themeManager.colors.textPrimary)
             }
             .opacity(hasAnimated ? 1 : 0)
             .offset(y: hasAnimated ? 0 : 10)
             .animation(.easeOut(duration: 0.4).delay(0.3), value: hasAnimated)
             
-            Spacer()
-            
             // AI insight as call-to-action
             if let aiInsight = insight.aiInsight {
                 aiInsightFooter(aiInsight)
-                    .padding(.bottom, 16)
+                    .padding(.top, 4)
             }
         }
-        .frame(height: 160)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
     }
     
     // Empty state icon based on card type
