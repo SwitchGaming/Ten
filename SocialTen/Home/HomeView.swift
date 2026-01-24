@@ -9,6 +9,7 @@ struct HomeView: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @EnvironmentObject var badgeManager: BadgeManager
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var premiumManager = PremiumManager.shared
     @State private var showCreatePost = false
     @State private var navigateToVibeTab = false
     @State private var expandedVibeId: String? = nil
@@ -16,7 +17,7 @@ struct HomeView: View {
     @State private var selectedInsightFriend: User? = nil
     
     private var isPremiumUser: Bool {
-        viewModel.currentUserProfile?.isPremium ?? false
+        premiumManager.isPremium
     }
     
     var body: some View {
@@ -76,19 +77,19 @@ struct HomeView: View {
             .padding(.horizontal, themeManager.spacing.screenHorizontal)
         }
         .background(themeManager.colors.background.ignoresSafeArea())
-        .onAppear {
-            regenerateInsights()
+        .task {
+            await regenerateInsights()
         }
         .refreshable {
             await viewModel.loadCurrentUser()
             await viewModel.loadRatingHistory()
-            regenerateInsights()
+            await regenerateInsights()
         }
         .onChange(of: viewModel.ratingHistory) { _, _ in
-            regenerateInsights()
+            Task { await regenerateInsights() }
         }
         .onChange(of: viewModel.friends) { _, _ in
-            regenerateInsights()
+            Task { await regenerateInsights() }
         }
         .onChange(of: navigateToVibeTab) { _, shouldNavigate in
             if shouldNavigate {
@@ -119,7 +120,10 @@ struct HomeView: View {
     
     // MARK: - Generate Insights
     
-    private func regenerateInsights() {
+    private func regenerateInsights() async {
+        // Preload friendship scores first so momentum insight has data
+        await viewModel.preloadAllFriendshipScores()
+        
         dailyInsights = InsightGenerator.generateInsights(
             ratingHistory: viewModel.ratingHistory,
             friends: viewModel.friends,
