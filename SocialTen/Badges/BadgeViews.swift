@@ -844,9 +844,9 @@ struct UserProfileView: View {
                         }
                     }
                     
-                    // Today's Rating Card
+                    // Rating Card
                     VStack(spacing: 12) {
-                        Text("today")
+                        Text("rating")
                             .font(.system(size: 10, weight: .semibold))
                             .tracking(2)
                             .foregroundColor(profileColors.textTertiary)
@@ -1124,6 +1124,14 @@ struct UserProfileView: View {
                     Text(ratingMoodText(for: rating))
                         .font(.system(size: 12, weight: .light))
                         .foregroundColor(profileColors.textTertiary)
+                    
+                    // Last rated timestamp
+                    if let timestamp = user.ratingTimestamp {
+                        Text(relativeTimeString(from: timestamp))
+                            .font(.system(size: 10, weight: .light))
+                            .foregroundColor(profileColors.textTertiary.opacity(0.6))
+                            .padding(.top, 4)
+                    }
                 } else {
                     Text("-")
                         .font(.system(size: 64, weight: .ultraLight))
@@ -1150,6 +1158,30 @@ struct UserProfileView: View {
                 )
         )
         .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+    }
+    
+    // MARK: - Relative Time Helper
+    
+    func relativeTimeString(from date: Date) -> String {
+        let now = Date()
+        let interval = now.timeIntervalSince(date)
+        
+        if interval < 60 {
+            return "rated just now"
+        } else if interval < 3600 {
+            let minutes = Int(interval / 60)
+            return "rated \(minutes) min\(minutes == 1 ? "" : "s") ago"
+        } else if interval < 86400 {
+            let hours = Int(interval / 3600)
+            return "rated \(hours) hour\(hours == 1 ? "" : "s") ago"
+        } else {
+            let days = Int(interval / 86400)
+            if days == 1 {
+                return "rated yesterday"
+            } else {
+                return "rated \(days) days ago"
+            }
+        }
     }
     
     // MARK: - Add Friend Button
