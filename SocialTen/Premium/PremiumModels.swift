@@ -15,6 +15,7 @@ struct AmbassadorStatus: Codable {
     let activeCodes: Int?
     let totalRedeemed: Int?
     let canGenerateCode: Bool?
+    let codesThisWeek: Int?
     
     enum CodingKeys: String, CodingKey {
         case isAmbassador = "is_ambassador"
@@ -22,6 +23,14 @@ struct AmbassadorStatus: Codable {
         case activeCodes = "active_codes"
         case totalRedeemed = "total_redeemed"
         case canGenerateCode = "can_generate_code"
+        case codesThisWeek = "codes_this_week"
+    }
+    
+    // Computed property for remaining codes this week
+    var codesRemainingThisWeek: Int {
+        let used = codesThisWeek ?? 0
+        let limit = maxCodes ?? 5
+        return max(0, limit - used)
     }
     
     static let notAmbassador = AmbassadorStatus(
@@ -29,7 +38,8 @@ struct AmbassadorStatus: Codable {
         maxCodes: nil,
         activeCodes: nil,
         totalRedeemed: nil,
-        canGenerateCode: nil
+        canGenerateCode: nil,
+        codesThisWeek: nil
     )
 }
 

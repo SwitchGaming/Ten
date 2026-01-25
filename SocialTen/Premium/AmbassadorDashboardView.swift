@@ -111,9 +111,9 @@ struct AmbassadorDashboardView: View {
                 )
                 
                 AmbassadorStatCard(
-                    value: "\(premiumManager.ambassadorStatus.maxCodes ?? 5)",
-                    label: "Max Codes",
-                    icon: "crown.fill",
+                    value: "\(premiumManager.ambassadorStatus.codesRemainingThisWeek)",
+                    label: "This Week",
+                    icon: "calendar",
                     color: Color.yellow
                 )
             }
@@ -155,11 +155,11 @@ struct AmbassadorDashboardView: View {
             .disabled(!(premiumManager.ambassadorStatus.canGenerateCode ?? false) || isGenerating)
             
             if !(premiumManager.ambassadorStatus.canGenerateCode ?? true) {
-                Text("You've reached the maximum number of active codes")
+                Text("Weekly limit reached (5 codes per week)")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(themeManager.colors.textTertiary)
             } else {
-                Text("Each code gives 7 days of ten+ and expires after 30 days")
+                Text("Each code gives 7 days of ten+ · \(premiumManager.ambassadorStatus.codesRemainingThisWeek) left this week")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(themeManager.colors.textTertiary)
             }

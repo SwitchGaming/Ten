@@ -289,6 +289,7 @@ struct DeveloperStatsView: View {
     @State private var showMapDetail = false
     @State private var selectedHour: Int? = nil
     @State private var selectedDay: Int? = nil
+    @State private var showAmbassadorManagement = false
     
     var body: some View {
         ZStack {
@@ -349,6 +350,9 @@ struct DeveloperStatsView: View {
             VStack(spacing: themeManager.spacing.xl) {
                 // Header
                 header
+                
+                // Quick Actions
+                quickActionsSection
                 
                 // Overview Cards
                 overviewSection(stats)
@@ -421,6 +425,51 @@ struct DeveloperStatsView: View {
         }
     }
     
+    // MARK: - Quick Actions
+    
+    private var quickActionsSection: some View {
+        HStack(spacing: themeManager.spacing.md) {
+            // Ambassador Management
+            Button {
+                showAmbassadorManagement = true
+            } label: {
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(red: 1.0, green: 0.75, blue: 0.3).opacity(0.2))
+                            .frame(width: 36, height: 36)
+                        
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(red: 1.0, green: 0.75, blue: 0.3))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Ambassadors")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(themeManager.colors.textPrimary)
+                        
+                        Text("Manage & invite")
+                            .font(.system(size: 11, weight: .light))
+                            .foregroundColor(themeManager.colors.textTertiary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(themeManager.colors.textTertiary)
+                }
+                .padding(14)
+                .background(themeManager.colors.cardBackground)
+                .cornerRadius(12)
+            }
+        }
+        .sheet(isPresented: $showAmbassadorManagement) {
+            AmbassadorManagementView()
+        }
+    }
+    
     // MARK: - Overview Section
     
     private func overviewSection(_ stats: AppStats) -> some View {
@@ -439,7 +488,7 @@ struct DeveloperStatsView: View {
                 )
                 
                 StatCard(
-                    title: "active today",
+                    title: "active (24h)",
                     value: "\(stats.usersRatedToday)",
                     icon: "sun.max.fill",
                     color: Color(hex: "FB923C"),
@@ -784,13 +833,13 @@ struct DeveloperStatsView: View {
             
             HStack(spacing: themeManager.spacing.md) {
                 RatingCard(
-                    title: "today's average",
+                    title: "avg (24h)",
                     rating: stats.averageRatingToday,
                     subtitle: "from \(stats.usersRatedToday) ratings"
                 )
                 
                 RatingCard(
-                    title: "all-time average",
+                    title: "all-time avg",
                     rating: stats.averageRatingAllTime,
                     subtitle: "\(stats.totalRatings) total ratings"
                 )
@@ -804,10 +853,13 @@ struct DeveloperStatsView: View {
         VStack(alignment: .leading, spacing: themeManager.spacing.md) {
             sectionHeader("global reach", icon: "globe.americas.fill")
             
+            // Filter out Unknown timezone for map pins (they'd appear at 0,0)
+            let mappableTimezones = stats.timezoneDistribution.filter { $0.timezone != "Unknown" }
+            
             ZStack {
                 // Map
                 Map {
-                    ForEach(stats.timezoneDistribution) { tz in
+                    ForEach(mappableTimezones) { tz in
                         Annotation(tz.cityName, coordinate: tz.coordinate) {
                             MapPin(count: tz.count, isSelected: selectedTimezone?.id == tz.id)
                                 .onTapGesture {
@@ -1191,7 +1243,7 @@ struct MiniStatCard: View {
     let value: Int
     let today: Int?
     let icon: String
-    var todayLabel: String = "today"
+    var todayLabel: String = "24h"
     
     @ObservedObject private var themeManager = ThemeManager.shared
     

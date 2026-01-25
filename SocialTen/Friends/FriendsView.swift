@@ -119,20 +119,18 @@ struct FriendsView: View {
                 }
             }
             
-            // Badge toast notification
-            if let badge = selectedBadgeForToast {
-                BadgeToastNotification(
-                    badge: badge,
-                    isVisible: Binding(
-                        get: { selectedBadgeForToast != nil },
-                        set: { if !$0 { selectedBadgeForToast = nil } }
-                    )
-                )
-                .padding(.bottom, 100)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
         }
         .background(themeManager.colors.background.ignoresSafeArea())
+        .sheet(item: $selectedBadgeForToast) { badge in
+            BadgeDetailSheet(
+                badge: badge,
+                isEarned: badgeManager.hasBadge(badge.id),
+                earnedDate: badgeManager.earnedDate(for: badge.id)
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(.black.opacity(0.95))
+        }
         .task {
             // Preload all friendship scores in background
             await viewModel.preloadAllFriendshipScores()

@@ -46,6 +46,8 @@
 		B8AC5A472F24351C003EF955 /* PremiumActivatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A412F24351C003EF955 /* PremiumActivatedView.swift */; };
 		B8AC5A492F248CAA003EF955 /* BlockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A482F248CAA003EF955 /* BlockManager.swift */; };
 		B8AC5A4B2F248FED003EF955 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */; };
+		B8AC5A4F2F25EC83003EF955 /* AmbassadorManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */; };
+		B8AC5A512F25ECD8003EF955 /* AmbassadorInvitationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -139,6 +141,8 @@
 		B8AC5A422F24351C003EF955 /* PremiumModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumModels.swift; sourceTree = "<group>"; };
 		B8AC5A482F248CAA003EF955 /* BlockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlockManager.swift; path = Settings/BlockManager.swift; sourceTree = "<group>"; };
 		B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlockedUsersView.swift; path = Settings/BlockedUsersView.swift; sourceTree = "<group>"; };
+		B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmbassadorManagementView.swift; path = Developer/AmbassadorManagementView.swift; sourceTree = "<group>"; };
+		B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmbassadorInvitationView.swift; path = Premium/AmbassadorInvitationView.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -306,6 +310,8 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */,
+				B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */,
 				B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */,
 				B8AC5A482F248CAA003EF955 /* BlockManager.swift */,
 				B8AC5A432F24351C003EF955 /* Premium */,
@@ -527,6 +533,7 @@
 				B8A8FD0B2F1D7C530017A398 /* ChangelogView.swift in Sources */,
 				B8F9FB0A2EE0F1E8004A2584 /* ContentView.swift in Sources */,
 				B800381F2F131114007CC449 /* CheckInManager.swift in Sources */,
+				B8AC5A512F25ECD8003EF955 /* AmbassadorInvitationView.swift in Sources */,
 				B80038202F131114007CC449 /* CheckInAlertView.swift in Sources */,
 				B80038212F131114007CC449 /* CheckInWalkthroughView.swift in Sources */,
 				B8C99EB62EFE8D4C0050E1A3 /* TenPlusView.swift in Sources */,
@@ -538,6 +545,7 @@
 				B8F9FB162EE0F304004A2584 /* Settings/User.swift in Sources */,
 				B8CD47712EEBC31600F2CC27 /* Vibe/Vibe.swift in Sources */,
 				B88E3D732F128BB2009649FE /* ConversationManager.swift in Sources */,
+				B8AC5A4F2F25EC83003EF955 /* AmbassadorManagementView.swift in Sources */,
 				B88E3D742F128BB2009649FE /* ChatView.swift in Sources */,
 				B88E3D752F128BB2009649FE /* Message.swift in Sources */,
 				B88E3D762F128BB2009649FE /* MessagesListView.swift in Sources */,

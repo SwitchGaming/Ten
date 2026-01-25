@@ -17,6 +17,8 @@ struct DBUser: Codable, Identifiable {
     let authId: UUID?
     let premiumExpiresAt: Date?
     let selectedThemeId: String?
+    let isDeveloper: Bool?
+    let isAmbassador: Bool?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -29,6 +31,8 @@ struct DBUser: Codable, Identifiable {
         case authId = "auth_id"
         case premiumExpiresAt = "premium_expires_at"
         case selectedThemeId = "selected_theme_id"
+        case isDeveloper = "is_developer"
+        case isAmbassador = "is_ambassador"
     }
 }
 

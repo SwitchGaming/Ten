@@ -15,30 +15,48 @@ enum FeedSection: String, CaseIterable {
 struct FeedTab: View {
     @EnvironmentObject var viewModel: SupabaseAppViewModel
     @StateObject private var conversationManager = ConversationManager.shared
+    @StateObject private var tutorialManager = TutorialManager.shared
     @State private var selectedSection: FeedSection = .feed
     @State private var showCreatePost = false
+    @State private var showDoubleTapTutorial = false
     
     var feedPosts: [Post] {
         viewModel.getFeedPosts()
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Segmented Control Header
-            feedSegmentedControl
-                .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
-                .padding(.top, ThemeManager.shared.spacing.md)
-                .padding(.bottom, ThemeManager.shared.spacing.sm)
+        ZStack {
+            VStack(spacing: 0) {
+                // Segmented Control Header
+                feedSegmentedControl
+                    .padding(.horizontal, ThemeManager.shared.spacing.screenHorizontal)
+                    .padding(.top, ThemeManager.shared.spacing.md)
+                    .padding(.bottom, ThemeManager.shared.spacing.sm)
+                
+                // Content based on selection
+                if selectedSection == .feed {
+                    feedContent
+                } else {
+                    MessagesListView()
+                        .environmentObject(viewModel)
+                }
+            }
+            .background(ThemeManager.shared.colors.background.ignoresSafeArea())
             
-            // Content based on selection
-            if selectedSection == .feed {
-                feedContent
-            } else {
-                MessagesListView()
-                    .environmentObject(viewModel)
+            // Double-tap tutorial overlay
+            if showDoubleTapTutorial {
+                TutorialOverlay(
+                    icon: "hand.tap.fill",
+                    title: "double tap to like",
+                    subtitle: "quickly show some love by\ndouble tapping any post"
+                ) {
+                    tutorialManager.hasSeenDoubleTapTutorial = true
+                    showDoubleTapTutorial = false
+                }
+                .transition(.opacity)
+                .zIndex(100)
             }
         }
-        .background(ThemeManager.shared.colors.background.ignoresSafeArea())
         .fullScreenCover(isPresented: $showCreatePost) {
             CreatePostView()
         }
@@ -50,6 +68,26 @@ struct FeedTab: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToConversation"))) { _ in
             // Switch to messages section when navigating to a conversation
             selectedSection = .messages
+        }
+        .onChange(of: feedPosts.count) { oldCount, newCount in
+            // Show tutorial when first post appears and hasn't been seen
+            if newCount > 0 && oldCount == 0 && !tutorialManager.hasSeenDoubleTapTutorial && !showDoubleTapTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    withAnimation {
+                        showDoubleTapTutorial = true
+                    }
+                }
+            }
+        }
+        .onAppear {
+            // Also check on appear in case posts were already loaded
+            if !feedPosts.isEmpty && !tutorialManager.hasSeenDoubleTapTutorial && !showDoubleTapTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    withAnimation {
+                        showDoubleTapTutorial = true
+                    }
+                }
+            }
         }
     }
     
@@ -163,11 +201,18 @@ struct FeedTab: View {
     private var feedContent: some View {
         SmartScrollView {
             VStack(spacing: ThemeManager.shared.spacing.xl) {
+                // Error banner if loading failed
+                if let error = viewModel.postsError {
+                    ErrorBanner(message: error) {
+                        Task { await viewModel.loadPosts() }
+                    }
+                }
+                
                 // Posts
                 if viewModel.isLoadingPosts && feedPosts.isEmpty {
                     FeedLoadingView()
                         .appearAnimation(delay: 0.1)
-                } else if feedPosts.isEmpty {
+                } else if feedPosts.isEmpty && viewModel.postsError == nil {
                     EmptyFeedView(showCreatePost: $showCreatePost)
                         .appearAnimation(delay: 0.2)
                 } else {

@@ -39,6 +39,13 @@ struct VibeTab: View {
                     .tracking(themeManager.letterSpacing.wide)
                     .padding(.top, themeManager.spacing.lg)
                 
+                // Error banner if loading failed
+                if let error = viewModel.vibesError {
+                    ErrorBanner(message: error) {
+                        Task { await viewModel.loadVibes() }
+                    }
+                }
+                
                 // Create Vibe Card
                 createVibeCard
                 
@@ -53,7 +60,7 @@ struct VibeTab: View {
                 }
                 
                 // Empty state
-                if activeVibes.isEmpty {
+                if activeVibes.isEmpty && viewModel.vibesError == nil {
                     emptyState
                 }
                 
@@ -74,6 +81,9 @@ struct VibeTab: View {
                 }
                 initialExpandedVibeId = nil
             }
+        }
+        .refreshable {
+            await viewModel.loadVibes()
         }
         .task {
             // Load groups for the group picker

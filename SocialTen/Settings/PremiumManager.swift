@@ -349,7 +349,8 @@ class PremiumManager: ObservableObject {
                 maxCodes: status.maxCodes,
                 activeCodes: max(0, activeCodes - 1),
                 totalRedeemed: status.totalRedeemed,
-                canGenerateCode: true
+                canGenerateCode: true,
+                codesThisWeek: status.codesThisWeek
             )
         }
         
