@@ -12,6 +12,7 @@ struct Vibe: Identifiable, Codable {
     let timeDescription: String
     let location: String
     let timestamp: Date
+    let expiresAt: Date
     var responses: [VibeResponse]
     var isActive: Bool
     var groupId: String?
@@ -23,6 +24,7 @@ struct Vibe: Identifiable, Codable {
         timeDescription: String,
         location: String,
         timestamp: Date = Date(),
+        expiresAt: Date,
         responses: [VibeResponse] = [],
         isActive: Bool = true,
         groupId: String? = nil
@@ -33,29 +35,10 @@ struct Vibe: Identifiable, Codable {
         self.timeDescription = timeDescription
         self.location = location
         self.timestamp = timestamp
+        self.expiresAt = expiresAt
         self.responses = responses
         self.isActive = isActive
         self.groupId = groupId
-    }
-    
-    // Computed expiration date based on timeDescription
-    var expiresAt: Date {
-        switch timeDescription.lowercased() {
-        case "now":
-            return timestamp.addingTimeInterval(30 * 60) // 30 minutes
-        case "in 5 min":
-            return timestamp.addingTimeInterval(35 * 60) // 35 minutes
-        case "in 15 min":
-            return timestamp.addingTimeInterval(45 * 60) // 45 minutes
-        case "in 30 min":
-            return timestamp.addingTimeInterval(60 * 60) // 1 hour
-        case "in 1 hr":
-            return timestamp.addingTimeInterval(90 * 60) // 1.5 hours
-        case "later":
-            return timestamp.addingTimeInterval(4 * 60 * 60) // 4 hours
-        default:
-            return timestamp.addingTimeInterval(2 * 60 * 60) // Default 2 hours
-        }
     }
     
     // Computed scheduled time (when the vibe is happening)

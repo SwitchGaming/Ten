@@ -9,10 +9,12 @@ const APNS_TEAM_ID = Deno.env.get('APNS_TEAM_ID')!
 const APNS_PRIVATE_KEY = Deno.env.get('APNS_PRIVATE_KEY')!
 const BUNDLE_ID = Deno.env.get('BUNDLE_ID') || 'com.joealapat.SocialTen'
 
-// Use sandbox for development, production for TestFlight/App Store
-const APNS_HOST = Deno.env.get('APNS_ENVIRONMENT') === 'production' 
-  ? 'api.push.apple.com' 
-  : 'api.sandbox.push.apple.com'
+// Default to production APNs (for TestFlight/App Store)
+// Only use sandbox if explicitly set to 'sandbox' or 'development'
+const apnsEnv = Deno.env.get('APNS_ENVIRONMENT')?.toLowerCase()
+const APNS_HOST = (apnsEnv === 'sandbox' || apnsEnv === 'development')
+  ? 'api.sandbox.push.apple.com' 
+  : 'api.push.apple.com'
 
 // Rate limiting constants
 const MAX_NOTIFICATIONS_PER_DAY = 50
@@ -110,6 +112,7 @@ serve(async (req) => {
     const { type, userId, senderName, data } = await req.json()
     
     console.log(`📬 Processing ${type} notification for user ${userId}, sender: ${senderName || 'undefined'}`)
+    console.log(`🔧 APNs Environment: ${Deno.env.get('APNS_ENVIRONMENT') || 'not set'} -> Using ${APNS_HOST}`)
     
     // Skip if this looks like a duplicate from a database trigger
     if (!senderName && type !== 'daily_reminder' && type !== 'connection_match') {

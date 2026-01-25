@@ -749,11 +749,14 @@ class SupabaseAppViewModel: ObservableObject {
     
     func loadVibes() async {
         do {
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds, .withTimeZone]
+            
             let dbVibes: [DBVibe] = try await supabase
                 .from("vibes")
                 .select()
                 .eq("is_active", value: true)
-                .gt("expires_at", value: ISO8601DateFormatter().string(from: Date()))
+                .gt("expires_at", value: isoFormatter.string(from: Date()))
                 .order("timestamp", ascending: false)
                 .execute()
                 .value
@@ -862,6 +865,7 @@ class SupabaseAppViewModel: ObservableObject {
             timeDescription: timeDescription,
             location: location,
             timestamp: Date(),
+            expiresAt: expiresAt,
             responses: [],
             isActive: true,
             groupId: groupId?.uuidString
@@ -900,6 +904,7 @@ class SupabaseAppViewModel: ObservableObject {
                     timeDescription: timeDescription,
                     location: location,
                     timestamp: insertedVibe.timestamp ?? Date(),
+                    expiresAt: insertedVibe.expiresAt,
                     responses: [],
                     isActive: true,
                     groupId: groupId?.uuidString
@@ -2219,11 +2224,14 @@ class SupabaseAppViewModel: ObservableObject {
         
         do {
             // Check for existing valid pairing
+            let connectionIsoFormatter = ISO8601DateFormatter()
+            connectionIsoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds, .withTimeZone]
+            
             let pairings: [DBConnectionPairing] = try await supabase
                 .from("connection_pairings")
                 .select()
                 .or("user_a.eq.\(userId),user_b.eq.\(userId)")
-                .gt("expires_at", value: ISO8601DateFormatter().string(from: Date()))
+                .gt("expires_at", value: connectionIsoFormatter.string(from: Date()))
                 .execute()
                 .value
             
@@ -2720,6 +2728,7 @@ extension DBVibe {
             timeDescription: timeDescription,
             location: location,
             timestamp: timestamp ?? Date(),
+            expiresAt: expiresAt,
             responses: responses.map { $0.toVibeResponse() },
             isActive: isActive,
             groupId: groupId?.uuidString

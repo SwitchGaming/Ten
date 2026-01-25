@@ -71,6 +71,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             return
         }
         
+        // Refresh unread count when receiving a DM notification in foreground
+        if let type = userInfo["type"] as? String, type == "direct_message" {
+            Task { @MainActor in
+                await ConversationManager.shared.refreshUnreadCount()
+            }
+        }
+        
         completionHandler([.banner, .sound, .badge])
     }
     

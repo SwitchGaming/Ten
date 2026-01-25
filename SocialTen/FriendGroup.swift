@@ -61,7 +61,7 @@ struct GroupPickerItem: Identifiable, Equatable {
         isAllFriends ? "all friends" : "\(emoji) \(name)"
     }
     
-    static let allFriends = GroupPickerItem(id: nil, name: "all friends", emoji: "👥", memberCount: 0)
+    static let allFriends = GroupPickerItem(id: nil, name: "all friends", emoji: "person.2.fill", memberCount: 0)
     
     init(id: UUID?, name: String, emoji: String, memberCount: Int) {
         self.id = id

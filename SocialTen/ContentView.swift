@@ -117,6 +117,9 @@ struct ContentView: View {
                 case .active:
                     // App came to foreground - refresh data and reconnect realtime
                     if authViewModel.isAuthenticated {
+                        // Refresh unread message count immediately
+                        await ConversationManager.shared.refreshUnreadCount()
+                        
                         // Check if daily rating should be reset (new day in user's timezone)
                         appViewModel.checkAndResetDailyRating()
                         
@@ -163,6 +166,12 @@ struct ContentView: View {
             
             // Handle navigation based on notification type
             switch type {
+            case "direct_message":
+                // Refresh unread count and navigate to feed/messages tab
+                Task {
+                    await ConversationManager.shared.refreshUnreadCount()
+                }
+                NotificationCenter.default.post(name: NSNotification.Name("NavigateToConversation"), object: nil)
             case "vibe":
                 // Navigate to vibe tab
                 NotificationCenter.default.post(name: NSNotification.Name("NavigateToVibeTab"), object: nil)
