@@ -206,7 +206,139 @@ class AuthViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
     }
-    // MARK: - Delete Account
+    
+    // MARK: - Delete Account with OTP Verification
+    
+    @Published var deleteOTPSent = false
+    @Published var isDeleteFlow = false
+    @Published var isDeleteLoading = false  // Separate loading state for delete flow
+    
+    /// Send OTP to user's email for account deletion verification (uses custom OTP system)
+    func sendDeleteOTP() async -> Bool {
+        print("🔐 sendDeleteOTP called")
+        
+        guard currentSession != nil else {
+            print("🔐 No active session")
+            errorMessage = "No active session"
+            return false
+        }
+        
+        // Use separate loading state to avoid dismissing the delete view
+        isDeleteLoading = true
+        errorMessage = nil
+        isDeleteFlow = true
+        
+        do {
+            // First, get the user's profile ID
+            let users: [DBUser] = try await supabase
+                .from("users")
+                .select()
+                .eq("auth_id", value: currentSession!.user.id)
+                .execute()
+                .value
+            
+            guard let userId = users.first?.id else {
+                errorMessage = "User profile not found"
+                isDeleteLoading = false
+                return false
+            }
+            
+            // Generate OTP using the database function
+            let otpCode: String = try await supabase
+                .rpc("generate_delete_otp", params: ["p_user_id": userId.uuidString])
+                .execute()
+                .value
+            
+            // Log OTP for development (remove in production when email is fully set up)
+            print("Delete OTP Code: \(otpCode)")
+            
+            // Try to send via edge function (non-blocking)
+            Task {
+                do {
+                    try await supabase.functions.invoke(
+                        "send-delete-otp",
+                        options: FunctionInvokeOptions(body: ["code": otpCode])
+                    )
+                } catch {
+                    print("Edge function failed (email may not send): \(error)")
+                }
+            }
+            
+            deleteOTPSent = true
+            isDeleteLoading = false
+            return true
+            
+        } catch {
+            errorMessage = "Failed to send verification code: \(error.localizedDescription)"
+            print("Delete OTP Error: \(error)")
+            isDeleteLoading = false
+            return false
+        }
+    }
+    
+    /// Verify OTP and delete the account if successful (uses custom OTP system)
+    func verifyDeleteOTP(code: String) async -> Bool {
+        guard currentSession != nil else {
+            errorMessage = "No active session"
+            return false
+        }
+        
+        isDeleteLoading = true
+        errorMessage = nil
+        
+        do {
+            // First, get the user's profile ID
+            let users: [DBUser] = try await supabase
+                .from("users")
+                .select()
+                .eq("auth_id", value: currentSession!.user.id)
+                .execute()
+                .value
+            
+            guard let userId = users.first?.id else {
+                errorMessage = "User profile not found"
+                isDeleteLoading = false
+                return false
+            }
+            
+            // Verify the OTP code using the custom function
+            let isValid: Bool = try await supabase
+                .rpc("verify_delete_otp", params: ["p_user_id": userId.uuidString, "p_code": code])
+                .execute()
+                .value
+            
+            if !isValid {
+                errorMessage = "Invalid or expired verification code. Please try again."
+                isDeleteLoading = false
+                return false
+            }
+            
+            // OTP verified successfully, now delete the account
+            let success = await deleteAccount()
+            
+            // Reset delete flow state
+            deleteOTPSent = false
+            isDeleteFlow = false
+            
+            isDeleteLoading = false
+            return success
+            
+        } catch {
+            errorMessage = "Verification failed. Please try again."
+            print("Delete OTP Verification Error: \(error)")
+            isDeleteLoading = false
+            return false
+        }
+    }
+    
+    /// Cancel the delete flow
+    func cancelDeleteFlow() {
+        deleteOTPSent = false
+        isDeleteFlow = false
+        errorMessage = nil
+    }
+    
+    // MARK: - Delete Account (Internal)
     
     func deleteAccount() async -> Bool {
         guard let session = currentSession else {
@@ -214,7 +346,7 @@ class AuthViewModel: ObservableObject {
             return false
         }
         
-        isLoading = true
+        isDeleteLoading = true
         errorMessage = nil
         
         do {
@@ -228,7 +360,7 @@ class AuthViewModel: ObservableObject {
             
             guard let userId = users.first?.id else {
                 errorMessage = "User profile not found"
-                isLoading = false
+                isDeleteLoading = false
                 return false
             }
             
@@ -253,14 +385,30 @@ class AuthViewModel: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "earnedBadges")
             UserDefaults.standard.removeObject(forKey: "deviceToken")
             UserDefaults.standard.removeObject(forKey: "notificationPreferences")
+            UserDefaults.standard.removeObject(forKey: "badgeManager_lastUserId")
+            // Clear all badge stats
+            UserDefaults.standard.removeObject(forKey: "currentStreak")
+            UserDefaults.standard.removeObject(forKey: "likesGiven")
+            UserDefaults.standard.removeObject(forKey: "repliesGiven")
+            UserDefaults.standard.removeObject(forKey: "vibesCreated")
+            UserDefaults.standard.removeObject(forKey: "vibesJoined")
+            UserDefaults.standard.removeObject(forKey: "nightRatings")
+            UserDefaults.standard.removeObject(forKey: "morningRatings")
+            UserDefaults.standard.removeObject(forKey: "daysActive")
+            UserDefaults.standard.removeObject(forKey: "consecutiveSameRating")
+            UserDefaults.standard.removeObject(forKey: "lastRating")
+            UserDefaults.standard.removeObject(forKey: "lastRatingDate")
+            UserDefaults.standard.removeObject(forKey: "totalRatings")
+            UserDefaults.standard.removeObject(forKey: "weekendVibes")
+            UserDefaults.standard.removeObject(forKey: "eveningVibes")
             
-            isLoading = false
+            isDeleteLoading = false
             return true
             
         } catch {
             errorMessage = "Failed to delete account: \(error.localizedDescription)"
             print("Delete account error: \(error)")
-            isLoading = false
+            isDeleteLoading = false
             return false
         }
     }

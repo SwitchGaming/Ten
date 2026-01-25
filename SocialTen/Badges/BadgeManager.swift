@@ -155,10 +155,40 @@ class BadgeManager: ObservableObject {
         loadFromUserDefaults()
     }
     
+    // MARK: - Reset all stats (call when switching users)
+    
+    private func resetAllStats() {
+        earnedBadges = []
+        currentStreak = 0
+        likesGiven = 0
+        repliesGiven = 0
+        vibesCreated = 0
+        vibesJoined = 0
+        nightRatings = 0
+        morningRatings = 0
+        daysActive = 0
+        consecutiveSameRating = 0
+        lastRating = nil
+        lastRatingDate = nil
+        totalRatings = 0
+        weekendVibes = 0
+        eveningVibes = 0
+    }
+    
     // MARK: - Load from Supabase
     
     func loadFromSupabase(userId: String) async {
         guard let userUUID = UUID(uuidString: userId) else { return }
+        
+        // Check if this is a different user than before - reset local stats
+        let previousUserId = UserDefaults.standard.string(forKey: "badgeManager_lastUserId")
+        if previousUserId != userId {
+            DispatchQueue.main.async {
+                self.resetAllStats()
+            }
+            UserDefaults.standard.set(userId, forKey: "badgeManager_lastUserId")
+        }
+        
         currentUserId = userId
         
         do {
@@ -204,6 +234,14 @@ class BadgeManager: ObservableObject {
                         let formatter = DateFormatter()
                         formatter.dateFormat = "yyyy-MM-dd"
                         self.lastRatingDate = formatter.date(from: dateStr)
+                    }
+                    // Reset local-only stats for new users (they start fresh)
+                    // weekendVibes and eveningVibes are tracked locally per-device
+                    // For new accounts, these should be 0
+                    if previousUserId != userId {
+                        self.weekendVibes = 0
+                        self.eveningVibes = 0
+                        self.totalRatings = 0
                     }
                     self.saveToUserDefaults() // Cache locally
                 }

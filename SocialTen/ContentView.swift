@@ -70,7 +70,13 @@ struct ContentView: View {
                                 await appViewModel.loadFriends()
                                 await appViewModel.loadConnectionOfTheWeek()
                                 
+                                // Re-register device token after login (in case it was deleted)
+                                if let savedToken = UserDefaults.standard.string(forKey: "deviceToken") {
+                                    await NotificationManager.shared.registerDeviceToken(savedToken)
+                                }
+                                
                                 // Validate premium status from server
+                                await premiumManager.validatePremiumStatus()
                                 await premiumManager.validatePremiumStatus()
                                 
                                 // Load blocked users
