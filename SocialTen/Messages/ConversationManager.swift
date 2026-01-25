@@ -632,10 +632,15 @@ class ConversationManager: ObservableObject {
                 }
             }
             
+            guard let senderUUID = UUID(uuidString: senderId) else {
+                print("❌ DM notification skipped: invalid sender ID format")
+                return
+            }
+            
             let response: [DisplayNameResult] = try await SupabaseManager.shared.client
                 .from("users")
                 .select("display_name")
-                .eq("id", value: UUID(uuidString: senderId)!)
+                .eq("id", value: senderUUID)
                 .limit(1)
                 .execute()
                 .value

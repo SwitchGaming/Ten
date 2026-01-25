@@ -5,6 +5,298 @@
 
 import SwiftUI
 
+// MARK: - Role Badge View
+
+struct RoleBadgeView: View {
+    let role: UserRole
+    var themeColor: Color? = nil // Optional theme color override for developers
+    
+    @State private var isGlowing = false
+    @State private var showRoleDetail = false
+    
+    // Use theme color for developers, otherwise use role default
+    private var displayColor: Color {
+        if role == .developer, let themeColor = themeColor {
+            return themeColor
+        }
+        return role.color
+    }
+    
+    var body: some View {
+        Button {
+            showRoleDetail = true
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: role.icon)
+                    .font(.system(size: 11, weight: .semibold))
+                
+                Text(role.displayName)
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(1.5)
+                    .textCase(.uppercase)
+            }
+            .foregroundColor(displayColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                ZStack {
+                    // Subtle glow behind
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(displayColor)
+                        .blur(radius: 8)
+                        .opacity(isGlowing ? 0.4 : 0.2)
+                    
+                    // Glass background
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(displayColor.opacity(0.15))
+                    
+                    // Border
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    displayColor.opacity(0.8),
+                                    displayColor.opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
+            .shadow(color: displayColor.opacity(0.3), radius: 8, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                isGlowing = true
+            }
+        }
+        .sheet(isPresented: $showRoleDetail) {
+            RoleDetailSheet(role: role, themeColor: themeColor)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+    }
+}
+
+// MARK: - Role Detail Sheet
+
+struct RoleDetailSheet: View {
+    let role: UserRole
+    var themeColor: Color? = nil
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var showContent = false
+    @State private var iconPulse = false
+    
+    // Use theme color for developers, otherwise use role default
+    private var displayColor: Color {
+        if role == .developer, let themeColor = themeColor {
+            return themeColor
+        }
+        return role.color
+    }
+    
+    var body: some View {
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                colors: [
+                    Color.black,
+                    displayColor.opacity(0.15),
+                    Color.black
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            // Radial glow
+            RadialGradient(
+                colors: [
+                    displayColor.opacity(0.2),
+                    Color.clear
+                ],
+                center: .top,
+                startRadius: 50,
+                endRadius: 300
+            )
+            .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Icon header
+                ZStack {
+                    // Glow rings
+                    ForEach(0..<3, id: \.self) { i in
+                        Circle()
+                            .stroke(displayColor.opacity(0.1 - Double(i) * 0.03), lineWidth: 1)
+                            .frame(width: 80 + CGFloat(i * 24), height: 80 + CGFloat(i * 24))
+                            .scaleEffect(iconPulse ? 1.05 : 1.0)
+                    }
+                    
+                    // Main icon circle
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [displayColor, displayColor.opacity(0.7)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 70, height: 70)
+                            .shadow(color: displayColor.opacity(0.5), radius: 16, x: 0, y: 6)
+                        
+                        Image(systemName: role.icon)
+                            .font(.system(size: 28, weight: .medium))
+                            .foregroundColor(.black.opacity(0.85))
+                    }
+                }
+                .padding(.top, 24)
+                .opacity(showContent ? 1 : 0)
+                .scaleEffect(showContent ? 1 : 0.8)
+                
+                // Title
+                Text(role.displayName)
+                    .font(.system(size: 24, weight: .light))
+                    .tracking(3)
+                    .foregroundColor(.white)
+                    .textCase(.uppercase)
+                    .padding(.top, 16)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                
+                // Tagline
+                Text(role.tagline)
+                    .font(.system(size: 13, weight: .light))
+                    .foregroundColor(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 6)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                
+                // Divider
+                Rectangle()
+                    .fill(displayColor.opacity(0.3))
+                    .frame(width: 60, height: 1)
+                    .padding(.top, 16)
+                    .opacity(showContent ? 1 : 0)
+                
+                // Perks
+                VStack(spacing: 12) {
+                    ForEach(role.perks, id: \.title) { perk in
+                        perkRow(perk: perk)
+                    }
+                }
+                .padding(.top, 16)
+                .padding(.horizontal, 24)
+                .opacity(showContent ? 1 : 0)
+                .offset(y: showContent ? 0 : 20)
+                
+                Spacer(minLength: 16)
+                
+                // Dismiss button
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Got it")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(displayColor)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(displayColor.opacity(0.15))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(displayColor.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                }
+                .padding(.bottom, 24)
+                .opacity(showContent ? 1 : 0)
+            }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                showContent = true
+            }
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                iconPulse = true
+            }
+        }
+    }
+    
+    private func perkRow(perk: RolePerk) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(displayColor.opacity(0.15))
+                    .frame(width: 36, height: 36)
+                
+                Image(systemName: perk.icon)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(displayColor)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(perk.title.lowercased())
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white)
+                
+                Text(perk.description)
+                    .font(.system(size: 12, weight: .light))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Role Perk Model
+
+struct RolePerk {
+    let icon: String
+    let title: String
+    let description: String
+}
+
+// MARK: - UserRole Extensions
+
+extension UserRole {
+    var tagline: String {
+        switch self {
+        case .developer:
+            return "Building the future of connection"
+        case .ambassador:
+            return "Spreading good vibes, one invite at a time"
+        }
+    }
+    
+    var perks: [RolePerk] {
+        switch self {
+        case .developer:
+            return [
+                RolePerk(icon: "hammer.fill", title: "Core Builder", description: "Actively shaping the ten experience"),
+                RolePerk(icon: "chart.bar.fill", title: "Analytics Access", description: "Real-time insights into app performance"),
+                RolePerk(icon: "sparkles", title: "Early Features", description: "First to test new capabilities"),
+                RolePerk(icon: "heart.fill", title: "Community Voice", description: "Direct line to user feedback")
+            ]
+        case .ambassador:
+            return [
+                RolePerk(icon: "crown.fill", title: "Free Premium", description: "ten+ membership included"),
+                RolePerk(icon: "ticket.fill", title: "Referral Codes", description: "Share 5 premium codes weekly"),
+                RolePerk(icon: "star.fill", title: "Community Leader", description: "Recognized for embodying ten's values"),
+                RolePerk(icon: "gift.fill", title: "Gift Access", description: "Bring friends into the ten+ experience")
+            ]
+        }
+    }
+}
+
 // MARK: - Premium Badge Icon View
 
 struct BadgeIconView: View {
@@ -304,6 +596,216 @@ struct BadgeTooltipView: View {
     }
     
     func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.string(from: date).lowercased()
+    }
+}
+
+// MARK: - Badge Detail Sheet (replaces toast for aesthetic presentation)
+
+struct BadgeDetailSheet: View {
+    let badge: BadgeDefinition
+    let isEarned: Bool
+    let earnedDate: Date?
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var showContent = false
+    @State private var iconPulse = false
+    
+    private var badgeColor: Color {
+        badge.rarity.color
+    }
+    
+    var body: some View {
+        ZStack {
+            // Background gradient using badge rarity color
+            LinearGradient(
+                colors: [
+                    Color.black,
+                    badgeColor.opacity(isEarned ? 0.2 : 0.08),
+                    Color.black
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            // Radial glow
+            RadialGradient(
+                colors: [
+                    badgeColor.opacity(isEarned ? 0.25 : 0.1),
+                    Color.clear
+                ],
+                center: .top,
+                startRadius: 50,
+                endRadius: 300
+            )
+            .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Badge icon header
+                ZStack {
+                    // Animated glow rings
+                    if isEarned {
+                        ForEach(0..<3, id: \.self) { i in
+                            Circle()
+                                .stroke(badgeColor.opacity(0.15 - Double(i) * 0.04), lineWidth: 1)
+                                .frame(width: 100 + CGFloat(i * 28), height: 100 + CGFloat(i * 28))
+                                .scaleEffect(iconPulse ? 1.06 : 1.0)
+                        }
+                    }
+                    
+                    // Badge icon
+                    BadgeIconView(badge: badge, isEarned: isEarned, size: 90)
+                        .scaleEffect(iconPulse ? 1.03 : 1.0)
+                }
+                .padding(.top, 28)
+                .opacity(showContent ? 1 : 0)
+                .scaleEffect(showContent ? 1 : 0.8)
+                
+                // Badge name
+                Text(badge.name)
+                    .font(.system(size: 22, weight: .light))
+                    .tracking(3)
+                    .foregroundColor(.white)
+                    .textCase(.uppercase)
+                    .padding(.top, 18)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                
+                // Description
+                Text(badge.description)
+                    .font(.system(size: 13, weight: .light))
+                    .foregroundColor(.white.opacity(0.55))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.top, 8)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                
+                // Rarity section
+                VStack(spacing: 12) {
+                    // Divider
+                    Rectangle()
+                        .fill(badgeColor.opacity(0.3))
+                        .frame(width: 60, height: 1)
+                        .padding(.top, 20)
+                    
+                    // Rarity badge
+                    HStack(spacing: 10) {
+                        Circle()
+                            .fill(badgeColor)
+                            .frame(width: 8, height: 8)
+                            .shadow(color: badgeColor.opacity(0.6), radius: 5)
+                        
+                        Text(badge.rarity.displayName)
+                            .font(.system(size: 13, weight: .medium))
+                            .tracking(2)
+                            .foregroundColor(badgeColor)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 10)
+                    .background(
+                        Capsule()
+                            .fill(badgeColor.opacity(0.1))
+                            .overlay(
+                                Capsule()
+                                    .stroke(badgeColor.opacity(0.25), lineWidth: 1)
+                            )
+                    )
+                    .padding(.top, 8)
+                    
+                    // Percentile stat
+                    HStack(spacing: 6) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.system(size: 11))
+                        Text(badge.rarity.percentile)
+                            .font(.system(size: 12, weight: .medium))
+                            .tracking(1)
+                    }
+                    .foregroundColor(badgeColor.opacity(0.8))
+                    .padding(.top, 4)
+                }
+                .opacity(showContent ? 1 : 0)
+                .offset(y: showContent ? 0 : 20)
+                
+                // Earned date or locked status
+                if isEarned, let date = earnedDate {
+                    VStack(spacing: 10) {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.06))
+                            .frame(width: 100, height: 1)
+                            .padding(.top, 20)
+                        
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .font(.system(size: 12))
+                            Text("earned \(formatDate(date))")
+                                .font(.system(size: 12, weight: .medium))
+                                .tracking(0.5)
+                        }
+                        .foregroundColor(.white.opacity(0.5))
+                    }
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                } else if !isEarned {
+                    VStack(spacing: 10) {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.06))
+                            .frame(width: 100, height: 1)
+                            .padding(.top, 20)
+                        
+                        HStack(spacing: 6) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 11))
+                            Text("not yet earned")
+                                .font(.system(size: 12, weight: .medium))
+                                .tracking(0.5)
+                        }
+                        .foregroundColor(.white.opacity(0.35))
+                    }
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
+                }
+                
+                Spacer(minLength: 20)
+                
+                // Dismiss button
+                Button {
+                    dismiss()
+                } label: {
+                    Text("Got it")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(badgeColor)
+                        .padding(.horizontal, 36)
+                        .padding(.vertical, 12)
+                        .background(
+                            Capsule()
+                                .fill(badgeColor.opacity(0.15))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(badgeColor.opacity(0.35), lineWidth: 1)
+                                )
+                        )
+                }
+                .padding(.bottom, 28)
+                .opacity(showContent ? 1 : 0)
+            }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1)) {
+                showContent = true
+            }
+            if isEarned {
+                withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                    iconPulse = true
+                }
+            }
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, yyyy"
         return formatter.string(from: date).lowercased()
@@ -665,6 +1167,9 @@ struct UserProfileView: View {
     @State private var friendshipScore: FriendshipScore?
     @State private var isLoadingFriendshipScore = false
     
+    // Badge sheet state
+    @State private var selectedBadge: BadgeDefinition?
+    
     var isCurrentUser: Bool {
         user.id == viewModel.currentUserProfile?.id
     }
@@ -804,6 +1309,15 @@ struct UserProfileView: View {
                                     .foregroundColor(accentColor.opacity(0.8))
                             }
                         }
+                        
+                        // Role badge - use user's theme color for developers
+                        if let role = user.userRole {
+                            RoleBadgeView(
+                                role: role,
+                                themeColor: role == .developer ? user.selectedTheme.glowColor : nil
+                            )
+                            .padding(.top, 8)
+                        }
                     }
                     
                     // Badges Row
@@ -826,11 +1340,15 @@ struct UserProfileView: View {
                             } else {
                                 HStack(spacing: -8) {
                                     ForEach(topBadges) { badge in
-                                        BadgeIconView(
-                                            badge: badge,
-                                            isEarned: true,
-                                            size: 36
-                                        )
+                                        Button {
+                                            selectedBadge = badge
+                                        } label: {
+                                            BadgeIconView(
+                                                badge: badge,
+                                                isEarned: true,
+                                                size: 36
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -1020,6 +1538,16 @@ struct UserProfileView: View {
                 },
                 colors: profileColors
             )
+        }
+        .sheet(item: $selectedBadge) { badge in
+            BadgeDetailSheet(
+                badge: badge,
+                isEarned: isCurrentUser ? badgeManager.hasBadge(badge.id) : true,
+                earnedDate: isCurrentUser ? badgeManager.earnedDate(for: badge.id) : nil
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(.black.opacity(0.95))
         }
     }
     
@@ -1422,7 +1950,6 @@ struct BadgeCollectionView: View {
     @ObservedObject var badgeManager = BadgeManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var selectedBadge: BadgeDefinition? = nil
-    @State private var showTooltip = false
     
     var earnedCount: Int {
         badgeManager.earnedBadges.count
@@ -1477,9 +2004,6 @@ struct BadgeCollectionView: View {
                                 earnedBadgeIds: Set(badgeManager.earnedBadges.map { $0.badgeId }),
                                 onBadgeTap: { badge in
                                     selectedBadge = badge
-                                    withAnimation(.easeOut(duration: 0.25)) {
-                                        showTooltip = true
-                                    }
                                 }
                             )
                         }
@@ -1488,30 +2012,16 @@ struct BadgeCollectionView: View {
                     .padding(.bottom, 100)
                 }
             }
-            
-            // Tooltip overlay
-            if showTooltip, let badge = selectedBadge {
-                Color.black.opacity(0.75)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            showTooltip = false
-                        }
-                    }
-                
-                BadgeTooltipView(
-                    badge: badge,
-                    isEarned: badgeManager.hasBadge(badge.id),
-                    earnedDate: badgeManager.earnedDate(for: badge.id),
-                    onDismiss: {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            showTooltip = false
-                        }
-                    }
-                )
-                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                .zIndex(1)
-            }
+        }
+        .sheet(item: $selectedBadge) { badge in
+            BadgeDetailSheet(
+                badge: badge,
+                isEarned: badgeManager.hasBadge(badge.id),
+                earnedDate: badgeManager.earnedDate(for: badge.id)
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(.black.opacity(0.95))
         }
     }
 }

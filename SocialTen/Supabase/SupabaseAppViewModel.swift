@@ -29,6 +29,11 @@ class SupabaseAppViewModel: ObservableObject {
     @Published var ratingHistory: [RatingEntry] = []
     @Published var todaysPrompt: DailyPrompt = DailyPrompt(text: "what made you smile today?")
     
+    // Error states for UI feedback
+    @Published var loadError: String?
+    @Published var vibesError: String?
+    @Published var postsError: String?
+    
     // Activity tracking
     @Published var hasUnreadPosts: Bool = false
     @Published var hasUnreadVibes: Bool = false
@@ -105,22 +110,17 @@ class SupabaseAppViewModel: ObservableObject {
                 self.currentUser = dbUser
                 self.currentUserProfile = dbUser.toUser()
                 
-                // Load friends
-                await loadFriends()
-
-                // Load friend requests
-                await loadFriendRequests()
-
-                // Load vibes
-                await loadVibes()
+                // Load all data in parallel for faster initial load
+                async let friendsTask: () = loadFriends()
+                async let requestsTask: () = loadFriendRequests()
+                async let vibesTask: () = loadVibes()
+                async let postsTask: () = loadPosts()
+                async let historyTask: () = loadRatingHistory()
                 
-                // Load posts
-                await loadPosts()
-                
-                // Load rating history
-                await loadRatingHistory()
+                // Wait for all parallel tasks to complete
+                _ = await (friendsTask, requestsTask, vibesTask, postsTask, historyTask)
 
-                // Setup realtime subscriptions
+                // Setup realtime subscriptions (after data is loaded)
                 await setupRealtimeSubscriptions()
                 
                 // Initialize ConversationManager with user ID
@@ -758,6 +758,7 @@ class SupabaseAppViewModel: ObservableObject {
                 .eq("is_active", value: true)
                 .gt("expires_at", value: isoFormatter.string(from: Date()))
                 .order("timestamp", ascending: false)
+                .limit(50)  // Pagination: limit to 50 vibes
                 .execute()
                 .value
             
@@ -767,14 +768,13 @@ class SupabaseAppViewModel: ObservableObject {
             // Get blocked user IDs
             let blockedIds = BlockManager.shared.blockedUserIds
             
-            // Load responses for each vibe
-            var vibesWithResponses: [Vibe] = []
-            for dbVibe in dbVibes {
-                guard let vibeId = dbVibe.id else { continue }
+            // Filter vibes first (before fetching responses)
+            let filteredVibes = dbVibes.filter { dbVibe in
+                guard dbVibe.id != nil else { return false }
                 
                 // Filter out vibes from blocked users
                 if blockedIds.contains(dbVibe.userId.uuidString) {
-                    continue
+                    return false
                 }
                 
                 // Filter: Only show vibes where:
@@ -785,25 +785,43 @@ class SupabaseAppViewModel: ObservableObject {
                     let isMyVibe = dbVibe.userId.uuidString == currentUserProfile?.id
                     let amInGroup = myGroupMemberships.contains(groupId)
                     if !isMyVibe && !amInGroup {
-                        continue // Skip this vibe - not meant for me
+                        return false
                     }
                 }
-                
-                let responses: [DBVibeResponse] = try await supabase
+                return true
+            }
+            
+            // Batch fetch all responses for filtered vibes in ONE query (instead of N+1)
+            let vibeIds = filteredVibes.compactMap { $0.id }
+            var responsesByVibeId: [UUID: [DBVibeResponse]] = [:]
+            
+            if !vibeIds.isEmpty {
+                let allResponses: [DBVibeResponse] = try await supabase
                     .from("vibe_responses")
                     .select()
-                    .eq("vibe_id", value: vibeId)
+                    .in("vibe_id", values: vibeIds.map { $0.uuidString })
                     .execute()
                     .value
                 
-                let vibe = dbVibe.toVibe(responses: responses)
-                vibesWithResponses.append(vibe)
+                // Group responses by vibe ID
+                for response in allResponses {
+                    responsesByVibeId[response.vibeId, default: []].append(response)
+                }
+            }
+            
+            // Build vibes with their responses
+            let vibesWithResponses = filteredVibes.compactMap { dbVibe -> Vibe? in
+                guard let vibeId = dbVibe.id else { return nil }
+                let responses = responsesByVibeId[vibeId] ?? []
+                return dbVibe.toVibe(responses: responses)
             }
             
             self.vibes = vibesWithResponses
+            self.vibesError = nil  // Clear any previous error
             updateUnreadCounts()
         } catch {
             print("Error loading vibes: \(error)")
+            self.vibesError = "Failed to load vibes. Pull to refresh."
         }
     }
     
@@ -1101,10 +1119,12 @@ class SupabaseAppViewModel: ObservableObject {
             }
             
             self.posts = postsWithDetails
+            self.postsError = nil  // Clear any previous error
             hasMorePosts = filteredPosts.count == postsPerPage
             updateUnreadCounts()
         } catch {
             print("Error loading posts: \(error)")
+            self.postsError = "Failed to load posts. Pull to refresh."
         }
         
         isLoadingPosts = false
@@ -2714,7 +2734,9 @@ extension DBUser {
             friendIds: [],
             ratingHistory: [],
             premiumExpiresAt: premiumExpiresAt,
-            selectedThemeId: selectedThemeId
+            selectedThemeId: selectedThemeId,
+            isDeveloper: isDeveloper ?? false,
+            isAmbassador: isAmbassador ?? false
         )
     }
 }

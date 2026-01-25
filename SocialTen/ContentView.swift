@@ -14,18 +14,23 @@ struct ContentView: View {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var checkInManager = CheckInManager.shared
     @StateObject private var premiumManager = PremiumManager.shared
+    @StateObject private var ambassadorInvitationManager = AmbassadorInvitationManager.shared
     @State private var isOnboardingComplete = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     @State private var showCheckInWalkthrough = false
     @State private var showCheckInAlert = false
     @State private var showSupportReceived = false
     @State private var navigateToConversationId: String? = nil
     @State private var showDowngradeFlow = false
+    @State private var showAmbassadorInvitation = false
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
         // Ensure premium theme is loaded on app launch
         _ = PremiumManager.shared
     }
+    
+    // TESTING: Set to true to force show onboarding (ignores UserDefaults)
+    private let forceShowOnboarding = false
     
     var body: some View {
         ZStack {
@@ -34,7 +39,16 @@ struct ContentView: View {
                     // Enhanced loading screen
                     LoadingScreen()
                 } else if authViewModel.isAuthenticated {
-                    if authViewModel.isNewUser && !isOnboardingComplete {
+                    // Force onboarding for testing (bypasses the saved state)
+                    if forceShowOnboarding && !isOnboardingComplete {
+                        OnboardingView(isOnboardingComplete: $isOnboardingComplete)
+                            .environmentObject(authViewModel)
+                            .transition(.opacity)
+                            .onAppear {
+                                // Reset the flag when force showing
+                                UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+                            }
+                    } else if authViewModel.isNewUser && !isOnboardingComplete {
                         // Show onboarding for new users
                         OnboardingView(isOnboardingComplete: $isOnboardingComplete)
                             .environmentObject(authViewModel)
@@ -83,6 +97,15 @@ struct ContentView: View {
                                         friendCount: appViewModel.friends.count
                                     )
                                 }
+                                
+                                // Check for ambassador invitation
+                                await ambassadorInvitationManager.checkForInvitation()
+                                if ambassadorInvitationManager.pendingInvitation != nil {
+                                    await MainActor.run {
+                                        showAmbassadorInvitation = true
+                                    }
+                                }
+                                
                                 // Update widgets with latest data
                                 appViewModel.updateWidgetData()
                             }                            .transition(.opacity)
@@ -262,6 +285,16 @@ struct ContentView: View {
             DowngradeFlowView()
                 .environmentObject(appViewModel)
                 .interactiveDismissDisabled()
+        }
+        .fullScreenCover(isPresented: $showAmbassadorInvitation) {
+            if let invitation = ambassadorInvitationManager.pendingInvitation {
+                AmbassadorInvitationView(invitation: invitation) {
+                    // On complete - refresh ambassador status
+                    Task {
+                        await premiumManager.checkAmbassadorStatus()
+                    }
+                }
+            }
         }
     }
     

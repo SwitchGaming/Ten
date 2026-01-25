@@ -44,7 +44,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        #if DEBUG
         print("📱 Device Token: \(token)")
+        #endif
         
         UserDefaults.standard.set(token, forKey: "deviceToken")
         

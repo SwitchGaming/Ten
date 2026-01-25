@@ -5,6 +5,33 @@
 
 import SwiftUI
 
+// MARK: - User Roles
+enum UserRole: String, Codable {
+    case developer
+    case ambassador
+    
+    var displayName: String {
+        switch self {
+        case .developer: return "developer"
+        case .ambassador: return "ambassador"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .developer: return "hammer.fill"
+        case .ambassador: return "star.fill"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .developer: return Color(red: 0.6, green: 0.4, blue: 1.0) // Purple
+        case .ambassador: return Color(red: 1.0, green: 0.75, blue: 0.3) // Gold
+        }
+    }
+}
+
 struct User: Identifiable, Codable, Equatable {
     let id: String
     let username: String
@@ -21,6 +48,17 @@ struct User: Identifiable, Codable, Equatable {
     // Premium status (visible to others)
     var premiumExpiresAt: Date?
     var selectedThemeId: String?
+    
+    // Role badges
+    var isDeveloper: Bool
+    var isAmbassador: Bool
+    
+    // Computed role - developer takes precedence
+    var userRole: UserRole? {
+        if isDeveloper { return .developer }
+        if isAmbassador { return .ambassador }
+        return nil
+    }
     
     // Dynamic friend limit based on premium status
     static var maxFriends: Int {
@@ -56,7 +94,9 @@ struct User: Identifiable, Codable, Equatable {
         ratingHistory: [RatingEntry] = [],
         lastRating: Int? = nil,
         premiumExpiresAt: Date? = nil,
-        selectedThemeId: String? = nil
+        selectedThemeId: String? = nil,
+        isDeveloper: Bool = false,
+        isAmbassador: Bool = false
     ) {
         self.id = id
         self.username = username
@@ -69,6 +109,8 @@ struct User: Identifiable, Codable, Equatable {
         self.lastRating = lastRating
         self.premiumExpiresAt = premiumExpiresAt
         self.selectedThemeId = selectedThemeId
+        self.isDeveloper = isDeveloper
+        self.isAmbassador = isAmbassador
     }
     
     var canAddMoreFriends: Bool {
