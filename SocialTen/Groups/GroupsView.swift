@@ -157,7 +157,7 @@ struct GroupChipsRow: View {
             HStack(spacing: themeManager.spacing.sm) {
                 // All Friends chip
                 GroupChip(
-                    emoji: "👥",
+                    emoji: "person.2.fill",
                     name: "all",
                     count: friendCount,
                     isSelected: groupsManager.selectedGroupId == nil,
@@ -214,7 +214,7 @@ struct GroupChipsRow: View {
 // MARK: - Group Chip
 
 struct GroupChip: View {
-    let emoji: String
+    let emoji: String  // Now stores SF Symbol name
     let name: String
     let count: Int
     let isSelected: Bool
@@ -223,11 +223,22 @@ struct GroupChip: View {
     
     @ObservedObject private var themeManager = ThemeManager.shared
     
+    /// Check if the string is an SF Symbol name (contains a dot or known symbol)
+    private var isIcon: Bool {
+        emoji.contains(".") || ["sparkles", "flame", "bolt", "star", "heart", "globe", "house", "airplane", "car", "book", "leaf", "sun", "moon", "cloud", "drop"].contains(emoji)
+    }
+    
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 6) {
-                Text(emoji)
-                    .font(.system(size: 14))
+                if isIcon {
+                    Image(systemName: emoji)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(isSelected ? themeManager.colors.background : themeManager.colors.accent1)
+                } else {
+                    Text(emoji)
+                        .font(.system(size: 14))
+                }
                 
                 Text(name)
                     .font(.system(size: 13, weight: .medium))
@@ -235,9 +246,9 @@ struct GroupChip: View {
                 
                 Text("\(count)")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white.opacity(0.8) : themeManager.colors.textTertiary)
+                    .foregroundStyle(isSelected ? themeManager.colors.background.opacity(0.7) : themeManager.colors.textTertiary)
             }
-            .foregroundStyle(isSelected ? .white : themeManager.colors.textPrimary)
+            .foregroundStyle(isSelected ? themeManager.colors.background : themeManager.colors.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
@@ -296,10 +307,10 @@ struct CreateGroupSheet: View {
     @ObservedObject private var groupsManager = GroupsManager.shared
     
     @State private var name = ""
-    @State private var emoji = "👥"
+    @State private var emoji = "person.3.fill"  // Default SF Symbol
     @State private var selectedFriendIds: Set<String> = []
     @State private var isCreating = false
-    @State private var showEmojiPicker = false
+    @State private var showIconPicker = false
     
     private var canCreate: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && !selectedFriendIds.isEmpty
@@ -351,18 +362,19 @@ struct CreateGroupSheet: View {
                 .tracking(1)
             
             HStack(spacing: 12) {
-                // Emoji button
-                Button(action: { showEmojiPicker = true }) {
-                    Text(emoji)
-                        .font(.system(size: 32))
+                // Icon button
+                Button(action: { showIconPicker = true }) {
+                    Image(systemName: emoji)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(themeManager.colors.accent1)
                         .frame(width: 60, height: 60)
                         .background(
                             RoundedRectangle(cornerRadius: themeManager.radius.md)
                                 .fill(themeManager.colors.cardBackground)
                         )
                 }
-                .sheet(isPresented: $showEmojiPicker) {
-                    EmojiPickerSheet(selectedEmoji: $emoji)
+                .sheet(isPresented: $showIconPicker) {
+                    IconPickerSheet(selectedIcon: $emoji)
                 }
                 
                 // Name field
@@ -474,7 +486,7 @@ struct EditGroupSheet: View {
     @State private var selectedFriendIds: Set<String> = []
     @State private var isSaving = false
     @State private var showDeleteConfirmation = false
-    @State private var showEmojiPicker = false
+    @State private var showIconPicker = false
     @State private var deleteInfo: (vibes: Int, posts: Int) = (0, 0)
     
     private var canSave: Bool {
@@ -543,18 +555,19 @@ struct EditGroupSheet: View {
                 .tracking(1)
             
             HStack(spacing: 12) {
-                // Emoji button
-                Button(action: { showEmojiPicker = true }) {
-                    Text(emoji)
-                        .font(.system(size: 32))
+                // Icon button
+                Button(action: { showIconPicker = true }) {
+                    Image(systemName: emoji.isEmpty || !emoji.contains(".") ? "person.3.fill" : emoji)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundStyle(themeManager.colors.accent1)
                         .frame(width: 60, height: 60)
                         .background(
                             RoundedRectangle(cornerRadius: themeManager.radius.md)
                                 .fill(themeManager.colors.cardBackground)
                         )
                 }
-                .sheet(isPresented: $showEmojiPicker) {
-                    EmojiPickerSheet(selectedEmoji: $emoji)
+                .sheet(isPresented: $showIconPicker) {
+                    IconPickerSheet(selectedIcon: $emoji)
                 }
                 
                 // Name field
@@ -748,19 +761,20 @@ struct FriendSelectionCell: View {
 
 // MARK: - Emoji Picker Sheet
 
-struct EmojiPickerSheet: View {
+struct IconPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var selectedEmoji: String
+    @Binding var selectedIcon: String
     @ObservedObject private var themeManager = ThemeManager.shared
     
-    @State private var searchText = ""
-    
-    private let commonEmojis = [
-        "👥", "👨‍👩‍👧‍👦", "💼", "🎓", "🏠", "🎮", "⚽️", "🎵",
-        "🍕", "✈️", "💪", "🎉", "❤️", "🔥", "⭐️", "🌟",
-        "🏆", "🎯", "💡", "📚", "🎨", "🎬", "🎸", "🏃",
-        "🧘", "🍻", "☕️", "🌴", "🏖️", "⛷️", "🎿", "🏀",
-        "🎾", "🏈", "⚾️", "🎳", "🚴", "🏊", "🧗", "🤝"
+    // Curated SF Symbols for groups - organized by category
+    private let iconCategories: [(name: String, icons: [String])] = [
+        ("People", ["person.3.fill", "person.2.fill", "figure.2.arms.open", "figure.2.and.child.holdinghands", "person.crop.circle.badge.plus", "shared.with.you"]),
+        ("Activities", ["figure.run", "figure.hiking", "figure.basketball", "sportscourt.fill", "gamecontroller.fill", "puzzlepiece.fill"]),
+        ("Social", ["bubble.left.and.bubble.right.fill", "party.popper.fill", "wineglass.fill", "cup.and.saucer.fill", "fork.knife", "music.note.list"]),
+        ("Work & Study", ["briefcase.fill", "book.fill", "graduationcap.fill", "laptopcomputer", "lightbulb.fill", "doc.text.fill"]),
+        ("Places", ["house.fill", "building.2.fill", "airplane", "car.fill", "mappin.and.ellipse", "globe.americas.fill"]),
+        ("Interests", ["heart.fill", "star.fill", "flame.fill", "bolt.fill", "sparkles", "wand.and.stars"]),
+        ("Nature", ["leaf.fill", "sun.max.fill", "moon.stars.fill", "cloud.sun.fill", "drop.fill", "pawprint.fill"])
     ]
     
     var body: some View {
@@ -768,50 +782,65 @@ struct EmojiPickerSheet: View {
             ZStack {
                 themeManager.colors.background.ignoresSafeArea()
                 
-                VStack(spacing: themeManager.spacing.lg) {
-                    // Preview
-                    Text(selectedEmoji)
-                        .font(.system(size: 64))
-                        .padding(.top, themeManager.spacing.lg)
-                    
-                    // Common emojis grid
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 12) {
-                        ForEach(commonEmojis, id: \.self) { emoji in
-                            Button(action: {
-                                selectedEmoji = emoji
-                                dismiss()
-                            }) {
-                                Text(emoji)
-                                    .font(.system(size: 28))
-                                    .frame(width: 40, height: 40)
-                                    .background(
-                                        Circle()
-                                            .fill(selectedEmoji == emoji ? themeManager.colors.accent1.opacity(0.2) : Color.clear)
-                                    )
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: themeManager.spacing.lg) {
+                        // Preview
+                        Image(systemName: selectedIcon)
+                            .font(.system(size: 48, weight: .medium))
+                            .foregroundStyle(themeManager.colors.accent1)
+                            .frame(width: 80, height: 80)
+                            .background(
+                                Circle()
+                                    .fill(themeManager.colors.cardBackground)
+                            )
+                            .padding(.top, themeManager.spacing.lg)
+                        
+                        // Icon categories
+                        ForEach(iconCategories, id: \.name) { category in
+                            VStack(alignment: .leading, spacing: themeManager.spacing.sm) {
+                                Text(category.name.lowercased())
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(themeManager.colors.textSecondary)
+                                    .textCase(.uppercase)
+                                    .tracking(1)
+                                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
+                                
+                                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                                    ForEach(category.icons, id: \.self) { icon in
+                                        Button(action: {
+                                            selectedIcon = icon
+                                            dismiss()
+                                        }) {
+                                            Image(systemName: icon)
+                                                .font(.system(size: 22, weight: .medium))
+                                                .foregroundStyle(selectedIcon == icon ? themeManager.colors.accent1 : themeManager.colors.textPrimary)
+                                                .frame(width: 44, height: 44)
+                                                .background(
+                                                    Circle()
+                                                        .fill(selectedIcon == icon ? themeManager.colors.accent1.opacity(0.2) : Color.clear)
+                                                )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal, themeManager.spacing.screenHorizontal)
                             }
-                            .buttonStyle(.plain)
                         }
+                        
+                        Spacer(minLength: themeManager.spacing.xl)
                     }
-                    .padding(.horizontal, themeManager.spacing.screenHorizontal)
-                    
-                    Spacer()
-                    
-                    // Tip
-                    Text("or use the keyboard emoji picker")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(themeManager.colors.textTertiary)
-                        .padding(.bottom, themeManager.spacing.lg)
                 }
             }
-            .navigationTitle("choose emoji")
+            .navigationTitle("choose icon")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundStyle(themeManager.colors.accent1)
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -834,7 +863,7 @@ struct GroupPicker: View {
                 HStack(spacing: themeManager.spacing.sm) {
                     // All friends option
                     GroupPickerChip(
-                        emoji: "👥",
+                        emoji: "person.2.fill",
                         name: "all friends",
                         isSelected: selectedGroupId == nil,
                         onTap: {
@@ -864,24 +893,35 @@ struct GroupPicker: View {
 }
 
 struct GroupPickerChip: View {
-    let emoji: String
+    let emoji: String  // Now stores SF Symbol name
     let name: String
     let isSelected: Bool
     let onTap: () -> Void
     
     @ObservedObject private var themeManager = ThemeManager.shared
     
+    /// Check if the string is an SF Symbol name
+    private var isIcon: Bool {
+        emoji.contains(".") || ["sparkles", "flame", "bolt", "star", "heart", "globe", "house", "airplane", "car", "book", "leaf", "sun", "moon", "cloud", "drop"].contains(emoji)
+    }
+    
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 6) {
-                Text(emoji)
-                    .font(.system(size: 14))
+                if isIcon {
+                    Image(systemName: emoji)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(isSelected ? themeManager.colors.background : themeManager.colors.accent1)
+                } else {
+                    Text(emoji)
+                        .font(.system(size: 14))
+                }
                 
                 Text(name)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
             }
-            .foregroundStyle(isSelected ? .white : themeManager.colors.textPrimary)
+            .foregroundStyle(isSelected ? themeManager.colors.background : themeManager.colors.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
