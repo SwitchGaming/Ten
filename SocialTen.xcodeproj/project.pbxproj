@@ -48,6 +48,7 @@
 		B8AC5A4B2F248FED003EF955 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */; };
 		B8AC5A4F2F25EC83003EF955 /* AmbassadorManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */; };
 		B8AC5A512F25ECD8003EF955 /* AmbassadorInvitationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */; };
+		B8AC5A532F25F798003EF955 /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8AC5A522F25F798003EF955 /* DeleteAccountView.swift */; };
 		B8B35A1B2EE2C117004A1258 /* Feed/Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */; };
 		B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */; };
 		B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */; };
@@ -143,6 +144,7 @@
 		B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BlockedUsersView.swift; path = Settings/BlockedUsersView.swift; sourceTree = "<group>"; };
 		B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmbassadorManagementView.swift; path = Developer/AmbassadorManagementView.swift; sourceTree = "<group>"; };
 		B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmbassadorInvitationView.swift; path = Premium/AmbassadorInvitationView.swift; sourceTree = "<group>"; };
+		B8AC5A522F25F798003EF955 /* DeleteAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeleteAccountView.swift; path = Settings/DeleteAccountView.swift; sourceTree = "<group>"; };
 		B8B35A1A2EE2C117004A1258 /* Feed/Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feed/Post.swift; sourceTree = "<group>"; };
 		B8B35A1C2EE2C12F004A1258 /* Friends/FriendRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Friends/FriendRequest.swift; sourceTree = "<group>"; };
 		B8B35A1E2EE2C149004A1258 /* Home/DailyPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home/DailyPrompt.swift; sourceTree = "<group>"; };
@@ -310,6 +312,7 @@
 		B8F9FB062EE0F1E8004A2584 /* SocialTen */ = {
 			isa = PBXGroup;
 			children = (
+				B8AC5A522F25F798003EF955 /* DeleteAccountView.swift */,
 				B8AC5A502F25ECD8003EF955 /* AmbassadorInvitationView.swift */,
 				B8AC5A4E2F25EC83003EF955 /* AmbassadorManagementView.swift */,
 				B8AC5A4A2F248FED003EF955 /* BlockedUsersView.swift */,
@@ -553,6 +556,7 @@
 				B8F9FB1C2EE0F33E004A2584 /* MainTabView.swift in Sources */,
 				B85383A42F0C49C400E18824 /* Friends/FriendshipScore.swift in Sources */,
 				B8B35A1F2EE2C149004A1258 /* Home/DailyPrompt.swift in Sources */,
+				B8AC5A532F25F798003EF955 /* DeleteAccountView.swift in Sources */,
 				B8B35A1D2EE2C12F004A1258 /* Friends/FriendRequest.swift in Sources */,
 				B8A8FD032F1D6DBC0017A398 /* FeedbackView.swift in Sources */,
 			);

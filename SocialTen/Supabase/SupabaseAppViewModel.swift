@@ -2115,7 +2115,13 @@ class SupabaseAppViewModel: ObservableObject {
     }
     
     func getActiveVibes() -> [Vibe] {
-        vibes.filter { $0.isActive && !$0.isExpired }
+        // Only show vibes from friends and the current user
+        let friendIds = Set(friends.map { $0.id })
+        let currentUserId = currentUserProfile?.id ?? ""
+        return vibes.filter { vibe in
+            vibe.isActive && !vibe.isExpired && 
+            (friendIds.contains(vibe.userId) || vibe.userId == currentUserId)
+        }
     }
     
     func getFeedPosts() -> [Post] {

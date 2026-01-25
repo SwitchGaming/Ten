@@ -740,8 +740,7 @@ struct FriendsView: View {
         @State private var showBadges = false
         @State private var showNotificationSettings = false
         @State private var showBlockedUsers = false
-        @State private var showDeleteConfirmation = false
-        @State private var isDeleting = false
+        @State private var showDeleteAccount = false
         @State private var showDeveloperStats = false
         @State private var showDeveloperFeedback = false
         @State private var showDeveloperChangelog = false
@@ -862,15 +861,10 @@ struct FriendsView: View {
                             
                             // Delete Account
                             Button(action: {
-                                showDeleteConfirmation = true
+                                showDeleteAccount = true
                             }) {
                                 HStack(spacing: 8) {
-                                    if isDeleting {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .red))
-                                            .scaleEffect(0.8)
-                                    }
-                                    Text(isDeleting ? "deleting..." : "delete account")
+                                    Text("delete account")
                                         .font(themeManager.fonts.body)
                                 }
                                 .foregroundColor(.red)
@@ -881,7 +875,6 @@ struct FriendsView: View {
                                         .stroke(Color.red.opacity(0.3), lineWidth: 1)
                                 )
                             }
-                            .disabled(isDeleting)
                             .padding(.top, themeManager.spacing.sm)
                         }
                         .padding(.horizontal, themeManager.spacing.screenHorizontal)
@@ -921,6 +914,11 @@ struct FriendsView: View {
                 FeedbackView()
                     .environmentObject(viewModel)
             }
+            .fullScreenCover(isPresented: $showDeleteAccount) {
+                DeleteAccountView()
+                    .environmentObject(authViewModel)
+                    .environmentObject(viewModel)
+            }
             .task {
                 // Check developer status when settings open
                 if let userId = viewModel.currentUserProfile?.id {
@@ -928,21 +926,6 @@ struct FriendsView: View {
                 }
                 // Load unread changelog count
                 await loadUnreadChangelogCount()
-            }
-            .alert("Delete Account", isPresented: $showDeleteConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete", role: .destructive) {
-                    Task {
-                        isDeleting = true
-                        let success = await authViewModel.deleteAccount()
-                        isDeleting = false
-                        if success {
-                            dismiss()
-                        }
-                    }
-                }
-            } message: {
-                Text("This action is permanent and cannot be undone.\n\nAll your data will be permanently deleted, including:\n• Your profile\n• All posts and replies\n• All vibes\n• Friends and friend requests\n• Badges and stats\n\nAre you sure you want to delete your account?")
             }
         }
         
