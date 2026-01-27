@@ -30,7 +30,7 @@ struct SwipeableRatingCard: View {
     
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     private let confirmFeedbackGenerator = UINotificationFeedbackGenerator()
-    private let dragThreshold: CGFloat = 50  // Points to drag for 1 rating change
+    private let dragThreshold: CGFloat = 35  // decreased from 50
     
     var dayOfWeek: String {
         let formatter = DateFormatter()
@@ -136,7 +136,7 @@ struct SwipeableRatingCard: View {
                                     .foregroundColor(themeManager.colors.textSecondary)
                                 
                                 if showHint {
-                                    Text("swipe left or right to rate")
+                                    Text("scroll to rate")
                                         .font(.system(size: 12, weight: .regular))
                                         .foregroundColor(themeManager.colors.textTertiary)
                                 }
@@ -173,7 +173,7 @@ struct SwipeableRatingCard: View {
                     state = true
                 }
                 .onChanged { value in
-                    let translation = value.translation.width
+                    let translation = -value.translation.height
                     dragOffset = translation
                     
                     let ratingChange = Int(translation / dragThreshold)
