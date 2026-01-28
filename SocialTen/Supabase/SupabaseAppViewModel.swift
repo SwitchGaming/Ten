@@ -1042,10 +1042,16 @@ class SupabaseAppViewModel: ObservableObject {
         hasMorePosts = true
         
         do {
-            // Load first batch of posts quickly
+            // Build list of user IDs whose posts we want to see (friends + self)
+            let friendIds = friends.map { $0.id }
+            let currentUserId = currentUserProfile?.id ?? ""
+            let allowedUserIds = friendIds + [currentUserId]
+            
+            // Load posts only from friends and self
             let dbPosts: [DBPost] = try await supabase
                 .from("posts")
                 .select()
+                .in("user_id", values: allowedUserIds)
                 .order("timestamp", ascending: false)
                 .limit(postsPerPage)
                 .execute()
@@ -1137,9 +1143,15 @@ class SupabaseAppViewModel: ObservableObject {
         let offset = postsPage * postsPerPage
         
         do {
+            // Build list of user IDs whose posts we want to see (friends + self)
+            let friendIds = friends.map { $0.id }
+            let currentUserId = currentUserProfile?.id ?? ""
+            let allowedUserIds = friendIds + [currentUserId]
+            
             let dbPosts: [DBPost] = try await supabase
                 .from("posts")
                 .select()
+                .in("user_id", values: allowedUserIds)
                 .order("timestamp", ascending: false)
                 .range(from: offset, to: offset + postsPerPage - 1)
                 .execute()
@@ -2125,9 +2137,8 @@ class SupabaseAppViewModel: ObservableObject {
     }
     
     func getFeedPosts() -> [Post] {
-        let friendIds = Set(friends.map { $0.id })
-        let currentUserId = currentUserProfile?.id ?? ""
-        return posts.filter { friendIds.contains($0.userId) || $0.userId == currentUserId }
+        // Posts are already filtered by friend IDs at the database level in loadPosts()
+        return posts
     }
     
     private func calculateExpiresAt(timeDescription: String) -> Date {
